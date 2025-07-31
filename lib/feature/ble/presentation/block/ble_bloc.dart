@@ -59,12 +59,12 @@ class BleBloc extends Bloc<BleEvent, BleState> {
 
     // Waiting for 3 seconds before checking
     await Future.delayed(const Duration(seconds: 3));
-    var targetDevice;
-    if (scannedDevices.isNotEmpty) {
-      targetDevice = scannedDevices.firstWhere(
-        (device) => device.id.toUpperCase() == AppConstants.bleId,
-      );
-    }
+    final matchingDevices = scannedDevices.where(
+          (device) => device.id.toUpperCase() == AppConstants.bleId,
+    );
+
+    BleDevice? targetDevice = matchingDevices.isNotEmpty ? matchingDevices.first : null;
+
 
     if (targetDevice != null) {
       add(ConnectToDeviceEvent(targetDevice.id));

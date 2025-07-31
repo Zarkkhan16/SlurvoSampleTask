@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sample_task/core/constants/app_colors.dart';
 import 'package:sample_task/core/constants/app_constants.dart';
 import 'package:sample_task/core/constants/app_strings.dart';
+import 'package:sample_task/feature/ble/domain/entities/ble_device.dart' show BleDevice;
 import 'package:sample_task/feature/ble/presentation/block/ble_bloc.dart';
 import 'package:sample_task/feature/ble/presentation/block/ble_event.dart';
 import 'package:sample_task/feature/ble/presentation/block/ble_state.dart';
@@ -31,15 +32,11 @@ class _ShotGridViewState extends State<ShotGridView> {
         }
 
         if (state is BleDevicesFound) {
-          var targetDevice;
+          final matchingDevices = state.devices.where(
+                (device) => device.id.toUpperCase() == AppConstants.bleId,
+          );
 
-          if(state.devices.isNotEmpty)
-            {
-               targetDevice = state.devices.firstWhere(
-                    (device) => device.id.toUpperCase() ==AppConstants.bleId ,
-              );
-            }
-
+          BleDevice? targetDevice = matchingDevices.isNotEmpty ? matchingDevices.first : null;
 
           if (targetDevice == null && !_deviceWithUUIDFound) {
             _deviceWithUUIDFound = true;

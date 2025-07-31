@@ -33,4 +33,5 @@ class AppStrings {
   static const String scanning = 'Scanning for BLE devices...';
   static const String noDataShowing = 'No BLE devices found, showing demo data...';
   static const String connecting = 'Connecting to device...';
+  static const String turnOnBluetooth = 'Turn on your Bluetooth for connectivity';
 }

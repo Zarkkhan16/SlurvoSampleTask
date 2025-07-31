@@ -4,8 +4,21 @@ import 'package:sample_task/core/constants/app_colors.dart';
 import 'package:sample_task/core/constants/app_images.dart';
 import 'package:sample_task/core/constants/app_strings.dart';
 
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
+
+  @override
+  State<BottomNavBar> createState() => _BottomNavBarState();
+}
+
+class _BottomNavBarState extends State<BottomNavBar> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,47 +27,46 @@ class BottomNavBar extends StatelessWidget {
         topLeft: Radius.circular(20),
         topRight: Radius.circular(20),
       ),
-      child: SizedBox(
-        height: 70,
+      child: Container(
+        height: 78,
+        width: double.infinity,
+        color: AppColors.bottomNavBackground,
         child: BottomNavigationBar(
-          backgroundColor: AppColors.bottomNavBackground,
-          selectedItemColor: AppColors.primaryText,
-          unselectedItemColor: AppColors.unselectedIcon,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          backgroundColor: Colors.transparent,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.grey,
           type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: TextStyle(fontSize: 12),
           showUnselectedLabels: true,
-          items:  [
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: SvgPicture.asset(AppImages.homeIcon, height: 24, width: 22),
-              ),
-              label: AppStrings.homePageLabel,
-            ),
-            BottomNavigationBarItem(
-              icon:  Padding(
-                  padding: const EdgeInsets.only(bottom: 4.0),
-                  child:SvgPicture.asset(AppImages.shotAnalysisIcon, height: 24, width: 22),),
-              label: AppStrings.shotAnalysisLabel,
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: SvgPicture.asset(AppImages.practiceGamesIcon,  height: 24, width: 22),
-              ),
-              label: AppStrings.practiceGamesLabel,
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: SvgPicture.asset(AppImages.libraryIcon,  height: 24, width: 22),
-              ),
-              label: AppStrings.shotLibraryLabel,
-
-            ),
+          selectedLabelStyle: const TextStyle(fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontSize: 12),
+          items: [
+            _buildBarItem(AppImages.homeIcon, AppStrings.homePageLabel),
+            _buildBarItem(AppImages.shotAnalysisIcon, AppStrings.shotAnalysisLabel),
+            _buildBarItem(AppImages.practiceGamesIcon, AppStrings.practiceGamesLabel),
+            _buildBarItem(AppImages.libraryIcon, AppStrings.shotLibraryLabel),
           ],
         ),
       ),
+    );
+  }
+
+  BottomNavigationBarItem _buildBarItem(String iconPath, String label) {
+    return BottomNavigationBarItem(
+      icon: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            iconPath,
+            height: 22,
+            width: 22,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 1),
+        ],
+      ),
+      label: label,
     );
   }
 }
