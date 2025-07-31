@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' show BlocProvider;
-import 'package:sample_task/core/di/injection_container.dart' as di;
-import 'package:sample_task/feature/ble/presentation/block/ble_bloc.dart';
-import 'package:sample_task/feature/ble/presentation/block/ble_event.dart';
-import 'package:sample_task/feature/home_screens/presentation/pages/shot_analysis_page.dart';
+import 'package:Slurvo/core/di/injection_container.dart' as di;
+import 'package:Slurvo/feature/ble/presentation/block/ble_bloc.dart';
+import 'package:Slurvo/feature/ble/presentation/block/ble_event.dart';
+import 'package:Slurvo/feature/home_screens/presentation/pages/shot_analysis_page.dart';
 
 class NavigationHelper {
   static void initializeAndNavigateSplash(BuildContext context) {

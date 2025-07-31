@@ -1,4 +1,4 @@
-import 'package:sample_task/core/constants/app_strings.dart';
+import 'package:Slurvo/core/constants/app_strings.dart';
 
 import '../models/shot_data_model.dart';
 

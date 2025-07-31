@@ -1,4 +1,4 @@
-import 'package:sample_task/core/usecases/usecase.dart';
+import 'package:Slurvo/core/usecases/usecase.dart';
 import '../entities/shot_data.dart';
 import '../repositories/shot_repository.dart';
 

@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sample_task/core/constants/app_constants.dart';
-import 'package:sample_task/core/usecases/usecase.dart';
-import 'package:sample_task/feature/ble/domain/entities/ble_device.dart';
-import 'package:sample_task/feature/ble/domain/usecases/connect_to_device.dart';
-import 'package:sample_task/feature/ble/domain/usecases/discover_devices.dart';
-import 'package:sample_task/feature/ble/domain/usecases/read_characteristic.dart';
-import 'package:sample_task/feature/ble/domain/usecases/scan_for_devices.dart';
-import 'package:sample_task/feature/ble/domain/usecases/write_characteristics.dart';
-import 'package:sample_task/feature/ble/presentation/block/ble_event.dart';
-import 'package:sample_task/feature/ble/presentation/block/ble_state.dart';
-import 'package:sample_task/feature/home_screens/domain/repositories/shot_repository.dart';
+import 'package:Slurvo/core/constants/app_constants.dart';
+import 'package:Slurvo/core/usecases/usecase.dart';
+import 'package:Slurvo/feature/ble/domain/entities/ble_device.dart';
+import 'package:Slurvo/feature/ble/domain/usecases/connect_to_device.dart';
+import 'package:Slurvo/feature/ble/domain/usecases/discover_devices.dart';
+import 'package:Slurvo/feature/ble/domain/usecases/read_characteristic.dart';
+import 'package:Slurvo/feature/ble/domain/usecases/scan_for_devices.dart';
+import 'package:Slurvo/feature/ble/domain/usecases/write_characteristics.dart';
+import 'package:Slurvo/feature/ble/presentation/block/ble_event.dart';
+import 'package:Slurvo/feature/ble/presentation/block/ble_state.dart';
+import 'package:Slurvo/feature/home_screens/domain/repositories/shot_repository.dart';
 
 class BleBloc extends Bloc<BleEvent, BleState> {
   final ScanForDevices scanForDevices;

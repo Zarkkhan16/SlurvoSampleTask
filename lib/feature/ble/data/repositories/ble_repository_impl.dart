@@ -1,8 +1,8 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:sample_task/feature/ble/domain/entities/ble_characteristic.dart';
-import 'package:sample_task/feature/ble/domain/entities/ble_device.dart';
-import 'package:sample_task/feature/ble/domain/entities/ble_service.dart';
-import 'package:sample_task/feature/ble/domain/repositories/ble_repository.dart';
+import 'package:Slurvo/feature/ble/domain/entities/ble_characteristic.dart';
+import 'package:Slurvo/feature/ble/domain/entities/ble_device.dart';
+import 'package:Slurvo/feature/ble/domain/entities/ble_service.dart';
+import 'package:Slurvo/feature/ble/domain/repositories/ble_repository.dart';
 
 class BleRepositoryImpl implements BleRepository {
   final Map<String, BluetoothDevice> _connectedDevices = {};

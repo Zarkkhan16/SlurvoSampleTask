@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:sample_task/core/constants/app_colors.dart';
-import 'package:sample_task/core/constants/app_constants.dart';
-import 'package:sample_task/core/constants/app_strings.dart';
-import 'package:sample_task/feature/ble/domain/entities/ble_device.dart' show BleDevice;
-import 'package:sample_task/feature/ble/presentation/block/ble_bloc.dart';
-import 'package:sample_task/feature/ble/presentation/block/ble_event.dart';
-import 'package:sample_task/feature/ble/presentation/block/ble_state.dart';
-import 'package:sample_task/feature/home_screens/presentation/widgets/card/glassmorphism_card.dart';
+import 'package:Slurvo/core/constants/app_colors.dart';
+import 'package:Slurvo/core/constants/app_constants.dart';
+import 'package:Slurvo/core/constants/app_strings.dart';
+import 'package:Slurvo/feature/ble/domain/entities/ble_device.dart' show BleDevice;
+import 'package:Slurvo/feature/ble/presentation/block/ble_bloc.dart';
+import 'package:Slurvo/feature/ble/presentation/block/ble_event.dart';
+import 'package:Slurvo/feature/ble/presentation/block/ble_state.dart';
+import 'package:Slurvo/feature/home_screens/presentation/widgets/card/glassmorphism_card.dart';
 
 class ShotGridView extends StatefulWidget {
   const ShotGridView({super.key});

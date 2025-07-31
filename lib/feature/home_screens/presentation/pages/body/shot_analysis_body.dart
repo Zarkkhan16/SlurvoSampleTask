@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:sample_task/core/constants/app_colors.dart';
-import 'package:sample_task/core/constants/app_images.dart';
-import 'package:sample_task/core/constants/app_strings.dart';
-import 'package:sample_task/feature/home_screens/presentation/widgets/buttons/action_button.dart';
-import 'package:sample_task/feature/home_screens/presentation/widgets/buttons/session_view_button.dart';
-import 'package:sample_task/feature/home_screens/presentation/widgets/custom_bar/custom_bar.dart';
-import 'package:sample_task/feature/home_screens/presentation/widgets/grid/shot_grid_view.dart';
-import 'package:sample_task/feature/home_screens/presentation/widgets/header/header_row.dart';
+import 'package:Slurvo/core/constants/app_colors.dart';
+import 'package:Slurvo/core/constants/app_images.dart';
+import 'package:Slurvo/core/constants/app_strings.dart';
+import 'package:Slurvo/feature/home_screens/presentation/widgets/buttons/action_button.dart';
+import 'package:Slurvo/feature/home_screens/presentation/widgets/buttons/session_view_button.dart';
+import 'package:Slurvo/feature/home_screens/presentation/widgets/custom_bar/custom_bar.dart';
+import 'package:Slurvo/feature/home_screens/presentation/widgets/grid/shot_grid_view.dart';
+import 'package:Slurvo/feature/home_screens/presentation/widgets/header/header_row.dart';
 
 class ShotAnalysisBody extends StatelessWidget {
   const ShotAnalysisBody({super.key});

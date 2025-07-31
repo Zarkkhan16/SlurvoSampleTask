@@ -1,7 +1,7 @@
 
-import 'package:sample_task/core/usecases/usecase.dart';
-import 'package:sample_task/feature/ble/domain/entities/ble_service.dart';
-import 'package:sample_task/feature/ble/domain/repositories/ble_repository.dart';
+import 'package:Slurvo/core/usecases/usecase.dart';
+import 'package:Slurvo/feature/ble/domain/entities/ble_service.dart';
+import 'package:Slurvo/feature/ble/domain/repositories/ble_repository.dart';
 
 
 

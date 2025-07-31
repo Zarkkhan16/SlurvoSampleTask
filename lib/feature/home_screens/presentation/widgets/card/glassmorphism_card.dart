@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sample_task/core/constants/app_strings.dart';
+import 'package:Slurvo/core/constants/app_strings.dart';
 
 class GlassmorphismCard extends StatelessWidget {
   final String value;

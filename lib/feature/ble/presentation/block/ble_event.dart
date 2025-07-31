@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:sample_task/feature/ble/domain/entities/ble_device.dart';
+import 'package:Slurvo/feature/ble/domain/entities/ble_device.dart';
 
 abstract class BleEvent extends Equatable {
   const BleEvent();

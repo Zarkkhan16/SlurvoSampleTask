@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sample_task/core/constants/app_colors.dart';
-import 'package:sample_task/core/constants/app_strings.dart';
+import 'package:Slurvo/core/constants/app_colors.dart';
+import 'package:Slurvo/core/constants/app_strings.dart';
 
 class CustomizeBar extends StatelessWidget {
   const CustomizeBar({super.key});

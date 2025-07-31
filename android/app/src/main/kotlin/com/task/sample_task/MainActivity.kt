@@ -1,4 +1,4 @@
-package com.task.sample_task
+package com.task.slurvo
 
 import io.flutter.embedding.android.FlutterActivity
 

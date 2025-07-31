@@ -1,4 +1,4 @@
-import 'package:sample_task/feature/ble/domain/entities/ble_device.dart';
+import 'package:Slurvo/feature/ble/domain/entities/ble_device.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../repositories/ble_repository.dart';
 

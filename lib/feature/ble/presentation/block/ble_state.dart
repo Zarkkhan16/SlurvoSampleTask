@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
-import 'package:sample_task/feature/ble/domain/entities/ble_device.dart';
-import 'package:sample_task/feature/home_screens/data/models/shot_data_model.dart';
-import 'package:sample_task/feature/home_screens/domain/entities/shot_data.dart';
-import 'package:sample_task/feature/ble/domain/entities/ble_service.dart'; // correct
+import 'package:Slurvo/feature/ble/domain/entities/ble_device.dart';
+import 'package:Slurvo/feature/home_screens/data/models/shot_data_model.dart';
+import 'package:Slurvo/feature/home_screens/domain/entities/shot_data.dart';
+import 'package:Slurvo/feature/ble/domain/entities/ble_service.dart'; // correct
 
 abstract class BleState extends Equatable {
   const BleState();

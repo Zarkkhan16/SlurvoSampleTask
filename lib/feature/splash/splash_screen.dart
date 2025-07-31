@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sample_task/core/constants/app_images.dart';
-import 'package:sample_task/core/constants/app_strings.dart';
-import 'package:sample_task/core/utils/navigation_helper.dart'; // 👈 import the helper
+import 'package:Slurvo/core/constants/app_images.dart';
+import 'package:Slurvo/core/constants/app_strings.dart';
+import 'package:Slurvo/core/utils/navigation_helper.dart'; // 👈 import the helper
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

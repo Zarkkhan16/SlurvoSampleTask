@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sample_task/feature/splash/splash_screen.dart';
+import 'package:Slurvo/feature/splash/splash_screen.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/constants/app_strings.dart';
 

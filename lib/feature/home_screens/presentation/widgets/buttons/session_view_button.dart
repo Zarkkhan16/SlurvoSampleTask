@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sample_task/core/constants/app_colors.dart';
-import 'package:sample_task/core/constants/app_strings.dart';
+import 'package:Slurvo/core/constants/app_colors.dart';
+import 'package:Slurvo/core/constants/app_strings.dart';
 
 class SessionViewButton extends StatelessWidget {
   const SessionViewButton({super.key});

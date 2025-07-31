@@ -1,16 +1,15 @@
-# sample_task
+# Slurvo BLE Task App
 
-A new Flutter project.
+This Flutter project, **Slurvo**, is built to demonstrate Bluetooth Low Energy (BLE) functionality using Flutter. It includes features such as device scanning, connection handling, and data read/write operations. The app also supports fallback to mock data when no BLE devices are found.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Scan for nearby BLE  devices
+- Connect to a selected BLE device
+- Read and write BLE characteristics
+- Handle no-device scenarios with mock data
+- Custom splash screen and launcher icon
+- Optimized for Android (min SDK 21)
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

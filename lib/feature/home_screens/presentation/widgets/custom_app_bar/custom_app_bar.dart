@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sample_task/core/constants/app_colors.dart';
-import 'package:sample_task/core/constants/app_images.dart'; // Make sure this contains `slurvoLogo`
+import 'package:Slurvo/core/constants/app_colors.dart';
+import 'package:Slurvo/core/constants/app_images.dart'; // Make sure this contains `slurvoLogo`
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
