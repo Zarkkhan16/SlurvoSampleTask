@@ -28,7 +28,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         topRight: Radius.circular(20),
       ),
       child: Container(
-        height: 78,
+        height: 80,
         width: double.infinity,
         color: AppColors.bottomNavBackground,
         child: BottomNavigationBar(
