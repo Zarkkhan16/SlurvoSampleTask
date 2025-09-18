@@ -11,7 +11,7 @@ class GlassmorphismCard extends StatelessWidget {
     super.key,
     this.value = '0.00',
     this.name = AppStrings.clubSpeedMetric,
-    this.unit =AppStrings.mphUnit
+    this.unit = AppStrings.mphUnit,
   });
 
   @override
@@ -49,50 +49,55 @@ class GlassmorphismCard extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    value,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.oswald(
-                      textStyle: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        height: 1.0,
-                        letterSpacing: 0.0,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      value,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.oswald(
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 8),
-                  Text(
-                    name,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.roboto(
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                        height: 1.0,
-                        letterSpacing: 0.0,
+
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.roboto(
+                        textStyle: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 6),
-                  Text(
-                    unit,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.roboto(
-                      textStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white60,
-                        height: 1.125, // 18px / 16px = 1.125
-                        letterSpacing: 0.0,
+
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      unit,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.roboto(
+                        textStyle: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white60,
+                        ),
                       ),
                     ),
                   ),
-
                 ],
               ),
             ),

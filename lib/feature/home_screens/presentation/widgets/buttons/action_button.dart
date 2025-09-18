@@ -17,11 +17,19 @@ class ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final buttonHeight = size.height * 0.07; // ~7% of screen height
+    final fontSize = size.width * 0.045; // scales with screen width
+    final iconSize = size.width * 0.05; // responsive icon size
+
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        height: 55,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        height: buttonHeight.clamp(45.0, 65.0), // keep within range
+        padding: EdgeInsets.symmetric(
+          horizontal: size.width * 0.05,
+          vertical: size.height * 0.012,
+        ),
         decoration: BoxDecoration(
           color: AppColors.buttonBackground,
           borderRadius: BorderRadius.circular(25),
@@ -30,19 +38,28 @@ class ActionButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (svgAssetPath != null) ...[
-              SvgPicture.asset(svgAssetPath!, height: 20, width: 20),
-              const SizedBox(width: 8),
+              SvgPicture.asset(
+                svgAssetPath!,
+                height: iconSize.clamp(16.0, 24.0),
+                width: iconSize.clamp(16.0, 24.0),
+              ),
+              SizedBox(width: size.width * 0.02),
             ],
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(
-                textStyle: const TextStyle(
-                  color: AppColors.buttonText,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  height: 1.0,
-                  letterSpacing: 0.0,
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.roboto(
+                    textStyle: TextStyle(
+                      color: AppColors.buttonText,
+                      fontSize: fontSize.clamp(16.0, 22.0),
+                      fontWeight: FontWeight.w700,
+                      height: 1.0,
+                      letterSpacing: 0.0,
+                    ),
+                  ),
                 ),
               ),
             ),

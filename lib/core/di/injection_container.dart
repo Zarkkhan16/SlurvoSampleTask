@@ -1,4 +1,5 @@
 
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get_it/get_it.dart';
 import 'package:Slurvo/feature/ble/domain/usecases/discover_devices.dart';
 import 'package:Slurvo/feature/ble/domain/usecases/write_characteristics.dart';
@@ -19,15 +20,25 @@ import 'package:Slurvo/feature/ble/domain/usecases/read_characteristic.dart';
 final sl = GetIt.instance;
 
 Future<void> init() async {
+  //
+  // sl.registerFactory(() => BleBloc(
+  //   scanForDevices: sl(),
+  //   connectToDevice: sl(),
+  //   discoverServices: sl(),
+  //   readCharacteristic: sl(),
+  //   writeCharacteristic: sl(),
+  //   shotRepository: sl()
+  //
+  // ));
+// Register reactive ble singleton
+  sl.registerLazySingleton(() => FlutterReactiveBle());
 
+// Register repository
+
+// Register bloc
   sl.registerFactory(() => BleBloc(
-    scanForDevices: sl(),
-    connectToDevice: sl(),
-    discoverServices: sl(),
-    readCharacteristic: sl(),
-    writeCharacteristic: sl(),
-    shotRepository: sl()
-
+    ble: sl<FlutterReactiveBle>(),
+    shotRepository: sl<ShotRepository>(),
   ));
 
 

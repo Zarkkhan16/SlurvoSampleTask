@@ -8,4 +8,5 @@ class AppImages {
 
   //png
   static const String slurvoLogo = 'assets/png/slurvo.png';
+  static const String splashLogo = 'assets/png/splash_logo.png';
 }

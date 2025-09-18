@@ -8,22 +8,35 @@ class HeaderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final iconSize = screenWidth * 0.07; // ~7% of screen width
+    final fontSize = screenWidth * 0.07; // ~7% of screen width
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Icon(Icons.arrow_back_ios_new_outlined, color: AppColors.primaryText, size: 30),
-        Text(
-          AppStrings.shotAnalysisTitle,
-          style: GoogleFonts.roboto(
-            textStyle: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primaryText,
+        Icon(
+          Icons.arrow_back_ios_new_outlined,
+          color: AppColors.primaryText,
+          size: iconSize.clamp(20.0, 34.0),
+        ),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              AppStrings.shotAnalysisTitle,
+              style: GoogleFonts.roboto(
+                textStyle: TextStyle(
+                  fontSize: fontSize.clamp(18.0, 32.0),
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primaryText,
+                ),
+              ),
             ),
           ),
         ),
-
-        const SizedBox(),
+        const SizedBox(), // placeholder to balance Row
       ],
     );
   }

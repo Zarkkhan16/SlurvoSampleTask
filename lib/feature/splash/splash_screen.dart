@@ -23,27 +23,10 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              AppImages.slurvoLogo,
-              width: 300,
-              height: 300,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              AppStrings.turnOnBluetooth,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(
-                textStyle: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
+        child: Image.asset(
+          AppImages.splashLogo,
+          width: 300,
+          height: 300,
         ),
       ),
     );

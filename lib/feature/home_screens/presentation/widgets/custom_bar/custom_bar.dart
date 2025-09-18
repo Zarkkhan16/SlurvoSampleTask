@@ -7,29 +7,45 @@ class CustomizeBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final barHeight = screenHeight * 0.055; // ~5.5% of height
+    final horizontalPadding = screenWidth * 0.04; // ~4% of width
+    final fontSize = screenWidth * 0.04; // ~4% of width
+    final iconSize = screenWidth * 0.055; // ~5.5% of width
+
     return Container(
-      height: 46,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: barHeight.clamp(40.0, 56.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding.clamp(12.0, 20.0),
+      ),
       decoration: BoxDecoration(
         color: AppColors.searchBarBackground,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(barHeight / 2),
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            AppStrings.customizeText,
-            style: TextStyle(
-              color: AppColors.primaryText,
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              height: 1.125,
-              // 18px line-height / 16px font-size
-              letterSpacing: 0,
+          Flexible(
+            child: Text(
+              AppStrings.customizeText,
+              style: TextStyle(
+                color: AppColors.primaryText,
+                fontSize: fontSize.clamp(14.0, 18.0),
+                fontWeight: FontWeight.w400,
+                height: 1.2,
+                letterSpacing: 0,
+              ),
+              textAlign: TextAlign.left,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.left,
           ),
-          Icon(Icons.tune, color: AppColors.primaryText),
+          Icon(
+            Icons.tune,
+            color: AppColors.primaryText,
+            size: iconSize.clamp(18.0, 26.0),
+          ),
         ],
       ),
     );
