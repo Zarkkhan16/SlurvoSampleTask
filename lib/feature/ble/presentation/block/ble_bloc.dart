@@ -39,6 +39,7 @@ class BleBloc extends Bloc<BleEvent, BleState> {
     on<ShowMockDataEvent>(_onShowMockData);
     on<DevicesDiscovered>(_onDevicesDiscovered);
   }
+
   void _onStartScan(StartScanEvent event, Emitter<BleState> emit) async {
     emit(BleScanning());
 
@@ -47,7 +48,7 @@ class BleBloc extends Bloc<BleEvent, BleState> {
     final List<BleDevice> scannedDevices = [];
 
     _scanSubscription = scanForDevices(NoParams()).listen(
-          (devices) {
+      (devices) {
         scannedDevices.clear();
         scannedDevices.addAll(devices);
         add(DevicesDiscovered(devices));
@@ -59,15 +60,18 @@ class BleBloc extends Bloc<BleEvent, BleState> {
 
     // Waiting for 3 seconds before checking
     await Future.delayed(const Duration(seconds: 3));
-    final matchingDevices = scannedDevices.where(
-          (device) => device.id.toUpperCase() == AppConstants.bleId,
-    );
+    final matchingDevices = scannedDevices
+        .where(
+          (device) =>
+              device.id == AppConstants.bleId ||
+              device.name.contains(AppConstants.bleName),
+        )
+        .toList();
 
-    BleDevice? targetDevice = matchingDevices.isNotEmpty ? matchingDevices.first : null;
-
-
-    if (targetDevice != null) {
-      add(ConnectToDeviceEvent(targetDevice.id));
+    if (matchingDevices.isNotEmpty) {
+      emit(BleScannedDevices(scannedDevice: matchingDevices));
+      // Optionally connect automatically:
+      // add(ConnectToDeviceEvent(matchingDevices.first.id));
     } else {
       _scanSubscription?.cancel();
       emit(BleInitial());

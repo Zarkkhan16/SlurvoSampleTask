@@ -21,6 +21,15 @@ class ConnectToDeviceEvent extends BleEvent {
   List<Object> get props => [deviceId];
 }
 
+class ScannedDevicesEvent extends BleEvent {
+  final List<BleDevice> targetDevice;
+
+  const ScannedDevicesEvent(this.targetDevice);
+
+  @override
+  List<Object> get props => [targetDevice];
+}
+
 class DisconnectDeviceEvent extends BleEvent {
   final String deviceId;
 

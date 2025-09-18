@@ -1,3 +1,4 @@
+import 'package:Slurvo/feature/scanned_devices_screen/scanned_devices_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' show BlocProvider;
 import 'package:Slurvo/core/di/injection_container.dart' as di;
@@ -14,7 +15,7 @@ class NavigationHelper {
           MaterialPageRoute(
             builder: (_) => BlocProvider(
               create: (context) => di.sl<BleBloc>()..add(StartScanEvent()),
-              child: const ShotAnalysisPage(),
+              child: const ScannedDevicesScreen(),
             ),
           ),
         );

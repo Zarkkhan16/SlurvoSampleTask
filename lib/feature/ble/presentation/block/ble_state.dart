@@ -36,6 +36,19 @@ class BleConnected extends BleState {
   List<Object> get props => [device, services];
 }
 
+class BleScannedDevices extends BleState {
+  final List<BleDevice> scannedDevice;
+
+  const BleScannedDevices({
+    required this.scannedDevice,
+  });
+
+  @override
+  List<Object> get props => [
+        scannedDevice,
+      ];
+}
+
 class BleDisconnected extends BleState {}
 
 class BleCharacteristicRead extends BleState {

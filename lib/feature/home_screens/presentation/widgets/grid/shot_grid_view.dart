@@ -70,6 +70,17 @@ class _ShotGridViewState extends State<ShotGridView> {
           );
         }
 
+        if (state is BleConnected) {
+          final device = state.device;
+          return Center(
+            child: GlassmorphismCard(
+              value: "Connected",
+              name: device.name.isNotEmpty ? device.name : AppStrings.unknown,
+              unit: device.id,
+            ),
+          );
+        }
+
         if (state is BleDevicesFound) {
           final devices = state.devices;
 
@@ -92,6 +103,7 @@ class _ShotGridViewState extends State<ShotGridView> {
           child: CircularProgressIndicator(color: AppColors.primaryText),
         );
       },
+
     );
   }
 
