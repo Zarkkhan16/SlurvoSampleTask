@@ -60,7 +60,7 @@ class BleBloc extends Bloc<BleEvent, BleState> {
       // Filter for specific device after each scan
       final matchingDevices = scannedDevices.where((d) =>
       d.id == AppConstants.bleId ||
-          d.name.contains(AppConstants.bleName)
+          d.name.contains(AppConstants.bleName1)
       ).toList();
 
       if (!isClosed) add(ScannedDevicesEvent(matchingDevices));
@@ -75,7 +75,7 @@ class BleBloc extends Bloc<BleEvent, BleState> {
 
         final matchingDevices = scannedDevices.where((d) =>
         d.id == AppConstants.bleId ||
-            d.name.contains(AppConstants.bleName)
+            d.name.contains(AppConstants.bleName1)||d.name.contains(AppConstants.bleName2)
         ).toList();
 
         if (matchingDevices.isEmpty && state is BleScanning) {
