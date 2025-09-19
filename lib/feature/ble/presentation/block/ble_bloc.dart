@@ -129,8 +129,7 @@ class BleBloc extends Bloc<BleEvent, BleState> {
           await Future.delayed(Duration(milliseconds: 500));
 
           final services = await _ble.discoverServices(event.deviceId);
-          print(services);
-          print('[][[][][][');
+
           final bleServices = services.map((s) => BleService(
             uuid: s.serviceId.toString(),
             characteristics: s.characteristics.map((c) => BleCharacteristic(
