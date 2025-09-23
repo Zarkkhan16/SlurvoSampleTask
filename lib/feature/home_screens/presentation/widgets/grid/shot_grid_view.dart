@@ -14,6 +14,8 @@ import 'package:Slurvo/feature/ble/presentation/block/ble_state.dart';
 import 'package:Slurvo/feature/home_screens/presentation/widgets/card/glassmorphism_card.dart';
 import 'package:Slurvo/feature/home_screens/domain/entities/shot_data.dart';
 
+import '../../../domain/entities/shot_parser.dart';
+
 class ShotGridView extends StatefulWidget {
   const ShotGridView({super.key});
 
@@ -53,9 +55,7 @@ class _ShotGridViewState extends State<ShotGridView> {
         // }
       },
       builder: (context, state) {
-
         print(state);
-        print("ssssss");
         // if ((state is BleInitial || state is BleDisconnected) && !_scanStarted) {
         //   context.read<BleBloc>().add(StartScanEvent());
         //   _scanStarted = true;
@@ -77,7 +77,7 @@ class _ShotGridViewState extends State<ShotGridView> {
         if (state is BleConnected) {
           final services = state.services;
 
-return  _buildDeviceGrid(services, context);
+          return _buildDeviceGrid(services, context);
           // return Center(
           //   child: GlassmorphismCard(
           //     value: "Connected",
@@ -113,23 +113,127 @@ return  _buildDeviceGrid(services, context);
     );
   }
 
+  // Widget _buildDeviceGrid(List<BleService> services, BuildContext context) {
+  //   // Filter services containing FFE0
+  //   final targetServices =
+  //       services.where((s) => s.uuid.toUpperCase().contains("FFE0")).toList();
+  //
+  //   // If no service found, show message
+  //   if (targetServices.isEmpty) {
+  //     return Center(
+  //       child: Text(
+  //         "No service with ID FFE0 found",
+  //         style: const TextStyle(color: Colors.white, fontSize: 16),
+  //         textAlign: TextAlign.center,
+  //       ),
+  //     );
+  //   }
+  //
+  //   return GridView.builder(
+  //     padding: const EdgeInsets.all(16),
+  //     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+  //       crossAxisCount: 2,
+  //       crossAxisSpacing: 30,
+  //       mainAxisSpacing: 20,
+  //       childAspectRatio: 1.42,
+  //     ),
+  //     itemCount: targetServices.length,
+  //     itemBuilder: (context, index) {
+  //       final service = targetServices[index];
+  //
+  //       // characteristic containing FEE2
+  //       BleCharacteristic? targetCharacteristic;
+  //       if (service.characteristics.isNotEmpty) {
+  //         final index = service.characteristics.indexWhere(
+  //           (c) => c.uuid.toUpperCase().contains("FEE2"),
+  //         );
+  //         if (index != -1) {
+  //           targetCharacteristic = service.characteristics[index];
+  //         }
+  //       }
+  //
+  //       if (targetCharacteristic == null) {
+  //         return GlassmorphismCard(
+  //           value: "--",
+  //           name: "No FEE2 in ${service.uuid}",
+  //           unit: "",
+  //         );
+  //       }
+  //
+  //       // Extract value safely
+  //       String value = targetCharacteristic.value != null
+  //           ? targetCharacteristic.value.toString()
+  //           : "--";
+  //       String name = targetCharacteristic.uuid;
+  //       List<ShotDataNew> parsedData = [];
+  //       if (targetCharacteristic.value != null &&
+  //           targetCharacteristic.value!.isNotEmpty) {
+  //         parsedData = ShotParser.parse(targetCharacteristic.value!);
+  //       } else {
+  //         // Use example data for demonstration
+  //         parsedData = ShotParser.parseExampleData();
+  //       }
+  //
+  //       print('Device Data Chara');
+  //       print(parsedData);
+  //       return GestureDetector(
+  //         onTap: () {
+  //           // ScaffoldMessenger.of(context).showSnackBar(
+  //           //   const SnackBar(content: Text(AppStrings.connecting)),
+  //           // );
+  //           // context.read<BleBloc>().add(ConnectToDeviceEvent(service.uuid));
+  //         },
+  //         child: GlassmorphismCard(
+  //           value: value,
+  //           name: name,
+  //           unit: name,
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
   Widget _buildDeviceGrid(List<BleService> services, BuildContext context) {
     // Filter services containing FFE0
-    final targetServices = services
-        .where((s) => s.uuid.toUpperCase().contains("FFE0"))
-        .toList();
+    final targetServices =
+    services.where((s) => s.uuid.toUpperCase().contains("FFE0")).toList();
 
-    // If no service found, show message
     if (targetServices.isEmpty) {
-      return Center(
+      return const Center(
         child: Text(
           "No service with ID FFE0 found",
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(color: Colors.white, fontSize: 16),
           textAlign: TextAlign.center,
         ),
       );
     }
 
+    // ⚡ Instead of looping services → just take the first FFE0
+    final service = targetServices.first;
+
+    print('Services');
+    print(service);
+
+    // Find FEE2 characteristic
+    final targetCharacteristic = service.characteristics.firstWhere(
+          (c) => c.uuid.toUpperCase().contains("FEE2"),
+    );
+
+    print('Target Characteristic');
+    print(targetCharacteristic.value);
+    // Parse values
+    List<ShotDataNew> parsedData = [];
+    if (targetCharacteristic.value != null &&
+        targetCharacteristic.value!.isNotEmpty) {
+      parsedData = ShotParser.parse(targetCharacteristic.value!);
+      print('Parsed Data');
+      print(parsedData);
+    }
+    //   else {
+    //   parsedData = ShotParser.parseExampleData();
+    // }
+
+    // 🔥 Now build cards from parsedData
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -138,59 +242,19 @@ return  _buildDeviceGrid(services, context);
         mainAxisSpacing: 20,
         childAspectRatio: 1.42,
       ),
-      itemCount: targetServices.length,
+      itemCount: parsedData.length,
       itemBuilder: (context, index) {
-        final service = targetServices[index];
-
-        // characteristic containing FEE2
-        BleCharacteristic? targetCharacteristic;
-        if (service.characteristics.isNotEmpty) {
-          final index = service.characteristics.indexWhere(
-                (c) => c.uuid.toUpperCase().contains("FEE2"),
-          );
-          if (index != -1) {
-            targetCharacteristic = service.characteristics[index];
-          }
-        }
-
-
-        if (targetCharacteristic == null) {
-          return GlassmorphismCard(
-            value: "--",
-            name: "No FEE2 in ${service.uuid}",
-            unit: "",
-          );
-        }
-
-        // Extract value safely
-        String value = targetCharacteristic.value != null
-            ? targetCharacteristic.value.toString()
-            : "--";
-        String name = targetCharacteristic.uuid;
-
-        return GestureDetector(
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text(AppStrings.connecting)),
-            );
-            context.read<BleBloc>().add(ConnectToDeviceEvent(service.uuid));
-          },
-          child: GlassmorphismCard(
-            value: value,
-            name: name,
-            unit: name,
-          ),
+        final shot = parsedData[index];
+        return GlassmorphismCard(
+          value: "${shot.value}",
+          name: shot.metric,
+          unit: shot.unit,
         );
       },
     );
-
-
-
   }
 
-
   Widget _buildMockDataGrid(List<ShotData> mockData) {
-
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

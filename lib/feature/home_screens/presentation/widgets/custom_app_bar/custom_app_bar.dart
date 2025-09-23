@@ -19,7 +19,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: SizedBox(
         height: 180,
         child: Image.asset(
-          AppImages.slurvoLogo,
+          AppImages.splashLogo,
         ),
       ),
       centerTitle: true,

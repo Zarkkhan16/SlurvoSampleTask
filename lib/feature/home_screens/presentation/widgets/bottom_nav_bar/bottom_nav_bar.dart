@@ -24,9 +24,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    final navHeight = screenWidth * 0.18; // ~18% of width
-    final iconSize = screenWidth * 0.055; // ~5.5% of width
-    final fontSize = screenWidth * 0.03; // ~3% of width
+    final iconSize = (screenWidth * 0.055).clamp(20.0, 28.0);
+    final fontSize = (screenWidth * 0.03).clamp(10.0, 14.0);
 
     return ClipRRect(
       borderRadius: const BorderRadius.only(
@@ -34,7 +33,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
         topRight: Radius.circular(20),
       ),
       child: Container(
-        height: navHeight.clamp(65.0, 90.0),
         width: double.infinity,
         color: AppColors.bottomNavBackground,
         child: BottomNavigationBar(
@@ -46,11 +44,11 @@ class _BottomNavBarState extends State<BottomNavBar> {
           type: BottomNavigationBarType.fixed,
           showUnselectedLabels: true,
           selectedLabelStyle: TextStyle(
-            fontSize: fontSize.clamp(10.0, 14.0),
+            fontSize: fontSize,
             fontWeight: FontWeight.w500,
           ),
           unselectedLabelStyle: TextStyle(
-            fontSize: fontSize.clamp(10.0, 14.0),
+            fontSize: fontSize,
           ),
           items: [
             _buildBarItem(AppImages.homeIcon, AppStrings.homePageLabel, iconSize),
@@ -65,17 +63,11 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
   BottomNavigationBarItem _buildBarItem(String iconPath, String label, double iconSize) {
     return BottomNavigationBarItem(
-      icon: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(
-            iconPath,
-            height: iconSize.clamp(18.0, 28.0),
-            width: iconSize.clamp(18.0, 28.0),
-            fit: BoxFit.contain,
-          ),
-          SizedBox(height: iconSize * 0.05), // tiny spacing based on size
-        ],
+      icon: SvgPicture.asset(
+        iconPath,
+        height: iconSize,
+        width: iconSize,
+        fit: BoxFit.contain,
       ),
       label: label,
     );

@@ -8,9 +8,17 @@ import 'package:Slurvo/feature/home_screens/presentation/widgets/custom_bar/cust
 import 'package:Slurvo/feature/home_screens/presentation/widgets/grid/shot_grid_view.dart';
 import 'package:Slurvo/feature/home_screens/presentation/widgets/header/header_row.dart';
 
-class ShotAnalysisBody extends StatelessWidget {
+import '../../../../choose_club_screen/presentation/choose_club_screen_page.dart';
+
+class ShotAnalysisBody extends StatefulWidget {
   const ShotAnalysisBody({super.key});
 
+  @override
+  State<ShotAnalysisBody> createState() => _ShotAnalysisBodyState();
+}
+
+class _ShotAnalysisBodyState extends State<ShotAnalysisBody> {
+  Club? mySelectedClub;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -22,7 +30,19 @@ class ShotAnalysisBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                HeaderRow(),
+                SizedBox(
+                  height: 60,
+                  child: HeaderRow(
+                    showClubName: true,
+                    headingName: "Shot Analysis",
+                    selectedClub: mySelectedClub,
+                    onClubSelected: (club) {
+                      setState(() {
+                        mySelectedClub = club;
+                      });
+                    },
+                  ),
+                ),
                 SizedBox(height: 14),
                 CustomizeBar(),
                 SizedBox(height: 15),

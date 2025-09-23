@@ -81,3 +81,8 @@ class BlePairingRequested extends BleState {
   @override
   List<Object> get props => [deviceId, deviceName];
 }
+
+class BleShotData extends BleState {
+  final List<ShotDataNew> shots;
+  BleShotData(this.shots);
+}
