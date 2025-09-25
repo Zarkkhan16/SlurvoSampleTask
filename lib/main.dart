@@ -442,7 +442,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
 
       _characteristicSubscription = _ble.subscribeToCharacteristic(characteristic).listen((data) {
         if (data.isNotEmpty) {
-          _addLog("Notify: ${data.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}");
+          _addLog("Notify <- ${data.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}");
         }
         if (data.length >= 16) {
           _parseGolfData(Uint8List.fromList(data));
@@ -513,6 +513,22 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
     _writeToCharacteristic(packet);
   }
 
+  // void _writeToCharacteristic(List<int> data) async {
+  //   if (connectedDevice == null) return;
+  //   try {
+  //     final characteristic = QualifiedCharacteristic(
+  //       serviceId: Uuid.parse(serviceUuid),
+  //       characteristicId: Uuid.parse(writeCharacteristicUuid),
+  //       deviceId: connectedDevice!.id,
+  //     );
+  //     await _ble.writeCharacteristicWithoutResponse(
+  //       characteristic,
+  //       value: data,
+  //     );
+  //   } catch (e) {
+  //     print('Write error: $e');
+  //   }
+  // }
   void _writeToCharacteristic(List<int> data) async {
     if (connectedDevice == null) return;
     try {
@@ -521,14 +537,18 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
         characteristicId: Uuid.parse(writeCharacteristicUuid),
         deviceId: connectedDevice!.id,
       );
+
+      _addLog("Write -> ${data.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}");
+
       await _ble.writeCharacteristicWithoutResponse(
         characteristic,
         value: data,
       );
     } catch (e) {
-      print('Write error: $e');
+      _addLog('Write error: $e');
     }
   }
+
 
   void _parseGolfData(Uint8List data) {
     if (data.length < 16 || data[0] != 0x47 || data[1] != 0x46) return;
