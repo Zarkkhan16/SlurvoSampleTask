@@ -254,22 +254,51 @@ class GolfApp extends StatelessWidget {
 }
 
 class GolfData {
-  int battery = 0;
-  int recordNumber = 0;
-  int clubName = 0;
-  double clubSpeed = 0.0;
-  double ballSpeed = 0.0;
-  double carryDistance = 0.0;
-  double totalDistance = 0.0;
+  int battery = 0;            // BYTE 4 (doc) = data[3]
+  int recordNumber = 0;       // BYTE 5-6 (doc) = data[4], data[5]
+  int clubName = 0;           // BYTE 7 (doc) = data[6]
+  double clubSpeed = 0.0;     // BYTE 8-9 (doc) = data[7], data[8]
+  double ballSpeed = 0.0;     // BYTE 10-11 (doc) = data[9], data[10]
+  double carryDistance = 0.0; // BYTE 12-13 (doc) = data[11], data[12]
+  double totalDistance = 0.0; // BYTE 14-15 (doc) = data[13], data[14]
 
   double get smashFactor => clubSpeed > 0 ? ballSpeed / clubSpeed : 0.0;
 
-  String get batteryStatus => battery == 0 ? "Normal" : "Low";
+  String get batteryStatus {
+    switch (battery) {
+      case 0: return "Blank";
+      case 1: return "Low";
+      case 2: return "Middle";
+      case 3: return "Full";
+      default: return "Unknown";
+    }
+  }
+
+  IconData get batteryIcon {
+    switch (battery) {
+      case 0: return Icons.battery_0_bar;
+      case 1: return Icons.battery_2_bar;
+      case 2: return Icons.battery_4_bar;
+      case 3: return Icons.battery_full;
+      default: return Icons.battery_unknown;
+    }
+  }
+
+  Color get batteryColor {
+    switch (battery) {
+      case 0: return Colors.grey;        // blank
+      case 1: return Colors.redAccent;   // low
+      case 2: return Colors.orangeAccent;// middle
+      case 3: return Colors.greenAccent; // full
+      default: return Colors.white;
+    }
+  }
+
   String get clubNameString {
     const clubs = [
-      "Driver", "1W", "2W", "3W", "4W", "5W", "6W", "7W", "8W", "9W",
+      "DR/1W", "2W", "3W", "4W", "5W", "6W", "7W", "8W", "9W",
       "2H", "3H", "4H", "5H", "1I", "2I", "3I", "4I", "5I", "6I", "7I",
-      "8I", "9I", "PW", "GW", "SW1", "SW", "LW"
+      "8I", "9I", "PW", "GW", "SW1", "SW", "LW", "LW1"
     ];
     return clubName < clubs.length ? clubs[clubName] : "Unknown";
   }
@@ -422,6 +451,8 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
       );
     });
   }
+
+  ///v2
   void _discoverServices(String deviceId) async {
     try {
       _services = await _ble.discoverServices(deviceId);
@@ -445,6 +476,11 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
           _addLog("Notify <- ${data.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}");
         }
         if (data.length >= 16) {
+          // final testPacket = [
+          //   0x47, 0x46, 0x01, 0x01, 0x00, 0x0E, 0x00,
+          //   0x04, 0x8A, 0x06, 0x9F, 0x0B, 0x36, 0x0B, 0xF0, 0x7F
+          // ];
+          // _parseGolfData(Uint8List.fromList([71, 70, 1, 1, 0, 14, 0, 4, 138, 6, 159, 11, 54, 11, 240, 127]));
           _parseGolfData(Uint8List.fromList(data));
         }
       }, onError: (error) {
@@ -456,7 +492,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
   }
 
 
-
+///v1
   // void _discoverServices(String deviceId) async {
   //   try {
   //     final characteristic = QualifiedCharacteristic(
@@ -512,7 +548,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
 
     _writeToCharacteristic(packet);
   }
-
+/// v1
   // void _writeToCharacteristic(List<int> data) async {
   //   if (connectedDevice == null) return;
   //   try {
@@ -529,6 +565,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
   //     print('Write error: $e');
   //   }
   // }
+  ///v2
   void _writeToCharacteristic(List<int> data) async {
     if (connectedDevice == null) return;
     try {
@@ -548,20 +585,42 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
       _addLog('Write error: $e');
     }
   }
-
-
+///v2
   void _parseGolfData(Uint8List data) {
-    if (data.length < 16 || data[0] != 0x47 || data[1] != 0x46) return;
+
+    if (data.length < 15 || data[0] != 0x47 || data[1] != 0x46) return;
     setState(() {
-      golfData.battery = data[3];
-      golfData.recordNumber = data[5] | (data[6] << 8);
-      golfData.clubName = data[7];
-      golfData.clubSpeed = ((data[8] | (data[9] << 8)) / 10.0);
-      golfData.ballSpeed = ((data[10] | (data[11] << 8)) / 10.0);
-      golfData.carryDistance = ((data[12] | (data[13] << 8)) / 10.0);
-      golfData.totalDistance = ((data[14] | (data[15] << 8)) / 10.0);
+      golfData.battery = data[3];                           // BYTE 4
+
+      // Record number = little endian
+      golfData.recordNumber = data[4] | (data[5] << 8);
+
+      golfData.clubName = data[6];                         // BYTE 7
+
+      // Club/ball speed, distances = big endian
+      golfData.clubSpeed = (((data[7] << 8) | data[8]) / 10.0);
+      golfData.ballSpeed = (((data[9] << 8) | data[10]) / 10.0);
+      golfData.carryDistance = (((data[11] << 8) | data[12]) / 10.0);
+      golfData.totalDistance = (((data[13] << 8) | data[14]) / 10.0);
     });
+
+
   }
+
+
+  ///v1
+  // void _parseGolfData(Uint8List data) {
+  //   if (data.length < 16 || data[0] != 0x47 || data[1] != 0x46) return;
+  //   setState(() {
+  //     golfData.battery = data[3];
+  //     golfData.recordNumber = data[5] | (data[6] << 8);
+  //     golfData.clubName = data[7];
+  //     golfData.clubSpeed = ((data[8] | (data[9] << 8)) / 10.0);
+  //     golfData.ballSpeed = ((data[10] | (data[11] << 8)) / 10.0);
+  //     golfData.carryDistance = ((data[12] | (data[13] << 8)) / 10.0);
+  //     golfData.totalDistance = ((data[14] | (data[15] << 8)) / 10.0);
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -594,7 +653,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
       ),
     );
   }
-
+///v2
   Widget _buildConnectionView() {
     return Padding(
       padding: EdgeInsets.all(16),
@@ -652,6 +711,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
     );
   }
 
+///v1
   Widget _buildConnectedView() {
     return SingleChildScrollView(
       padding: EdgeInsets.all(16),
@@ -666,10 +726,8 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
                     child: Column(
                       children: [
                         Icon(
-                          golfData.battery == 0
-                              ? Icons.battery_full
-                              : Icons.battery_alert,
-                          color: golfData.battery == 0 ? Colors.greenAccent : Colors.redAccent,
+                          golfData.batteryIcon,
+                          color: golfData.batteryColor,
                           size: 32,
                         ),
                         Text(golfData.batteryStatus),

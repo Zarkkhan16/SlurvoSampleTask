@@ -148,67 +148,70 @@ class LogScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  elevation: 3,
+                  elevation: 4,
                   margin: const EdgeInsets.symmetric(vertical: 6),
+                  color: Colors.indigo.shade50,
                   child: ExpansionTile(
+                    collapsedIconColor: Colors.indigo,
+                    iconColor: Colors.indigo,
                     title: Text(
                       "Service: ${service.serviceId}",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: Colors.indigo.shade800,
                       ),
                     ),
                     children: service.characteristics.map((c) {
                       return Card(
-                        color: Colors.grey.shade100,
+                        color: Colors.white,
                         margin: const EdgeInsets.symmetric(
                             vertical: 4, horizontal: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: ExpansionTile(
-                          leading: const Icon(Icons.extension),
+                          collapsedIconColor: Colors.teal,
+                          iconColor: Colors.teal,
+                          leading: const Icon(Icons.extension,
+                              color: Colors.teal),
                           title: Text(
                             "Char: ${c.characteristicId}",
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
+                              color: Colors.teal.shade700,
                             ),
                           ),
                           children: [
                             if (c.isReadable)
-                              ListTile(
-                                leading: _buildIcon(
-                                    Icons.visibility, Colors.blue),
-                                title: const Text("Readable"),
+                              _buildPropertyTile(
+                                "Readable",
+                                Icons.visibility,
+                                Colors.blue,
                               ),
                             if (c.isWritableWithoutResponse)
-                              ListTile(
-                                leading: _buildIcon(
-                                    Icons.edit, Colors.green),
-                                title:
-                                const Text("Writable (No Response)"),
+                              _buildPropertyTile(
+                                "Writable (No Response)",
+                                Icons.edit,
+                                Colors.green,
                               ),
                             if (c.isWritableWithResponse)
-                              ListTile(
-                                leading: _buildIcon(
-                                    Icons.edit_note, Colors.teal),
-                                title: const Text("Writable (With Response)"),
+                              _buildPropertyTile(
+                                "Writable (With Response)",
+                                Icons.edit_note,
+                                Colors.teal,
                               ),
                             if (c.isNotifiable)
-                              ListTile(
-                                leading: _buildIcon(Icons.notifications,
-                                    Colors.orange),
-                                title: const Text("Notifiable"),
-                                trailing: const Icon(
-                                  Icons.wifi_tethering,
-                                  color: Colors.orange,
-                                ),
+                              _buildPropertyTile(
+                                "Notifiable",
+                                Icons.notifications,
+                                Colors.deepOrange,
                               ),
                             if (c.isIndicatable)
-                              ListTile(
-                                leading: _buildIcon(
-                                    Icons.info, Colors.purple),
-                                title: const Text("Indicatable"),
+                              _buildPropertyTile(
+                                "Indicatable",
+                                Icons.info,
+                                Colors.purple,
                               ),
                           ],
                         ),
@@ -230,14 +233,17 @@ class LogScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final log = logs[index];
                   final isError = log.toLowerCase().contains("error");
-                  final isNotify =
-                  log.toLowerCase().contains("notify");
+                  final isNotify = log.toLowerCase().contains("notify");
                   final isWrite = log.toLowerCase().contains("write");
 
                   Color logColor = Colors.greenAccent;
-                  if (isError) logColor = Colors.redAccent;
-                  else if (isNotify) logColor = Colors.orangeAccent;
-                  else if (isWrite) logColor = Colors.lightBlueAccent;
+                  if (isError) {
+                    logColor = Colors.redAccent;
+                  } else if (isNotify) {
+                    logColor = Colors.orangeAccent;
+                  } else if (isWrite) {
+                    logColor = Colors.lightBlueAccent;
+                  }
 
                   return Container(
                     padding: const EdgeInsets.symmetric(
@@ -284,11 +290,20 @@ class LogScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildIcon(IconData icon, Color color) {
-    return CircleAvatar(
-      radius: 14,
-      backgroundColor: color.withOpacity(0.15),
-      child: Icon(icon, color: color, size: 18),
+  Widget _buildPropertyTile(String title, IconData icon, Color color) {
+    return ListTile(
+      leading: CircleAvatar(
+        radius: 14,
+        backgroundColor: color.withOpacity(0.15),
+        child: Icon(icon, color: color, size: 18),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 }
