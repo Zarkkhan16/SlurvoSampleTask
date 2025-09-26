@@ -296,11 +296,27 @@ class GolfData {
 
   String get clubNameString {
     const clubs = [
-      "DR/1W", "2W", "3W", "4W", "5W", "6W", "7W", "8W", "9W",
-      "2H", "3H", "4H", "5H", "1I", "2I", "3I", "4I", "5I", "6I", "7I",
-      "8I", "9I", "PW", "GW", "SW1", "SW", "LW", "LW1"
+      "1W", "2W", "3W", "5W", "7W", "2H", "3H", "4H", "5H",
+      "1i", "2i", "3i", "4i", "5i", "6i", "7i", "8i", "9i",
+      "PW", "GW", "GW1", "SW", "SW1", "LW", "LW1"
     ];
-    return clubName < clubs.length ? clubs[clubName] : "Unknown";
+    return clubName <= clubs.length ? clubs[clubName] : "Unknown";
+  }
+
+  String get clubLoftString {
+    const clubLofts = [
+      10, 13, 15, 17, 21,
+      17, 19, 21, 24,
+      14, 18, 21, 23, 26, 29, 33, 37, 41,
+      46, 50, 52, 54, 56, 58, 60
+    ];
+
+    if (clubName >= 0 && clubName < clubLofts.length) {
+      return clubLofts[clubName].toString(); // return as String
+    } else {
+      return "Unknown";
+    }
+
   }
 }
 
@@ -477,10 +493,10 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
         }
         if (data.length >= 16) {
           // final testPacket = [
-          //   0x47, 0x46, 0x01, 0x01, 0x00, 0x0E, 0x00,
+          //   0x47, 0x46, 0x01, 0x01, 0x00, 0x1E, 0x00,
           //   0x04, 0x8A, 0x06, 0x9F, 0x0B, 0x36, 0x0B, 0xF0, 0x7F
           // ];
-          // _parseGolfData(Uint8List.fromList([71, 70, 1, 1, 0, 14, 0, 4, 138, 6, 159, 11, 54, 11, 240, 127]));
+          // _parseGolfData(Uint8List.fromList([71, 70, 1, 1, 0, 30, 4, 4, 138, 6, 159, 11, 54, 11, 240, 127]));
           _parseGolfData(Uint8List.fromList(data));
         }
       }, onError: (error) {
@@ -593,7 +609,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
       golfData.battery = data[3];                           // BYTE 4
 
       // Record number = little endian
-      golfData.recordNumber = data[4] | (data[5] << 8);
+      golfData.recordNumber = (data[4] << 8) | data[5];
 
       golfData.clubName = data[6];                         // BYTE 7
 
@@ -738,7 +754,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
                     child: Column(
                       children: [
                         Icon(Icons.golf_course, size: 32, color: Colors.greenAccent),
-                        Text(golfData.clubNameString),
+                        Text("${golfData.clubNameString} (${golfData.clubLoftString})"),
                       ],
                     ),
                   ),
