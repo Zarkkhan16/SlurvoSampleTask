@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:Slurvo/feature/home_screens/domain/entities/shot_data.dart';
 
 class ShotParser {
+  static int clubName = 0;
   static const List<String> CLUB_NAMES = [
     "DR", "2W", "3W", "5W", "7W",
     "2H", "3H", "4H", "5H",
@@ -19,43 +20,48 @@ class ShotParser {
     }
 
     final bytes = Uint8List.fromList(data);
+
+    print("????");
+    print(data);
     List<ShotDataNew> result = [];
 
     // Header + CMD
     final header = "${bytes[0].toRadixString(16).toUpperCase()} ${bytes[1].toRadixString(16).toUpperCase()}";
     final cmd = bytes[2];
-
-    if (cmd == 1) {
-      // Battery (byte 3)
+    if(cmd == 1){
+      // Battery (BYTE 4)
       final batteryCode = bytes[3];
-      final battery = batteryCode < BATTERY_STATUS.length ? BATTERY_STATUS[batteryCode] : "Unknown";
-      // result.add(ShotDataNew(
-      //   metric: "Battery Status",
-      //   value: batteryCode,
-      //   unit: battery,
-      //   displayValue: battery,
-      // ));
+      final battery = batteryCode < BATTERY_STATUS.length
+          ? BATTERY_STATUS[batteryCode]
+          : "Unknown";
+      result.add(ShotDataNew(
+        metric: "Battery",
+        value: batteryCode,
+        unit: battery,
+        displayValue: battery,
+      ));
 
-      // Record number (bytes 4–5, big endian)
+      // Record number (bytes 4–5, little endian)
       final record = (bytes[4] << 8) | bytes[5];
-      // result.add(ShotDataNew(
-      //   metric: "Current Record",
-      //   value: record,
-      //   unit: "records",
-      //   displayValue: record.toString(),
-      // ));
+      result.add(ShotDataNew(
+        metric: "Record Number",
+        value: record,
+        unit: "records",
+        displayValue: record.toString(),
+      ));
 
-      // Club name (byte 6)
+      // Club name (BYTE 7)
       final clubCode = bytes[6];
+      clubName = clubCode;
       final club = clubCode < CLUB_NAMES.length ? CLUB_NAMES[clubCode] : "Unknown";
-      // result.add(ShotDataNew(
-      //   metric: "Club Name",
-      //   value: clubCode,
-      //   unit: club,
-      //   displayValue: club,
-      // ));
+      result.add(ShotDataNew(
+        metric: "Club",
+        value: clubCode,
+        unit: club,
+        displayValue: club,
+      ));
 
-      // Club speed (bytes 7–8, big endian, ÷10)
+      // Club Speed (bytes 7–8 → ÷10.0)
       final clubSpeedRaw = (bytes[7] << 8) | bytes[8];
       final clubSpeed = clubSpeedRaw / 10.0;
       result.add(ShotDataNew(
@@ -65,7 +71,7 @@ class ShotParser {
         displayValue: "${clubSpeed.toStringAsFixed(1)} mph",
       ));
 
-      // Ball speed (bytes 9–10)
+      // Ball Speed (bytes 9–10 → ÷10.0)
       final ballSpeedRaw = (bytes[9] << 8) | bytes[10];
       final ballSpeed = ballSpeedRaw / 10.0;
       result.add(ShotDataNew(
@@ -75,7 +81,7 @@ class ShotParser {
         displayValue: "${ballSpeed.toStringAsFixed(1)} mph",
       ));
 
-      // Carry (bytes 11–12)
+      // Carry Distance (bytes 11–12 → ÷10.0)
       final carryRaw = (bytes[11] << 8) | bytes[12];
       final carry = carryRaw / 10.0;
       result.add(ShotDataNew(
@@ -85,7 +91,7 @@ class ShotParser {
         displayValue: "${carry.toStringAsFixed(1)} yards",
       ));
 
-      // Total (bytes 13–14)
+      // Total Distance (bytes 13–14 → ÷10.0)
       final totalRaw = (bytes[13] << 8) | bytes[14];
       final total = totalRaw / 10.0;
       result.add(ShotDataNew(
@@ -94,8 +100,81 @@ class ShotParser {
         unit: "yards",
         displayValue: "${total.toStringAsFixed(1)} yards",
       ));
+
     }
 
+    // if (cmd == 1) {
+    //   // Battery (byte 3)
+    //   final batteryCode = bytes[3];
+    //   final battery = batteryCode < BATTERY_STATUS.length ? BATTERY_STATUS[batteryCode] : "Unknown";
+    //   // result.add(ShotDataNew(
+    //   //   metric: "Battery Status",
+    //   //   value: batteryCode,
+    //   //   unit: battery,
+    //   //   displayValue: battery,
+    //   // ));
+    //
+    //   // Record number (bytes 4–5, big endian)
+    //   final record = (bytes[4] << 8) | bytes[5];
+    //   // result.add(ShotDataNew(
+    //   //   metric: "Current Record",
+    //   //   value: record,
+    //   //   unit: "records",
+    //   //   displayValue: record.toString(),
+    //   // ));
+    //
+    //   // Club name (byte 6)
+    //   final clubCode = bytes[6];
+    //   final club = clubCode < CLUB_NAMES.length ? CLUB_NAMES[clubCode] : "Unknown";
+    //   // result.add(ShotDataNew(
+    //   //   metric: "Club Name",
+    //   //   value: clubCode,
+    //   //   unit: club,
+    //   //   displayValue: club,
+    //   // ));
+    //
+    //   // Club speed (bytes 7–8, big endian, ÷10)
+    //   final clubSpeedRaw = (bytes[7] << 8) | bytes[8];
+    //   final clubSpeed = clubSpeedRaw / 10.0;
+    //   result.add(ShotDataNew(
+    //     metric: "Club Speed",
+    //     value: clubSpeed,
+    //     unit: "mph",
+    //     displayValue: "${clubSpeed.toStringAsFixed(1)} mph",
+    //   ));
+    //
+    //   // Ball speed (bytes 9–10)
+    //   final ballSpeedRaw = (bytes[9] << 8) | bytes[10];
+    //   final ballSpeed = ballSpeedRaw / 10.0;
+    //   result.add(ShotDataNew(
+    //     metric: "Ball Speed",
+    //     value: ballSpeed,
+    //     unit: "mph",
+    //     displayValue: "${ballSpeed.toStringAsFixed(1)} mph",
+    //   ));
+    //
+    //   // Carry (bytes 11–12)
+    //   final carryRaw = (bytes[11] << 8) | bytes[12];
+    //   final carry = carryRaw / 10.0;
+    //   result.add(ShotDataNew(
+    //     metric: "Carry Distance",
+    //     value: carry,
+    //     unit: "yards",
+    //     displayValue: "${carry.toStringAsFixed(1)} yards",
+    //   ));
+    //
+    //   // Total (bytes 13–14)
+    //   final totalRaw = (bytes[13] << 8) | bytes[14];
+    //   final total = totalRaw / 10.0;
+    //   result.add(ShotDataNew(
+    //     metric: "Total Distance",
+    //     value: total,
+    //     unit: "yards",
+    //     displayValue: "${total.toStringAsFixed(1)} yards",
+    //   ));
+    // }
+
+    // Battery (BYTE 4)
     return result;
   }
 

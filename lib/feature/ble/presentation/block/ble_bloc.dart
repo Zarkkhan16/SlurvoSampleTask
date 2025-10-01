@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:Slurvo/core/constants/app_constants.dart';
+import 'package:Slurvo/core/constants/app_strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -14,13 +15,14 @@ import 'ble_state.dart';
 class BleBloc extends Bloc<BleEvent, BleState> {
   final FlutterReactiveBle _ble;
   final ShotRepository shotRepository;
-
   StreamSubscription<DiscoveredDevice>? _scanSubscription;
   StreamSubscription<ConnectionStateUpdate>? _connectionSubscription;
   Timer? _connectionTimer;
   String? _currentConnectingDeviceId;
   String? _currentConnectingDeviceName;
   StreamSubscription<List<int>>? _notifySub;
+  DeviceConnectionState connectionState = DeviceConnectionState.disconnected;
+  DiscoveredDevice? connectedDevice;
 
   Timer? _syncTimer;
 
@@ -330,6 +332,141 @@ class BleBloc extends Bloc<BleEvent, BleState> {
   //     if (!isClosed) emit(BleError(message: "Failed to start connection: $e"));
   //   }
   // }
+  // Future<void> _onConnectToDevice(
+  //     ConnectToDeviceEvent event, Emitter<BleState> emit) async {
+  //   _scanSubscription?.cancel();
+  //   // _cancelConnectionAttempt();
+  //
+  //   // _currentConnectingDeviceId = event.deviceId;
+  //   // _currentConnectingDeviceName = event.deviceName;
+  //   // emit(BleConnecting(deviceName: event.deviceName ?? "Unknown Device"));
+  //
+  //   // _connectionTimer = Timer(const Duration(seconds: 10), () {
+  //   //   if (!isClosed && _currentConnectingDeviceId == event.deviceId) {
+  //   //     add(ConnectionTimeoutEvent(event.deviceId));
+  //   //   }
+  //   // });
+  //
+  //   try {
+  //     _connectionSubscription = _ble.connectToDevice(
+  //       id: event.deviceId,
+  //       connectionTimeout: const Duration(seconds: 8),
+  //     ).listen((update) async {
+  //       if (!isClosed) {
+  //         add(ConnectionStateEvent(event.deviceId, update.connectionState));
+  //       }
+  //
+  //       if (update.connectionState == DeviceConnectionState.connected) {
+  //         // _connectionTimer?.cancel();
+  //
+  //         try {
+  //           final services = await _ble.discoverServices(event.deviceId);
+  //           print("✅ Services discovered: $services");
+  //
+  //           // // Find FFE0 service
+  //           // final targetService = services.firstWhere(
+  //           //       (s) => s.serviceId.toString().toLowerCase() ==
+  //           //       "0000ffe0-0000-1000-8000-00805f9b34fb",
+  //           //   orElse: () => throw Exception("FFE0 service not found"),
+  //           // );
+  //           //
+  //           // // Find FEE1 (write) and FEE2 (notify)
+  //           // final writeCharId = targetService.characteristicIds.firstWhere(
+  //           //       (c) => c.toString().toLowerCase() ==
+  //           //       "0000fee1-0000-1000-8000-00805f9b34fb",
+  //           //   orElse: () => throw Exception("FEE1 write characteristic not found"),
+  //           // );
+  //           //
+  //           // final readCharId = targetService.characteristicIds.firstWhere(
+  //           //       (c) => c.toString().toLowerCase() ==
+  //           //       "0000fee2-0000-1000-8000-00805f9b34fb",
+  //           //   orElse: () => throw Exception("FEE2 notify characteristic not found"),
+  //           // );
+  //           //
+  //           // print("📝 WriteChar: $writeCharId");
+  //           // print("👂 ReadChar:  $readCharId");
+  //
+  //           final characteristic = QualifiedCharacteristic(
+  //             serviceId: Uuid.parse(AppStrings.serviceUuid),
+  //             characteristicId: Uuid.parse(AppStrings.notifyCharacteristicUuid),
+  //             deviceId: event.deviceId,
+  //           );
+  //
+  //           _notifySub = _ble.subscribeToCharacteristic(characteristic).listen((data){
+  //             if(data.isNotEmpty)
+  //               {
+  //                 final parsed = ShotParser.parse(data);
+  //                 emit(BleShotData(parsed));
+  //               }
+  //           });
+  //
+  //
+  //           // final writeChar = QualifiedCharacteristic(
+  //           //   serviceId: targetService.serviceId,
+  //           //   characteristicId: writeCharId,
+  //           //   deviceId: event.deviceId,
+  //           // );
+  //           //
+  //           // final readChar = QualifiedCharacteristic(
+  //           //   serviceId: targetService.serviceId,
+  //           //   characteristicId: readCharId,
+  //           //   deviceId: event.deviceId,
+  //           // );
+  //
+  //           // Subscribe once
+  //           // _notifySub?.cancel();
+  //           // _notifySub = _ble.subscribeToCharacteristic(readChar).listen(
+  //           //       (rawData) {
+  //           //     print("📥 Notify Data: $rawData");
+  //           //     if (!isClosed && rawData.isNotEmpty) {
+  //           //       final parsed = ShotParser.parse(rawData);
+  //           //       emit(BleShotData(parsed));
+  //           //     }
+  //           //   },
+  //           //   onError: (err) {
+  //           //     print("❌ Notify error: $err");
+  //           //     if (!isClosed) {
+  //           //       emit(BleError(message: "Notify error: $err"));
+  //           //     }
+  //           //   },
+  //           // );
+  //
+  //           // Send HEX command
+  //           _startSyncTimer();
+  //           // final command =
+  //           // Uint8List.fromList([0x47, 0x46, 0x01, 0x00, 0x00, 0x01]);
+  //           //
+  //           // final hexStr = command
+  //           //     .map((b) => b.toRadixString(16).padLeft(2, '0'))
+  //           //     .join(' ');
+  //           // print("📤 Sending packet: $hexStr");
+  //           //
+  //           // await _ble.writeCharacteristicWithResponse(
+  //           //   writeChar,
+  //           //   value: command,
+  //           // );
+  //           //
+  //           // print("✅ Write successful");
+  //         } catch (e) {
+  //           // if (!isClosed) {
+  //           //   emit(BleError(message: "Service discovery failed: $e"));
+  //           // }
+  //         }
+  //       }
+  //     }, onError: (error) {
+  //       _connectionTimer?.cancel();
+  //       if (!isClosed) {
+  //         add(ConnectionTimeoutEvent(event.deviceId, error: error.toString()));
+  //       }
+  //     }, onDone: () => _connectionTimer?.cancel());
+  //   } catch (e) {
+  //     _connectionTimer?.cancel();
+  //     if (!isClosed) {
+  //       emit(BleError(message: "Failed to start connection: $e"));
+  //     }
+  //   }
+  // }
+
   Future<void> _onConnectToDevice(
       ConnectToDeviceEvent event, Emitter<BleState> emit) async {
     _scanSubscription?.cancel();
@@ -339,119 +476,143 @@ class BleBloc extends Bloc<BleEvent, BleState> {
     _currentConnectingDeviceName = event.deviceName;
     emit(BleConnecting(deviceName: event.deviceName ?? "Unknown Device"));
 
-    _connectionTimer = Timer(const Duration(seconds: 10), () {
-      if (!isClosed && _currentConnectingDeviceId == event.deviceId) {
-        add(ConnectionTimeoutEvent(event.deviceId));
-      }
-    });
-
     try {
-      _connectionSubscription = _ble.connectToDevice(
+      _connectionSubscription = _ble
+          .connectToDevice(
         id: event.deviceId,
         connectionTimeout: const Duration(seconds: 8),
-      ).listen((update) async {
+      )
+          .listen((update) async {
         if (!isClosed) {
           add(ConnectionStateEvent(event.deviceId, update.connectionState));
         }
 
         if (update.connectionState == DeviceConnectionState.connected) {
-          _connectionTimer?.cancel();
+          // discover services
+          final services = await _ble.discoverServices(event.deviceId);
+          print("✅ Services discovered: $services");
 
-          try {
-            final services = await _ble.discoverServices(event.deviceId);
-            print("✅ Services discovered: $services");
+          final serviceId = Uuid.parse("0000FFE0-0000-1000-8000-00805F9B34FB");
+          final readId = Uuid.parse("0000FEE2-0000-1000-8000-00805F9B34FB");
+          final writeId = Uuid.parse("0000FEE1-0000-1000-8000-00805F9B34FB");
 
-            // Find FFE0 service
-            final targetService = services.firstWhere(
-                  (s) => s.serviceId.toString().toLowerCase() ==
-                  "0000ffe0-0000-1000-8000-00805f9b34fb",
-              orElse: () => throw Exception("FFE0 service not found"),
-            );
+          final readChar = QualifiedCharacteristic(
+            serviceId: serviceId,
+            characteristicId: readId,
+            deviceId: event.deviceId,
+          );
+          final writeChar = QualifiedCharacteristic(
+            serviceId: serviceId,
+            characteristicId: writeId,
+            deviceId: event.deviceId,
+          );
 
-            // Find FEE1 (write) and FEE2 (notify)
-            final writeCharId = targetService.characteristicIds.firstWhere(
-                  (c) => c.toString().toLowerCase() ==
-                  "0000fee1-0000-1000-8000-00805f9b34fb",
-              orElse: () => throw Exception("FEE1 write characteristic not found"),
-            );
+          // ✅ subscribe ONCE
+          _notifySub?.cancel();
+          _notifySub = _ble.subscribeToCharacteristic(readChar).listen(
+                (rawData) {
+              if (rawData.isNotEmpty) {
+                final parsed = ShotParser.parse(rawData);
+                emit(BleShotData(parsed));
+              }
+            },
+            onError: (err) => emit(BleError(message: "Notify error: $err")),
+          );
 
-            final readCharId = targetService.characteristicIds.firstWhere(
-                  (c) => c.toString().toLowerCase() ==
-                  "0000fee2-0000-1000-8000-00805f9b34fb",
-              orElse: () => throw Exception("FEE2 notify characteristic not found"),
-            );
+          await Future.delayed(const Duration(milliseconds: 300));
 
-            print("📝 WriteChar: $writeCharId");
-            print("👂 ReadChar:  $readCharId");
+          // ✅ send first sync immediately
+          final firstPacket = [0x47, 0x46, 0x01, 0x00, 0x00, 0x01];
+          await _ble.writeCharacteristicWithResponse(writeChar, value: firstPacket);
 
-            final writeChar = QualifiedCharacteristic(
-              serviceId: targetService.serviceId,
-              characteristicId: writeCharId,
-              deviceId: event.deviceId,
-            );
+          // ✅ keep sending sync every second
+          _syncTimer?.cancel();
+          _syncTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
+            try {
+              await _ble.writeCharacteristicWithResponse(
+                writeChar,
+                value: firstPacket,
+              );
+            } catch (e) {
+              emit(BleError(message: "Sync write failed: $e"));
+            }
+          });
 
-            final readChar = QualifiedCharacteristic(
-              serviceId: targetService.serviceId,
-              characteristicId: readCharId,
-              deviceId: event.deviceId,
-            );
-
-            // Subscribe once
-            _notifySub?.cancel();
-            _notifySub = _ble.subscribeToCharacteristic(readChar).listen(
-                  (rawData) {
-                print("📥 Notify Data: $rawData");
-                if (!isClosed && rawData.isNotEmpty) {
-                  final parsed = ShotParser.parse(rawData);
-                  emit(BleShotData(parsed));
-                }
-              },
-              onError: (err) {
-                print("❌ Notify error: $err");
-                if (!isClosed) {
-                  emit(BleError(message: "Notify error: $err"));
-                }
-              },
-            );
-
-            // Send HEX command
-            final command =
-            Uint8List.fromList([0x47, 0x46, 0x01, 0x00, 0x00, 0x01]);
-
-            final hexStr = command
-                .map((b) => b.toRadixString(16).padLeft(2, '0'))
-                .join(' ');
-            print("📤 Sending packet: $hexStr");
-
-            await _ble.writeCharacteristicWithResponse(
-              writeChar,
-              value: command,
-            );
-
-            print("✅ Write successful");
-          } catch (e) {
-            // if (!isClosed) {
-            //   emit(BleError(message: "Service discovery failed: $e"));
-            // }
-          }
+          // emit(BleConnected(
+          //   BleDevice(event.deviceId, event.deviceName ?? "Device", "BLE", 0, true, id: '', name: '', type: '', rssi: null),
+          //   services.map((s) => BleService.fromDiscovered(s)).toList(),
+          // ));
         }
       }, onError: (error) {
-        _connectionTimer?.cancel();
-        if (!isClosed) {
-          add(ConnectionTimeoutEvent(event.deviceId, error: error.toString()));
-        }
-      }, onDone: () => _connectionTimer?.cancel());
+        if (!isClosed) emit(BleError(message: "Connection error: $error"));
+      });
     } catch (e) {
-      _connectionTimer?.cancel();
-      if (!isClosed) {
-        emit(BleError(message: "Failed to start connection: $e"));
-      }
+      if (!isClosed) emit(BleError(message: "Failed to connect: $e"));
+    }
+  }
+
+  void _startSyncTimer() {
+    _syncTimer?.cancel();
+    _syncTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _sendSyncPacket();
+    });
+  }
+  void _sendSyncPacket() {
+    if (connectedDevice == null || connectionState != DeviceConnectionState.connected) return;
+    int clubId = ShotParser.clubName; // <-- your current club index
+    int checksum = (0x01 + clubId + 0x00) & 0xFF; // sum of bytes 3~5
+
+    print("Club Number ${clubId}");
+    print("Sum ${checksum}");
+
+    // List<int> syncPacket = [0x47, 0x46, 0x01, 0x00, 0x00, 0x01];
+
+    List<int> syncPacket = [
+      0x47, 0x46,       // Header "GF"
+      0x01,             // CMD = sync
+      clubId,           // current club id
+      0x00,             // reserved
+      checksum,         // checksum
+    ];
+    _writeToCharacteristic(syncPacket);
+  }
+
+  void _sendCommand(int cmd, int param1, int param2) {
+    if (connectedDevice == null || connectionState != DeviceConnectionState.connected) return;
+
+    List<int> packet = [0x47, 0x46, cmd, param1, param2];
+    int checksum = 0;
+    for (int i = 2; i < packet.length; i++) {
+      checksum += packet[i];
+    }
+    packet.add(checksum & 0xFF);
+
+    print('?????????');
+    print(packet);
+    _writeToCharacteristic(packet);
+  }
+
+  void _writeToCharacteristic(List<int> data) async {
+    if (connectedDevice == null) return;
+    try {
+      final characteristic = QualifiedCharacteristic(
+        serviceId: Uuid.parse(AppStrings.serviceUuid),
+        characteristicId: Uuid.parse(AppStrings.writeCharacteristicUuid),
+        deviceId: connectedDevice!.id,
+      );
+      print('Data ${data}');
+
+      await _ble.writeCharacteristicWithoutResponse(
+        characteristic,
+        value: data,
+      );
+    } catch (e) {
+      // _addLog('Write error: $e');
     }
   }
 
 
-
-  Future<void> _onConnectionState(ConnectionStateEvent event, Emitter<BleState> emit) async {
+    Future<void> _onConnectionState(ConnectionStateEvent event, Emitter<BleState> emit) async {
     switch (event.connectionState) {
       case DeviceConnectionState.connected:
         _connectionTimer?.cancel();

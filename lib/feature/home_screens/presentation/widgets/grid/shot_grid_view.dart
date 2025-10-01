@@ -31,6 +31,8 @@ class _ShotGridViewState extends State<ShotGridView> {
   Widget build(BuildContext context) {
     return BlocConsumer<BleBloc, BleState>(
       listener: (context, state) {
+        print('????????{{{');
+        print(state);
         if (state is BleError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
@@ -74,17 +76,29 @@ class _ShotGridViewState extends State<ShotGridView> {
         //   );
         // }
 
-        if (state is BleConnected) {
-          final services = state.services;
+        // if (state is BleConnected) {
+        //   final services = state.services;
+        //
+        //   return _buildDeviceGrid(services, context);
+        //   // return Center(
+        //   //   child: GlassmorphismCard(
+        //   //     value: "Connected",
+        //   //     name: device.name.isNotEmpty ? device.name : AppStrings.unknown,
+        //   //     unit: device.id,
+        //   //   ),
+        //   // );
+        // }
 
-          return _buildDeviceGrid(services, context);
-          // return Center(
-          //   child: GlassmorphismCard(
-          //     value: "Connected",
-          //     name: device.name.isNotEmpty ? device.name : AppStrings.unknown,
-          //     unit: device.id,
-          //   ),
-          // );
+        if (state is BleConnected) {
+          // Just show message that device is connected
+          return const Center(
+            child: Text("✅ Device Connected. Waiting for data...",
+                style: TextStyle(color: Colors.white, fontSize: 16)),
+          );
+        }
+
+        if (state is BleShotData) {
+          return _buildShotGrid(state.shots);
         }
 
         // if (state is BleScannedDevices) {
@@ -193,47 +207,78 @@ class _ShotGridViewState extends State<ShotGridView> {
   //   );
   // }
 
-  Widget _buildDeviceGrid(List<BleService> services, BuildContext context) {
-    // Filter services containing FFE0
-    final targetServices =
-    services.where((s) => s.uuid.toUpperCase().contains("FFE0")).toList();
+  // Widget _buildDeviceGrid(List<BleService> services, BuildContext context) {
+  //   // Filter services containing FFE0
+  //   final targetServices =
+  //   services.where((s) => s.uuid.toUpperCase().contains("FFE0")).toList();
+  //
+  //   if (targetServices.isEmpty) {
+  //     return const Center(
+  //       child: Text(
+  //         "No service with ID FFE0 found",
+  //         style: TextStyle(color: Colors.white, fontSize: 16),
+  //         textAlign: TextAlign.center,
+  //       ),
+  //     );
+  //   }
+  //
+  //   // ⚡ Instead of looping services → just take the first FFE0
+  //   final service = targetServices.first;
+  //
+  //   print('Services');
+  //   print(service);
+  //
+  //   // Find FEE2 characteristic
+  //   final targetCharacteristic = service.characteristics.firstWhere(
+  //         (c) => c.uuid.toUpperCase().contains("FEE2"),
+  //   );
+  //
+  //   print('Target Characteristic');
+  //   print(targetCharacteristic.value);
+  //   // Parse values
+  //   List<ShotDataNew> parsedData = [];
+  //   if (targetCharacteristic.value != null &&
+  //       targetCharacteristic.value!.isNotEmpty) {
+  //     parsedData = ShotParser.parse(targetCharacteristic.value!);
+  //     print('Parsed Data');
+  //     print(parsedData);
+  //   }
+  //   //   else {
+  //   //   parsedData = ShotParser.parseExampleData();
+  //   // }
+  //
+  //   // 🔥 Now build cards from parsedData
+  //   return GridView.builder(
+  //     padding: const EdgeInsets.all(16),
+  //     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+  //       crossAxisCount: 2,
+  //       crossAxisSpacing: 30,
+  //       mainAxisSpacing: 20,
+  //       childAspectRatio: 1.42,
+  //     ),
+  //     itemCount: parsedData.length,
+  //     itemBuilder: (context, index) {
+  //       final shot = parsedData[index];
+  //       return GlassmorphismCard(
+  //         value: "${shot.value}",
+  //         name: shot.metric,
+  //         unit: shot.unit,
+  //       );
+  //     },
+  //   );
+  // }
 
-    if (targetServices.isEmpty) {
+  Widget _buildShotGrid(List<ShotDataNew> shots) {
+    if (shots.isEmpty) {
       return const Center(
         child: Text(
-          "No service with ID FFE0 found",
+          "No shot data received yet",
           style: TextStyle(color: Colors.white, fontSize: 16),
           textAlign: TextAlign.center,
         ),
       );
     }
 
-    // ⚡ Instead of looping services → just take the first FFE0
-    final service = targetServices.first;
-
-    print('Services');
-    print(service);
-
-    // Find FEE2 characteristic
-    final targetCharacteristic = service.characteristics.firstWhere(
-          (c) => c.uuid.toUpperCase().contains("FEE2"),
-    );
-
-    print('Target Characteristic');
-    print(targetCharacteristic.value);
-    // Parse values
-    List<ShotDataNew> parsedData = [];
-    if (targetCharacteristic.value != null &&
-        targetCharacteristic.value!.isNotEmpty) {
-      parsedData = ShotParser.parse(targetCharacteristic.value!);
-      print('Parsed Data');
-      print(parsedData);
-    }
-    //   else {
-    //   parsedData = ShotParser.parseExampleData();
-    // }
-
-    // 🔥 Now build cards from parsedData
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -242,9 +287,9 @@ class _ShotGridViewState extends State<ShotGridView> {
         mainAxisSpacing: 20,
         childAspectRatio: 1.42,
       ),
-      itemCount: parsedData.length,
+      itemCount: shots.length,
       itemBuilder: (context, index) {
-        final shot = parsedData[index];
+        final shot = shots[index];
         return GlassmorphismCard(
           value: "${shot.value}",
           name: shot.metric,

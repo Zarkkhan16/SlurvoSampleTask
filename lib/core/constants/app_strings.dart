@@ -34,4 +34,8 @@ class AppStrings {
   static const String noDataShowing = 'No BLE devices found, showing demo data...';
   static const String connecting = 'Connecting to device...';
   static const String turnOnBluetooth = 'Turn on your Bluetooth for connectivity';
+
+  static const String serviceUuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
+  static const String writeCharacteristicUuid = "0000fee1-0000-1000-8000-00805f9b34fb";
+  static const String notifyCharacteristicUuid = "0000fee2-0000-1000-8000-00805f9b34fb";
 }

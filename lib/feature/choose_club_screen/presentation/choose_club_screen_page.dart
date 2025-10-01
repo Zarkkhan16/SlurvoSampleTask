@@ -60,7 +60,7 @@ class Club {
 class ChooseClubScreenPage extends StatefulWidget {
   final Club? selectedClub; // <- previously selected club (from parent)
 
-  const ChooseClubScreenPage({super.key, this.selectedClub});
+  const ChooseClubScreenPage({super.key, this.selectedClub,});
 
   @override
   State<ChooseClubScreenPage> createState() => _ChooseClubScreenPageState();
@@ -82,15 +82,16 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
   Future<void> _loadClubs() async {
     await Future.delayed(const Duration(milliseconds: 800));
     final fetchedClubs = [
-      Club(code: "1", name: "Driver Wood"),
+      Club(code: "0", name: "1 Wood"),
+      Club(code: "1", name: "2 Wood"),
       Club(code: "2", name: "3 Wood"),
       Club(code: "3", name: "5 Wood"),
       Club(code: "4", name: "7 Wood"),
-      Club(code: "5", name: "1 Hybrid"),
-      Club(code: "6", name: "2 Hybrid"),
-      Club(code: "7", name: "3 Hybrid"),
-      Club(code: "8", name: "4 Hybrid"),
-      Club(code: "9", name: "5 Hybrid"),
+      Club(code: "5", name: "2 Hybrid"),
+      Club(code: "6", name: "3 Hybrid"),
+      Club(code: "7", name: "4 Hybrid"),
+      Club(code: "8", name: "5 Hybrid"),
+      Club(code: "9", name: "1 Iron"),
       Club(code: "10", name: "2 Iron"),
       Club(code: "11", name: "3 Iron"),
       Club(code: "12", name: "4 Iron"),
@@ -129,12 +130,12 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: 60,
-                    child: HeaderRow(
-                      headingName: 'Choose a Club', onClubSelected: (Club p1) {  },
-                    ),
-                  ),
+                  // SizedBox(
+                  //   height: 60,
+                  //   child: HeaderRow(
+                  //     headingName: 'Choose a Club', onClubSelected: (Club p1) {  },
+                  //   ),
+                  // ),
                   Expanded(child: _buildBody()),
                 ],
               ),

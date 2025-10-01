@@ -56,7 +56,7 @@ class GlassmorphismCard extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.oswald(
                         textStyle: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 30,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -74,7 +74,7 @@ class GlassmorphismCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.roboto(
                         textStyle: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Colors.white,
                         ),

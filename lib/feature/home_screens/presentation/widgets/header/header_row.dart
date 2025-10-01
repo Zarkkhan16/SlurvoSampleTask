@@ -7,13 +7,13 @@ import '../../../../choose_club_screen/presentation/choose_club_screen_page.dart
 class HeaderRow extends StatefulWidget {
   final bool showClubName;
   final String headingName;
-  final Club? selectedClub; // 👈 current selected club
+  final Club selectedClub; // 👈 current selected club
   final Function(Club) onClubSelected; // 👈 callback when new club selected
   const HeaderRow({
     super.key,
     this.showClubName = false,
     this.headingName = AppStrings.shotAnalysisTitle,
-    this.selectedClub,
+    required this.selectedClub,
     required this.onClubSelected,
   });
 
@@ -23,12 +23,12 @@ class HeaderRow extends StatefulWidget {
 
 class _HeaderRowState extends State<HeaderRow> {
 
-  late Club? _club;
+  late int _club = 0;
 
   @override
   void initState() {
     super.initState();
-    _club = widget.selectedClub;
+    _club = int.parse(widget.selectedClub.code);
   }
 
   @override
@@ -80,20 +80,20 @@ class _HeaderRowState extends State<HeaderRow> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => ChooseClubScreenPage(
-                    selectedClub: _club, // 👈 pass current selection
+                    selectedClub: widget.selectedClub, // 👈 pass current selection
                   ),
                 ),
               );
 
               if (result != null && result is Club) {
                 setState(() {
-                  _club = result;
+                  _club = int.parse(result.code);
                 });
                 widget.onClubSelected(result); // 👈 notify parent
               }
             },
             child: Text(
-              _club?.name ?? "Choose",
+              clubs[_club],
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -106,4 +106,12 @@ class _HeaderRowState extends State<HeaderRow> {
       ],
     );
   }
+
+  static const clubs = [
+    "1W", "2W", "3W", "5W", "7W",
+    "2H", "3H", "4H", "5H",
+    "1i", "2i", "3i", "4i", "5i", "6i", "7i", "8i", "9i",
+    "PW", "GW", "GW1", "SW", "SW1", "LW", "LW1"
+  ];
+
 }
