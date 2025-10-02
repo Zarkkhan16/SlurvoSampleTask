@@ -1,7 +1,7 @@
 
-import 'package:Slurvo/core/usecases/usecase.dart';
-import 'package:Slurvo/feature/ble/domain/entities/ble_service.dart';
-import 'package:Slurvo/feature/ble/domain/repositories/ble_repository.dart';
+import 'package:OneGolf/core/usecases/usecase.dart';
+import 'package:OneGolf/feature/ble/domain/entities/ble_service.dart';
+import 'package:OneGolf/feature/ble/domain/repositories/ble_repository.dart';
 
 
 

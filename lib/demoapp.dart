@@ -1,6 +1,6 @@
 
-import 'package:Slurvo/feature/choose_club_screen/presentation/choose_club_screen_page.dart';
-import 'package:Slurvo/log.dart';
+import 'package:OneGolf/feature/choose_club_screen/presentation/choose_club_screen_page.dart';
+import 'package:OneGolf/log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:Slurvo/core/constants/app_colors.dart';
-import 'package:Slurvo/core/constants/app_strings.dart';
+import 'package:OneGolf/core/constants/app_colors.dart';
+import 'package:OneGolf/core/constants/app_strings.dart';
 import '../../../../choose_club_screen/presentation/choose_club_screen_page.dart';
 
 class HeaderRow extends StatefulWidget {

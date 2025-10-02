@@ -1,12 +1,12 @@
 // import 'package:flutter/material.dart';
-// import 'package:Slurvo/core/constants/app_colors.dart';
-// import 'package:Slurvo/core/constants/app_images.dart';
-// import 'package:Slurvo/core/constants/app_strings.dart';
-// import 'package:Slurvo/feature/home_screens/presentation/widgets/buttons/action_button.dart';
-// import 'package:Slurvo/feature/home_screens/presentation/widgets/buttons/session_view_button.dart';
-// import 'package:Slurvo/feature/home_screens/presentation/widgets/custom_bar/custom_bar.dart';
-// import 'package:Slurvo/feature/home_screens/presentation/widgets/grid/shot_grid_view.dart';
-// import 'package:Slurvo/feature/home_screens/presentation/widgets/header/header_row.dart';
+// import 'package:OneGolf/core/constants/app_colors.dart';
+// import 'package:OneGolf/core/constants/app_images.dart';
+// import 'package:OneGolf/core/constants/app_strings.dart';
+// import 'package:OneGolf/feature/home_screens/presentation/widgets/buttons/action_button.dart';
+// import 'package:OneGolf/feature/home_screens/presentation/widgets/buttons/session_view_button.dart';
+// import 'package:OneGolf/feature/home_screens/presentation/widgets/custom_bar/custom_bar.dart';
+// import 'package:OneGolf/feature/home_screens/presentation/widgets/grid/shot_grid_view.dart';
+// import 'package:OneGolf/feature/home_screens/presentation/widgets/header/header_row.dart';
 //
 // import '../../../../choose_club_screen/presentation/choose_club_screen_page.dart';
 // import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -80,16 +80,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:Slurvo/core/constants/app_colors.dart';
-import 'package:Slurvo/core/constants/app_strings.dart';
-import 'package:Slurvo/feature/home_screens/domain/entities/shot_data.dart';
-import 'package:Slurvo/feature/home_screens/domain/entities/shot_parser.dart';
-import 'package:Slurvo/feature/home_screens/presentation/widgets/card/glassmorphism_card.dart';
-import 'package:Slurvo/feature/home_screens/presentation/widgets/header/header_row.dart';
-import 'package:Slurvo/feature/home_screens/presentation/widgets/buttons/action_button.dart';
-import 'package:Slurvo/core/constants/app_images.dart';
-import 'package:Slurvo/feature/home_screens/presentation/widgets/buttons/session_view_button.dart';
-import 'package:Slurvo/feature/home_screens/presentation/widgets/custom_bar/custom_bar.dart';
+import 'package:OneGolf/core/constants/app_colors.dart';
+import 'package:OneGolf/core/constants/app_strings.dart';
+import 'package:OneGolf/feature/home_screens/domain/entities/shot_data.dart';
+import 'package:OneGolf/feature/home_screens/domain/entities/shot_parser.dart';
+import 'package:OneGolf/feature/home_screens/presentation/widgets/card/glassmorphism_card.dart';
+import 'package:OneGolf/feature/home_screens/presentation/widgets/header/header_row.dart';
+import 'package:OneGolf/feature/home_screens/presentation/widgets/buttons/action_button.dart';
+import 'package:OneGolf/core/constants/app_images.dart';
+import 'package:OneGolf/feature/home_screens/presentation/widgets/buttons/session_view_button.dart';
+import 'package:OneGolf/feature/home_screens/presentation/widgets/custom_bar/custom_bar.dart';
 
 class ShotAnalysisBody extends StatefulWidget {
   final DiscoveredDevice? connectedDevice;

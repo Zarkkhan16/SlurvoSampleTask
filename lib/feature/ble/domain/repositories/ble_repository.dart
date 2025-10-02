@@ -1,5 +1,5 @@
-import 'package:Slurvo/feature/ble/domain/entities/ble_device.dart';
-import 'package:Slurvo/feature/ble/domain/entities/ble_service.dart';
+import 'package:OneGolf/feature/ble/domain/entities/ble_device.dart';
+import 'package:OneGolf/feature/ble/domain/entities/ble_service.dart';
 
 abstract class BleRepository {
   Stream<List<BleDevice>> scanForDevices();

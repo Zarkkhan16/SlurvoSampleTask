@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:Slurvo/core/constants/app_colors.dart';
+import 'package:OneGolf/core/constants/app_colors.dart';
 
 class ActionButton extends StatelessWidget {
   final String? svgAssetPath;

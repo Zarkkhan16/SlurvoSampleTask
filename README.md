@@ -1,6 +1,6 @@
-# Slurvo BLE Task App
+# OneGolf BLE Task App
 
-This Flutter project, **Slurvo**, is built to demonstrate Bluetooth Low Energy (BLE) functionality using Flutter. It includes features such as device scanning, connection handling, and data read/write operations. The app also supports fallback to mock data when no BLE devices are found.
+This Flutter project, **OneGolf**, is built to demonstrate Bluetooth Low Energy (BLE) functionality using Flutter. It includes features such as device scanning, connection handling, and data read/write operations. The app also supports fallback to mock data when no BLE devices are found.
 
 ## Features
 

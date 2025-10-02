@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:Slurvo/core/constants/app_colors.dart';
+import 'package:OneGolf/core/constants/app_colors.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:Slurvo/feature/home_screens/presentation/pages/body/shot_analysis_body.dart';
-import 'package:Slurvo/feature/home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
-import 'package:Slurvo/feature/home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
+import 'package:OneGolf/feature/home_screens/presentation/pages/body/shot_analysis_body.dart';
+import 'package:OneGolf/feature/home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
+import 'package:OneGolf/feature/home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
 
 class ShotAnalysisPage extends StatelessWidget {
   DiscoveredDevice? connectedDevice;

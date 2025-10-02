@@ -1,4 +1,4 @@
-package com.task.slurvo
+package com.golf.one
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:Slurvo/feature/splash/splash_screen.dart';
+import 'package:OneGolf/feature/splash/splash_screen.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/constants/app_strings.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
   }
 }
 //
-// import 'package:Slurvo/log.dart';
+// import 'package:OneGolf/log.dart';
 // import 'package:flutter/material.dart';
 // import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 // import 'package:permission_handler/permission_handler.dart';
