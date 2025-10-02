@@ -1,7 +1,7 @@
 
-import 'package:OneGolf/core/usecases/usecase.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_service.dart';
-import 'package:OneGolf/feature/ble/domain/repositories/ble_repository.dart';
+import 'package:onegolf/core/usecases/usecase.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_service.dart';
+import 'package:onegolf/feature/ble/domain/repositories/ble_repository.dart';
 
 
 

@@ -1,6 +1,6 @@
 
-import 'package:OneGolf/feature/choose_club_screen/presentation/choose_club_screen_page.dart';
-import 'package:OneGolf/log.dart';
+import 'package:onegolf/feature/choose_club_screen/presentation/choose_club_screen_page.dart';
+import 'package:onegolf/log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:permission_handler/permission_handler.dart';

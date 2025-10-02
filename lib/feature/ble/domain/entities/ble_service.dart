@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_characteristic.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_characteristic.dart';
 
 class BleService extends Equatable {
   final String uuid;

@@ -1,4 +1,4 @@
-import 'package:OneGolf/feature/ble/domain/entities/ble_device.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_device.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../repositories/ble_repository.dart';
 

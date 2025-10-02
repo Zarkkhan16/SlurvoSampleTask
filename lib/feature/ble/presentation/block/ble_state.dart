@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_device.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_service.dart';
-import 'package:OneGolf/feature/home_screens/domain/entities/shot_data.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_device.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_service.dart';
+import 'package:onegolf/feature/home_screens/domain/entities/shot_data.dart';
 
 abstract class BleState extends Equatable {
   const BleState();

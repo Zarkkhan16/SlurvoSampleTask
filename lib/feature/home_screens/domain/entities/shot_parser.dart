@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'package:OneGolf/feature/home_screens/domain/entities/shot_data.dart';
+import 'package:onegolf/feature/home_screens/domain/entities/shot_data.dart';
 
 class ShotParser {
   static int clubName = 0;

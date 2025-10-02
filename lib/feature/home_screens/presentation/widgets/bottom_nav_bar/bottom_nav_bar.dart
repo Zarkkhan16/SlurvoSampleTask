@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:OneGolf/core/constants/app_colors.dart';
-import 'package:OneGolf/core/constants/app_images.dart';
-import 'package:OneGolf/core/constants/app_strings.dart';
+import 'package:onegolf/core/constants/app_colors.dart';
+import 'package:onegolf/core/constants/app_images.dart';
+import 'package:onegolf/core/constants/app_strings.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
