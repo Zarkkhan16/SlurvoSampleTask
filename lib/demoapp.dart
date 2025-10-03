@@ -1,12 +1,8 @@
-
 import 'package:OneGolf/feature/choose_club_screen/presentation/choose_club_screen_page.dart';
-import 'package:OneGolf/log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'dart:typed_data';
 import 'dart:async';
-
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_images.dart';
 import 'core/constants/app_strings.dart';
@@ -18,64 +14,6 @@ import 'feature/home_screens/presentation/widgets/custom_app_bar/custom_app_bar.
 import 'feature/home_screens/presentation/widgets/custom_bar/custom_bar.dart';
 import 'feature/home_screens/presentation/widgets/header/header_row.dart';
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await _requestPermissions();
-//   runApp(GolfApp());
-// }
-//
-// Future<void> _requestPermissions() async {
-//   Map<Permission, PermissionStatus> statuses = await [
-//     Permission.bluetooth,
-//     Permission.bluetoothScan,
-//     Permission.bluetoothConnect,
-//     Permission.bluetoothAdvertise,
-//     Permission.location,
-//     Permission.locationWhenInUse,
-//   ].request();
-//
-//   bool allGranted = true;
-//   statuses.forEach((permission, status) {
-//     if (status != PermissionStatus.granted) {
-//       print('Permission $permission denied: $status');
-//       allGranted = false;
-//     }
-//   });
-//
-//   if (!allGranted) {
-//     print('Some permissions were denied. The app may not work properly.');
-//   }
-// }
-
-// class GolfApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Golf Device',
-//       debugShowCheckedModeBanner: false,
-//       theme: ThemeData.dark().copyWith(
-//         primaryColor: Colors.grey[900],
-//         scaffoldBackgroundColor: Colors.black,
-//         appBarTheme: AppBarTheme(
-//           backgroundColor: Colors.grey[850],
-//           foregroundColor: Colors.white,
-//         ),
-//         cardColor: Colors.grey[850],
-//         elevatedButtonTheme: ElevatedButtonThemeData(
-//           style: ElevatedButton.styleFrom(
-//             backgroundColor: Colors.grey[800],
-//             foregroundColor: Colors.white,
-//           ),
-//         ),
-//         snackBarTheme: SnackBarThemeData(
-//           backgroundColor: Colors.grey[800],
-//           contentTextStyle: TextStyle(color: Colors.white),
-//         ),
-//       ),
-//       home: GolfDeviceScreen(),
-//     );
-//   }
-// }
 
 class GolfData {
   int battery = 0;            // BYTE 4 (doc) = data[3]
@@ -415,18 +353,6 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
     });
   }
 
-  void _pauseSyncTimer() {
-    setState(() {
-      _isPaused = true;
-    });
-  }
-
-  void _resumeSyncTimer() {
-    setState(() {
-      _isPaused = false;
-    });
-  }
-
   void _sendSyncPacket() {
     if(_isPaused) print('pause');
     if (connectedDevice == null || connectionState != DeviceConnectionState.connected) return;
@@ -495,6 +421,9 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
     if (data.length < 15 || data[0] != 0x47 || data[1] != 0x46) return;
     setState(() {
       golfData.battery = data[3];                           // BYTE 4
+
+        batteryNotifier.value = golfData.battery;
+        print("Battery Raw: ${data[3]}");
 
       // Record number = little endian
       golfData.recordNumber = (data[4] << 8) | data[5];
@@ -672,6 +601,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
                   height: 60,
                   child: HeaderRow(
                     showClubName: true,
+                    goScanScreen: true,
                     headingName: "Shot Analysis",
                     selectedClub: Club(code: golfData.clubName.toString(), name: clubs[golfData.clubName]), // use the index
                     onClubSelected: (value) {
@@ -741,276 +671,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
         ),
       ],
     );
-
-
-
-
-      SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text("Club: "),
-              SizedBox(width: 8),
-              Expanded(
-                child: DropdownButton<int>(
-                  value: golfData.clubName, // current club
-                  isExpanded: true,
-                  items: List.generate(
-                    clubs.length,
-                        (index) => DropdownMenuItem(
-                      value: index,
-                      child: Text(clubs[index]),
-                    ),
-                  ),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedClub = value;
-                          golfData.clubName = value; // keep UI consistent
-                        });
-                        _sendCommand(0x02, value, 0x00);
-                      }
-                    },
-                ),
-              ),
-            ],
-          ),
-          Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Icon(
-                          golfData.batteryIcon,
-                          color: golfData.batteryColor,
-                          size: 32,
-                        ),
-                        Text(golfData.batteryStatus),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Icon(Icons.golf_course, size: 32, color: Colors.greenAccent),
-                        Text("${golfData.clubNameString} (${golfData.clubLoftString})"),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Icon(Icons.numbers, size: 32, color: Colors.blueAccent),
-                        Text('Shot #${golfData.recordNumber}'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Icon(Icons.speed, size: 40, color: Colors.blueAccent),
-                        SizedBox(height: 8),
-                        Text(
-                          '${golfData.clubSpeed.toStringAsFixed(1)}',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        Text('Club Speed (MPH)'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Icon(Icons.sports_baseball, size: 40, color: Colors.orangeAccent),
-                        SizedBox(height: 8),
-                        Text(
-                          '${golfData.ballSpeed.toStringAsFixed(1)}',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        Text('Ball Speed (MPH)'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Icon(Icons.flag, size: 40, color: Colors.greenAccent),
-                        SizedBox(height: 8),
-                        Text(
-                          '${golfData.carryDistance.toStringAsFixed(1)}',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        Text('Carry Distance (${units ? "m" : "yds"})'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Icon(Icons.golf_course, size: 40, color: Colors.purpleAccent),
-                        SizedBox(height: 8),
-                        Text(
-                          '${golfData.totalDistance.toStringAsFixed(1)}',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        Text('Total Distance (${units ? "m" : "yds"})'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Icon(Icons.insights, size: 40, color: Colors.amberAccent),
-                  SizedBox(height: 8),
-                  Text(
-                    '${golfData.smashFactor.toStringAsFixed(2)}',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                  Text('Smash Factor'),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Settings', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              units = !units;
-                            });
-                            _sendCommand(0x04, units ? 1 : 0, 0x00);
-                          },
-                          child: Text(units ? 'Switch to Yards' : 'Switch to Meters'),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _sendCommand(0x05, 0x00, 0x00);
-                          },
-                          child: Text('Clear Records'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _sendCommand(0x06, 1, 0x00),
-                          child: Text('Backlight ON'),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _sendCommand(0x06, 0, 0x00),
-                          child: Text('Backlight OFF'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Text('Sleep Time: ${sleepTime} min'),
-                      Spacer(),
-                      IconButton(
-                        onPressed: sleepTime > 1
-                            ? () {
-                          setState(() {
-                            sleepTime--;
-                          });
-                          _sendCommand(0x03, sleepTime, 0x00);
-                        }
-                            : null,
-                        icon: Icon(Icons.remove, color: Colors.white),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            sleepTime++;
-                          });
-                          _sendCommand(0x03, sleepTime, 0x00);
-                        },
-                        icon: Icon(Icons.add, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _disconnect,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              foregroundColor: Colors.white,
-            ),
-            child: Text('Disconnect'),
-          ),
-        ],
-      ),
-    );
   }
-
   List<Map<String, String>> get _golfMetrics {
     return [
       {

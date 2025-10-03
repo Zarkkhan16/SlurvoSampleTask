@@ -3,18 +3,22 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:OneGolf/core/constants/app_colors.dart';
 import 'package:OneGolf/core/constants/app_strings.dart';
 import '../../../../choose_club_screen/presentation/choose_club_screen_page.dart';
+import '../../../../scanned_devices_screen/scanned_devices_screen.dart';
 
 class HeaderRow extends StatefulWidget {
   final bool showClubName;
   final String headingName;
-  final Club selectedClub; // 👈 current selected club
-  final Function(Club) onClubSelected; // 👈 callback when new club selected
+  final Club? selectedClub; // 👈 now optional
+  final Function(Club)? onClubSelected; // 👈 now optional
+  final bool goScanScreen;
+
   const HeaderRow({
     super.key,
     this.showClubName = false,
     this.headingName = AppStrings.shotAnalysisTitle,
-    required this.selectedClub,
-    required this.onClubSelected,
+    this.selectedClub, // 👈 optional
+    this.onClubSelected, // 👈 optional
+    this.goScanScreen = false,
   });
 
   @override
@@ -22,21 +26,20 @@ class HeaderRow extends StatefulWidget {
 }
 
 class _HeaderRowState extends State<HeaderRow> {
-
-  late int _club = 0;
+  late int _club;
 
   @override
   void initState() {
     super.initState();
-    _club = int.parse(widget.selectedClub.code);
+    _club = widget.selectedClub != null ? int.parse(widget.selectedClub!.code) : 0;
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    final iconSize = screenWidth * 0.07; // ~7% of screen width
-    final fontSize = screenWidth * 0.07; // ~7% of screen width
+    final iconSize = screenWidth * 0.07;
+    final fontSize = screenWidth * 0.07;
 
     return Row(
       mainAxisAlignment:
@@ -44,7 +47,16 @@ class _HeaderRowState extends State<HeaderRow> {
       children: [
         GestureDetector(
           onTap: () {
-            Navigator.pop(context);
+            if (widget.goScanScreen) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ScannedDevicesScreen(),
+                ),
+              );
+            } else {
+              Navigator.pop(context);
+            }
           },
           child: Icon(
             Icons.arrow_back_ios_new_outlined,
@@ -53,7 +65,6 @@ class _HeaderRowState extends State<HeaderRow> {
           ),
         ),
 
-        // Center heading if no club name
         Expanded(
           child: Center(
             child: FittedBox(
@@ -72,15 +83,14 @@ class _HeaderRowState extends State<HeaderRow> {
           ),
         ),
 
-        // Show club name if true, else keep spacing balanced
-        if (widget.showClubName)
+        if (widget.showClubName && widget.selectedClub != null)
           GestureDetector(
             onTap: () async {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ChooseClubScreenPage(
-                    selectedClub: widget.selectedClub, // 👈 pass current selection
+                    selectedClub: widget.selectedClub!, // 👈 safe because we checked above
                   ),
                 ),
               );
@@ -89,7 +99,7 @@ class _HeaderRowState extends State<HeaderRow> {
                 setState(() {
                   _club = int.parse(result.code);
                 });
-                widget.onClubSelected(result); // 👈 notify parent
+                widget.onClubSelected?.call(result); // 👈 safe call
               }
             },
             child: Text(
@@ -102,7 +112,7 @@ class _HeaderRowState extends State<HeaderRow> {
             ),
           )
         else
-          const SizedBox(width: 34), // 👈 ensures symmetry with back icon
+          const SizedBox(width: 34),
       ],
     );
   }
@@ -113,5 +123,5 @@ class _HeaderRowState extends State<HeaderRow> {
     "1i", "2i", "3i", "4i", "5i", "6i", "7i", "8i", "9i",
     "PW", "GW", "GW1", "SW", "SW1", "LW", "LW1"
   ];
-
 }
+
