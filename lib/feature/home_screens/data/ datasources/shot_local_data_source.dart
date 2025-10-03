@@ -1,4 +1,4 @@
-import 'package:OneGolf/core/constants/app_strings.dart';
+import 'package:onegolf/core/constants/app_strings.dart';
 
 import '../models/shot_data_model.dart';
 

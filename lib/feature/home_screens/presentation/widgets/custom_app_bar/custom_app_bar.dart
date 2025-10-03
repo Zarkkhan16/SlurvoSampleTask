@@ -1,11 +1,11 @@
-import 'package:OneGolf/core/di/injection_container.dart' as di;
-import 'package:OneGolf/core/utils/navigation_helper.dart';
-import 'package:OneGolf/feature/ble/presentation/block/ble_bloc.dart';
-import 'package:OneGolf/feature/ble/presentation/block/ble_event.dart';
-import 'package:OneGolf/feature/scanned_devices_screen/scanned_devices_screen.dart';
+import 'package:onegolf/core/di/injection_container.dart' as di;
+import 'package:onegolf/core/utils/navigation_helper.dart';
+import 'package:onegolf/feature/ble/presentation/block/ble_bloc.dart';
+import 'package:onegolf/feature/ble/presentation/block/ble_event.dart';
+import 'package:onegolf/feature/scanned_devices_screen/scanned_devices_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:OneGolf/core/constants/app_colors.dart';
-import 'package:OneGolf/core/constants/app_images.dart';
+import 'package:onegolf/core/constants/app_colors.dart';
+import 'package:onegolf/core/constants/app_images.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/utils/ble_command_helper.dart';

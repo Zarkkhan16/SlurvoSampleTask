@@ -1,18 +1,18 @@
-import 'package:OneGolf/core/di/injection_container.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_characteristic.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_service.dart';
+import 'package:onegolf/core/di/injection_container.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_characteristic.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:OneGolf/core/constants/app_colors.dart';
-import 'package:OneGolf/core/constants/app_constants.dart';
-import 'package:OneGolf/core/constants/app_strings.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_device.dart';
-import 'package:OneGolf/feature/ble/presentation/block/ble_bloc.dart';
-import 'package:OneGolf/feature/ble/presentation/block/ble_event.dart';
-import 'package:OneGolf/feature/ble/presentation/block/ble_state.dart';
-import 'package:OneGolf/feature/home_screens/presentation/widgets/card/glassmorphism_card.dart';
-import 'package:OneGolf/feature/home_screens/domain/entities/shot_data.dart';
+import 'package:onegolf/core/constants/app_colors.dart';
+import 'package:onegolf/core/constants/app_constants.dart';
+import 'package:onegolf/core/constants/app_strings.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_device.dart';
+import 'package:onegolf/feature/ble/presentation/block/ble_bloc.dart';
+import 'package:onegolf/feature/ble/presentation/block/ble_event.dart';
+import 'package:onegolf/feature/ble/presentation/block/ble_state.dart';
+import 'package:onegolf/feature/home_screens/presentation/widgets/card/glassmorphism_card.dart';
+import 'package:onegolf/feature/home_screens/domain/entities/shot_data.dart';
 
 import '../../../domain/entities/shot_parser.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:OneGolf/core/constants/app_images.dart';
-import 'package:OneGolf/core/constants/app_strings.dart';
-import 'package:OneGolf/core/utils/navigation_helper.dart';
+import 'package:onegolf/core/constants/app_images.dart';
+import 'package:onegolf/core/constants/app_strings.dart';
+import 'package:onegolf/core/utils/navigation_helper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_device.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_device.dart';
 
 class DeviceCard extends StatelessWidget {
   final BleDevice device;

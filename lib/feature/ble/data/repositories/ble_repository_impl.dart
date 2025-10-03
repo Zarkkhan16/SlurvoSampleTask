@@ -1,8 +1,8 @@
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_characteristic.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_device.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_service.dart';
-import 'package:OneGolf/feature/ble/domain/repositories/ble_repository.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_characteristic.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_device.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_service.dart';
+import 'package:onegolf/feature/ble/domain/repositories/ble_repository.dart';
 
 class BleRepositoryImpl implements BleRepository {
   final Map<String, BluetoothDevice> _connectedDevices = {};

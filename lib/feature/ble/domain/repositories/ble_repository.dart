@@ -1,5 +1,5 @@
-import 'package:OneGolf/feature/ble/domain/entities/ble_device.dart';
-import 'package:OneGolf/feature/ble/domain/entities/ble_service.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_device.dart';
+import 'package:onegolf/feature/ble/domain/entities/ble_service.dart';
 
 abstract class BleRepository {
   Stream<List<BleDevice>> scanForDevices();

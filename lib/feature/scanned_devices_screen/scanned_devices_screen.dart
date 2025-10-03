@@ -1,14 +1,14 @@
 // import 'dart:async';
 //
-// import 'package:OneGolf/core/di/injection_container.dart';
+// import 'package:onegolf/core/di/injection_container.dart';
 // import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:OneGolf/core/constants/app_strings.dart';
-// import 'package:OneGolf/feature/ble/domain/entities/ble_device.dart';
-// import 'package:OneGolf/feature/ble/presentation/block/ble_bloc.dart';
-// import 'package:OneGolf/feature/ble/presentation/block/ble_event.dart';
-// import 'package:OneGolf/feature/ble/presentation/block/ble_state.dart';
-// import 'package:OneGolf/feature/home_screens/presentation/pages/shot_analysis_page.dart';
+// import 'package:onegolf/core/constants/app_strings.dart';
+// import 'package:onegolf/feature/ble/domain/entities/ble_device.dart';
+// import 'package:onegolf/feature/ble/presentation/block/ble_bloc.dart';
+// import 'package:onegolf/feature/ble/presentation/block/ble_event.dart';
+// import 'package:onegolf/feature/ble/presentation/block/ble_state.dart';
+// import 'package:onegolf/feature/home_screens/presentation/pages/shot_analysis_page.dart';
 // import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 //
 // class ScannedDevicesScreen extends StatefulWidget {
@@ -220,7 +220,7 @@
 //   }
 // }
 import 'dart:async';
-import 'package:OneGolf/core/constants/app_constants.dart';
+import 'package:onegolf/core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import '../home_screens/presentation/pages/shot_analysis_page.dart';
