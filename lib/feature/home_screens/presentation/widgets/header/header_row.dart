@@ -8,8 +8,8 @@ import '../../../../scanned_devices_screen/scanned_devices_screen.dart';
 class HeaderRow extends StatefulWidget {
   final bool showClubName;
   final String headingName;
-  final Club? selectedClub; // 👈 now optional
-  final Function(Club)? onClubSelected; // 👈 now optional
+  final Club? selectedClub;
+  final Function(Club)? onClubSelected;
   final bool goScanScreen;
 
   const HeaderRow({
@@ -103,7 +103,7 @@ class _HeaderRowState extends State<HeaderRow> {
               }
             },
             child: Text(
-              clubs[_club],
+              "(${AppStrings.getLoft(_club)}) ${AppStrings.getClub(_club)}",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -117,11 +117,5 @@ class _HeaderRowState extends State<HeaderRow> {
     );
   }
 
-  static const clubs = [
-    "1W", "2W", "3W", "5W", "7W",
-    "2H", "3H", "4H", "5H",
-    "1i", "2i", "3i", "4i", "5i", "6i", "7i", "8i", "9i",
-    "PW", "GW", "GW1", "SW", "SW1", "LW", "LW1"
-  ];
 }
 

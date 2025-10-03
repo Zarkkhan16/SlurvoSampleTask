@@ -14,8 +14,10 @@ import '../../../../setting/setting_screen.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final DiscoveredDevice? connectedDevice;
+  final   List<DiscoveredService>? services ;
+  final   bool selectedUnit ;
   final bool showSettingButton;
-  const CustomAppBar({super.key, this.connectedDevice, this.showSettingButton = false});
+  const CustomAppBar({super.key, this.connectedDevice, this.showSettingButton = false, this.services,this.selectedUnit=false});
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +58,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => SettingScreen(connectedDevice: connectedDevice),
+                builder: (_) => SettingScreen(connectedDevice: connectedDevice,services: services??[],selectedUnit: selectedUnit,),
               ),
             );
           },

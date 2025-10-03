@@ -38,4 +38,26 @@ class AppStrings {
   static const String serviceUuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
   static const String writeCharacteristicUuid = "0000fee1-0000-1000-8000-00805f9b34fb";
   static const String notifyCharacteristicUuid = "0000fee2-0000-1000-8000-00805f9b34fb";
+
+
+
+  static const clubs = [
+    "1W", "2W", "3W", "5W", "7W",
+    "2H", "3H", "4H", "5H",
+    "1i", "2i", "3i", "4i", "5i", "6i", "7i", "8i", "9i",
+    "PW", "GW", "GW1", "SW", "SW1", "LW", "LW1"
+  ];
+
+  static const clubLofts = [
+    "10", "13", "15", "17", "21",
+    "17", "19", "21", "24",
+    "14", "18", "21", "23", "26", "29", "33", "37", "41",
+    "46", "50", "52", "54", "56", "58", "60"
+  ];
+
+  /// Get loft against index
+  static String getLoft(int index) => clubLofts[index];
+
+  /// Get club name against index
+  static String getClub(int index) => clubs[index];
 }

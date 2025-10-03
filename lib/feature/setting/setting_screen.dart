@@ -1,18 +1,19 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:onegolf/demoapp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/utils/ble_command_helper.dart';
 import '../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
 import '../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
 import '../home_screens/presentation/widgets/header/header_row.dart';
 
 class SettingScreen extends StatefulWidget {
   final DiscoveredDevice? connectedDevice;
+  final List<DiscoveredService> services;
+  final bool selectedUnit;
 
-  const SettingScreen({super.key, required this.connectedDevice});
+  SettingScreen({super.key, required this.connectedDevice, required this.services,required this.selectedUnit});
 
   @override
   State<SettingScreen> createState() => _SettingScreenState();
@@ -20,141 +21,86 @@ class SettingScreen extends StatefulWidget {
 
 class _SettingScreenState extends State<SettingScreen> {
   bool backlight = false;
-  int sleepTime = 5; // minutes
-  String selectedUnit = "Yards";
-
-  static const String serviceUuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
-  static const String writeCharacteristicUuid = "0000fee1-0000-1000-8000-00805f9b34fb";
-  static const String notifyCharacteristicUuid = "0000fee2-0000-1000-8000-00805f9b34fb";
+  int sleepTime = 5;
+  bool selectedUnit = false;
 
   final FlutterReactiveBle _ble = FlutterReactiveBle();
-  StreamSubscription<List<int>>? _characteristicSubscription;
-  List<DiscoveredService>? _services = [];
+  Uuid? _serviceId;
+  Uuid? _writeCharId;
+  bool? _useWriteWithResponse;
+  bool _isWriting = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
-    if (widget.connectedDevice != null) {
-      // _discoverServices(widget.connectedDevice!.id);
-    }
+    selectedUnit=widget.selectedUnit;
+    _loadPrefs();
+    _findCharacteristics();
   }
 
-  @override
-  void dispose() {
-    _characteristicSubscription?.cancel();
-    super.dispose();
-  }
-
-  /// 🔹 Load saved preferences
-  Future<void> _loadPreferences() async {
+  Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       backlight = prefs.getBool("backlight") ?? false;
       sleepTime = prefs.getInt("sleepTime") ?? 5;
-      selectedUnit = prefs.getString("unit") ?? "Yards";
     });
   }
 
-  /// 🔹 Save preferences
-  Future<void> _savePreferences() async {
+  Future<void> _savePrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool("backlight", backlight);
     await prefs.setInt("sleepTime", sleepTime);
-    await prefs.setString("unit", selectedUnit);
+    // Save as boolean for consistency
+    await prefs.setBool("unit", selectedUnit);
   }
 
-  void _discoverServices(String deviceId) async {
-    try {
-      _services = await _ble.discoverServices(deviceId);
-
-      final characteristic = QualifiedCharacteristic(
-        serviceId: Uuid.parse(serviceUuid),
-        characteristicId: Uuid.parse(notifyCharacteristicUuid),
-        deviceId: deviceId,
-      );
-
-      await _characteristicSubscription?.cancel();
-
-      _characteristicSubscription = _ble.subscribeToCharacteristic(characteristic).listen((data) {
-
-        print('Data From Setting Scrren ${data}');
-
-        if (data.length >= 3) {
-          final cmd = data[2];
-
-          switch (cmd) {
-            case 0x03: // Sleep timer set
-              print('update data');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("⏳ Sleep time set to $sleepTime min "),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
-              break;
-
-            case 0x04: // Unit change
-            print('update data');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("📏 Unit updated"),
-                  duration: Duration(seconds: 1),
-                ),
-              );
-              break;
-
-            case 0x06: // Backlight ON/OFF
-              // print('update data');              ScaffoldMessenger.of(context).showSnackBar(
-              //   SnackBar(content: Text("💡 Backlight updated"),
-              //     duration: Duration(seconds: 1),
-              //   ),
-              // );
-              break;
-
-            default:
-              print("Setting Screen CMD: $cmd");
+  void _findCharacteristics() {
+    for (var service in widget.services) {
+      if (service.serviceId.toString().toLowerCase().contains("ffe0")) {
+        _serviceId = service.serviceId;
+        for (var c in service.characteristics) {
+          String charId = c.characteristicId.toString().toLowerCase();
+          if (charId.contains("fee1") && (c.isWritableWithResponse || c.isWritableWithoutResponse)) {
+            _writeCharId = c.characteristicId;
+            _useWriteWithResponse = c.isWritableWithResponse;
+            break;
           }
         }
-      }, onError: (error) {
-
-      });
-    } catch (e) {
-
+        break;
+      }
     }
   }
-  void _sendCommand(int cmd, int param1, int param2) {
+
+  Future<void> _sendCommand(int cmd, int param1, int param2) async {
+    if (_isWriting || widget.connectedDevice == null || _serviceId == null || _writeCharId == null) return;
+
+    _isWriting = true;
+
     List<int> packet = [0x47, 0x46, cmd, param1, param2];
-    int checksum = 0;
-    for (int i = 2; i < packet.length; i++) {
-      checksum += packet[i];
-    }
-    packet.add(checksum & 0xFF);
+    int checksum = packet.skip(2).fold(0, (sum, byte) => sum + byte) & 0xFF;
+    packet.add(checksum);
 
-    print('send yard command');
-    print(packet);
-    _writeToCharacteristic(packet);
-  }
-
-  void _writeToCharacteristic(List<int> data) async {
-    // if (widget.connectedDevice == null) return;
     try {
-      print(widget.connectedDevice?.id ?? "nullllll");
-      final characteristic = QualifiedCharacteristic(
-        serviceId: Uuid.parse(serviceUuid),
-        characteristicId: Uuid.parse(writeCharacteristicUuid),
+      final char = QualifiedCharacteristic(
+        serviceId: _serviceId!,
+        characteristicId: _writeCharId!,
         deviceId: widget.connectedDevice!.id,
       );
 
+      if (_useWriteWithResponse == true) {
+        await _ble.writeCharacteristicWithResponse(char, value: packet);
+      } else {
+        await _ble.writeCharacteristicWithoutResponse(char, value: packet);
+      }
 
-      print('Data123 ${data}');
-
-      await _ble.writeCharacteristicWithoutResponse(
-        characteristic,
-        value: data,
-      );
     } catch (e) {
-      print('hello$e');
+      print('Write error: $e');
     }
+
+    await Future.delayed(Duration(milliseconds: 500));
+    _isWriting = false;
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -173,29 +119,25 @@ class _SettingScreenState extends State<SettingScreen> {
                 headingName: "Setting & Security",
               ),
             ),
-            // 🔘 Backlight Toggle
+
+            // Backlight
             _buildCard(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Backlight",
-                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                  const Text("Backlight", style: TextStyle(color: Colors.white, fontSize: 16)),
                   Transform.scale(
-                    scale: 0.8, // 0.8 = 80% of original size
+                    scale: 0.8,
                     child: Switch(
                       value: backlight,
                       onChanged: (value) async {
                         setState(() => backlight = value);
-                        _sendCommand(0x06, value ? 1 : 0, 0x00);
-                        await _savePreferences();
+                        await _sendCommand(0x06, value ? 1 : 0, 0x00);
+                        await _savePrefs();
                       },
                       activeTrackColor: Colors.white,
-                      // track when active
                       inactiveTrackColor: Colors.grey,
-                      // track when inactive
-                      thumbColor: MaterialStateProperty.resolveWith<Color>(
-                        (states) => Colors.black, // thumb always black
-                      ),
+                      thumbColor: MaterialStateProperty.resolveWith<Color>((states) => Colors.black),
                     ),
                   )
                 ],
@@ -204,7 +146,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
             const SizedBox(height: 12),
 
-            // ⏲ Sleep Time
+            // Sleep Time
             _buildCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,38 +156,23 @@ class _SettingScreenState extends State<SettingScreen> {
                     children: [
                       Row(
                         children: [
-                          const Text(
-                            "Screen Sleep Time:",
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
+                          const Text("Screen Sleep Time:", style: TextStyle(color: Colors.white, fontSize: 16)),
                           const SizedBox(width: 8),
-                          Text(
-                            "$sleepTime min",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
+                          Text("$sleepTime min", style: const TextStyle(color: Colors.white, fontSize: 16)),
                         ],
                       ),
                       const SizedBox(width: 12),
                       Row(
                         children: [
                           GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                sleepTime++;
-                              });
-                            },
+                            onTap: () => setState(() => sleepTime++),
                             child: const Icon(Icons.add, color: Colors.white, size: 22),
                           ),
-                          const SizedBox(width: 10), // small gap
+                          const SizedBox(width: 10),
                           GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                if (sleepTime > 1) sleepTime--;
-                              });
-                            },
+                            onTap: () => setState(() {
+                              if (sleepTime > 1) sleepTime--;
+                            }),
                             child: const Icon(Icons.remove, color: Colors.white, size: 22),
                           ),
                         ],
@@ -258,16 +185,13 @@ class _SettingScreenState extends State<SettingScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () async {
-                        _sendCommand(0x03, sleepTime, 0x00);
-                        await _savePreferences();
+                        await _sendCommand(0x03, sleepTime, 0x00);
+                        await _savePrefs();
                       },
-                      child: const Text("OK",
-                          style: TextStyle(color: Colors.black)),
+                      child: const Text("OK", style: TextStyle(color: Colors.black)),
                     ),
                   )
                 ],
@@ -276,32 +200,28 @@ class _SettingScreenState extends State<SettingScreen> {
 
             const SizedBox(height: 12),
 
-            // 📏 Units Dropdown
+            // Units
             _buildCard(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Units",
-                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                  const Text("Units", style: TextStyle(color: Colors.white, fontSize: 16)),
                   DropdownButton<String>(
                     dropdownColor: Colors.grey[900],
-                    value: selectedUnit,
+                    value: selectedUnit ? "Meters" : "Yards",
                     underline: const SizedBox(),
                     items: const [
-                      DropdownMenuItem(
-                          value: "Yards",
-                          child: Text("Yards",
-                              style: TextStyle(color: Colors.white))),
-                      DropdownMenuItem(
-                          value: "Meters",
-                          child: Text("Meters",
-                              style: TextStyle(color: Colors.white))),
+                      DropdownMenuItem(value: "Yards", child: Text("Yards", style: TextStyle(color: Colors.white))),
+                      DropdownMenuItem(value: "Meters", child: Text("Meters", style: TextStyle(color: Colors.white))),
                     ],
-                    onChanged: (value) async {
-                      setState(() => selectedUnit = value!);
-                      _sendCommand(
-                          0x04, selectedUnit == "Meters" ? 1 : 0, 0x00);
-                      await _savePreferences();
+                      onChanged: (value) async {
+                        if (value != null) {
+                          setState(() => selectedUnit = value == "Meters");
+                          await _sendCommand(0x04, value == "Meters" ? 1 : 0, 0x00);
+                          Navigator.pop(context);
+
+                        }
+
                     },
                   ),
                 ],
