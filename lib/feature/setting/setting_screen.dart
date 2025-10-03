@@ -36,7 +36,7 @@ class _SettingScreenState extends State<SettingScreen> {
     super.initState();
     _loadPreferences();
     if (widget.connectedDevice != null) {
-      _discoverServices(widget.connectedDevice!.id);
+      // _discoverServices(widget.connectedDevice!.id);
     }
   }
 

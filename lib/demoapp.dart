@@ -282,29 +282,32 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
               );
               break;
 
-            // case 0x03: // Sleep timer set
-            //   ScaffoldMessenger.of(context).showSnackBar(
-            //     const SnackBar(content: Text("⏳ Sleep timer set"),
-            //       duration: Duration(seconds: 2),
-            //     ),
-            //   );
-            //   break;
-            //
-            // case 0x04: // Unit change
-            //   ScaffoldMessenger.of(context).showSnackBar(
-            //     SnackBar(content: Text("📏 Unit updated"),
-            //       duration: Duration(seconds: 2),
-            //     ),
-            //   );
-            //   break;
-            //
-            // case 0x06: // Backlight ON/OFF
-            //   ScaffoldMessenger.of(context).showSnackBar(
-            //     SnackBar(content: Text("💡 Backlight updated"),
-            //       duration: Duration(seconds: 2),
-            //     ),
-            //   );
-            //   break;
+            case 0x03: // Sleep timer set
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("⏳ Sleep timer set"),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              break;
+
+            case 0x04: // Unit change
+            setState(() {
+              units = !units;
+            });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("📏 Unit updated"),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              break;
+
+            case 0x06: // Backlight ON/OFF
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("💡 Backlight updated"),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              break;
 
             default:
               print("Unknown CMD: $cmd");

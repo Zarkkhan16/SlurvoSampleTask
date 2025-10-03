@@ -35,7 +35,7 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: true
-  image_path: "assets/png/slurvo.png"
+  image_path: "assets/png/splash_logo.png"
   min_sdk_android: 21
   background_color: "#000000"
 
