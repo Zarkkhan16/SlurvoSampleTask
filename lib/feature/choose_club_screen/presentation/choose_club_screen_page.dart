@@ -120,7 +120,7 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
       bottomNavigationBar: const BottomNavBar(),
-      appBar: const CustomAppBar(),
+      appBar: const CustomAppBar(showSettingButton: true,),
       body: Column(
         children: [
           const Divider(thickness: 1, color: AppColors.dividerColor),

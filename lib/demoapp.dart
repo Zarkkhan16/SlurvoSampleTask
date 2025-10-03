@@ -1,4 +1,3 @@
-import 'package:OneGolf/feature/choose_club_screen/presentation/choose_club_screen_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'dart:typed_data';
@@ -6,6 +5,7 @@ import 'dart:async';
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_images.dart';
 import 'core/constants/app_strings.dart';
+import 'feature/choose_club_screen/presentation/choose_club_screen_page.dart';
 import 'feature/home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
 import 'feature/home_screens/presentation/widgets/buttons/action_button.dart';
 import 'feature/home_screens/presentation/widgets/buttons/session_view_button.dart';
@@ -282,29 +282,29 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
               );
               break;
 
-            case 0x03: // Sleep timer set
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("⏳ Sleep timer set"),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-              break;
-
-            case 0x04: // Unit change
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("📏 Unit updated"),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-              break;
-
-            case 0x06: // Backlight ON/OFF
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("💡 Backlight updated"),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-              break;
+            // case 0x03: // Sleep timer set
+            //   ScaffoldMessenger.of(context).showSnackBar(
+            //     const SnackBar(content: Text("⏳ Sleep timer set"),
+            //       duration: Duration(seconds: 2),
+            //     ),
+            //   );
+            //   break;
+            //
+            // case 0x04: // Unit change
+            //   ScaffoldMessenger.of(context).showSnackBar(
+            //     SnackBar(content: Text("📏 Unit updated"),
+            //       duration: Duration(seconds: 2),
+            //     ),
+            //   );
+            //   break;
+            //
+            // case 0x06: // Backlight ON/OFF
+            //   ScaffoldMessenger.of(context).showSnackBar(
+            //     SnackBar(content: Text("💡 Backlight updated"),
+            //       duration: Duration(seconds: 2),
+            //     ),
+            //   );
+            //   break;
 
             default:
               print("Unknown CMD: $cmd");
@@ -448,7 +448,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
       Scaffold(
         backgroundColor: AppColors.primaryBackground,
         bottomNavigationBar: const BottomNavBar(),
-        appBar: const CustomAppBar(),
+        appBar: CustomAppBar(connectedDevice: connectedDevice, showSettingButton: true,),
         body: _buildConnectedView()
       ) :
 

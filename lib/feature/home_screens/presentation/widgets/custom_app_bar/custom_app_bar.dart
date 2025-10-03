@@ -1,3 +1,4 @@
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:onegolf/core/di/injection_container.dart' as di;
 import 'package:onegolf/core/utils/navigation_helper.dart';
 import 'package:onegolf/feature/ble/presentation/block/ble_bloc.dart';
@@ -12,8 +13,9 @@ import '../../../../../core/utils/ble_command_helper.dart';
 import '../../../../setting/setting_screen.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final BleHelper? bleHelper;
-  const CustomAppBar({super.key, this.bleHelper});
+  final DiscoveredDevice? connectedDevice;
+  final bool showSettingButton;
+  const CustomAppBar({super.key, this.connectedDevice, this.showSettingButton = false});
 
   @override
   Widget build(BuildContext context) {
@@ -48,12 +50,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           },
         ),
 
+        if(showSettingButton)
         GestureDetector(
           onTap: (){
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => SettingScreen(bleHelper: bleHelper ?? BleHelper()),
+                builder: (_) => SettingScreen(connectedDevice: connectedDevice),
               ),
             );
           },

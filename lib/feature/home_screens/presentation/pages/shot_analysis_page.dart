@@ -14,7 +14,7 @@ class ShotAnalysisPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
       bottomNavigationBar: const BottomNavBar(),
-      appBar: const CustomAppBar(),
+      appBar: const CustomAppBar(showSettingButton: true,),
       body: ShotAnalysisBody(connectedDevice: connectedDevice,),
     );
   }

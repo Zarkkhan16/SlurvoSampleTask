@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/ble_command_helper.dart';
@@ -7,9 +10,9 @@ import '../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart'
 import '../home_screens/presentation/widgets/header/header_row.dart';
 
 class SettingScreen extends StatefulWidget {
-  final BleHelper bleHelper; // inject BLE helper
+  final DiscoveredDevice? connectedDevice;
 
-  const SettingScreen({super.key, required this.bleHelper});
+  const SettingScreen({super.key, required this.connectedDevice});
 
   @override
   State<SettingScreen> createState() => _SettingScreenState();
@@ -20,10 +23,27 @@ class _SettingScreenState extends State<SettingScreen> {
   int sleepTime = 5; // minutes
   String selectedUnit = "Yards";
 
+  static const String serviceUuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
+  static const String writeCharacteristicUuid = "0000fee1-0000-1000-8000-00805f9b34fb";
+  static const String notifyCharacteristicUuid = "0000fee2-0000-1000-8000-00805f9b34fb";
+
+  final FlutterReactiveBle _ble = FlutterReactiveBle();
+  StreamSubscription<List<int>>? _characteristicSubscription;
+  List<DiscoveredService>? _services = [];
+
   @override
   void initState() {
     super.initState();
     _loadPreferences();
+    if (widget.connectedDevice != null) {
+      _discoverServices(widget.connectedDevice!.id);
+    }
+  }
+
+  @override
+  void dispose() {
+    _characteristicSubscription?.cancel();
+    super.dispose();
   }
 
   /// 🔹 Load saved preferences
@@ -44,16 +64,97 @@ class _SettingScreenState extends State<SettingScreen> {
     await prefs.setString("unit", selectedUnit);
   }
 
-  /// 🔹 Send BLE command through helper
-  Future<void> _sendBleCommand(int cmd, int p1, int p2) async {
+  void _discoverServices(String deviceId) async {
     try {
-      await widget.bleHelper.sendCommand(cmd, p1, p2);
-      debugPrint("✅ Sent BLE Command -> cmd:$cmd p1:$p1 p2:$p2");
+      _services = await _ble.discoverServices(deviceId);
+
+      final characteristic = QualifiedCharacteristic(
+        serviceId: Uuid.parse(serviceUuid),
+        characteristicId: Uuid.parse(notifyCharacteristicUuid),
+        deviceId: deviceId,
+      );
+
+      await _characteristicSubscription?.cancel();
+
+      _characteristicSubscription = _ble.subscribeToCharacteristic(characteristic).listen((data) {
+
+        print('Data From Setting Scrren ${data}');
+
+        if (data.length >= 3) {
+          final cmd = data[2];
+
+          switch (cmd) {
+            case 0x03: // Sleep timer set
+              print('update data');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("⏳ Sleep time set to $sleepTime min "),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+              break;
+
+            case 0x04: // Unit change
+            print('update data');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("📏 Unit updated"),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+              break;
+
+            case 0x06: // Backlight ON/OFF
+              // print('update data');              ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(content: Text("💡 Backlight updated"),
+              //     duration: Duration(seconds: 1),
+              //   ),
+              // );
+              break;
+
+            default:
+              print("Setting Screen CMD: $cmd");
+          }
+        }
+      }, onError: (error) {
+
+      });
     } catch (e) {
-      debugPrint("❌ Failed to send BLE command: $e");
+
     }
   }
+  void _sendCommand(int cmd, int param1, int param2) {
+    List<int> packet = [0x47, 0x46, cmd, param1, param2];
+    int checksum = 0;
+    for (int i = 2; i < packet.length; i++) {
+      checksum += packet[i];
+    }
+    packet.add(checksum & 0xFF);
 
+    print('send yard command');
+    print(packet);
+    _writeToCharacteristic(packet);
+  }
+
+  void _writeToCharacteristic(List<int> data) async {
+    // if (widget.connectedDevice == null) return;
+    try {
+      print(widget.connectedDevice?.id ?? "nullllll");
+      final characteristic = QualifiedCharacteristic(
+        serviceId: Uuid.parse(serviceUuid),
+        characteristicId: Uuid.parse(writeCharacteristicUuid),
+        deviceId: widget.connectedDevice!.id,
+      );
+
+
+      print('Data123 ${data}');
+
+      await _ble.writeCharacteristicWithoutResponse(
+        characteristic,
+        value: data,
+      );
+    } catch (e) {
+      print('hello$e');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,7 +186,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       value: backlight,
                       onChanged: (value) async {
                         setState(() => backlight = value);
-                        await _sendBleCommand(0x06, value ? 1 : 0, 0x00);
+                        _sendCommand(0x06, value ? 1 : 0, 0x00);
                         await _savePreferences();
                       },
                       activeTrackColor: Colors.white,
@@ -162,13 +263,8 @@ class _SettingScreenState extends State<SettingScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        await _sendBleCommand(0x03, sleepTime, 0x00);
+                        _sendCommand(0x03, sleepTime, 0x00);
                         await _savePreferences();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  "Sleep time set to $sleepTime min (saved)")),
-                        );
                       },
                       child: const Text("OK",
                           style: TextStyle(color: Colors.black)),
@@ -203,7 +299,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     ],
                     onChanged: (value) async {
                       setState(() => selectedUnit = value!);
-                      await _sendBleCommand(
+                      _sendCommand(
                           0x04, selectedUnit == "Meters" ? 1 : 0, 0x00);
                       await _savePreferences();
                     },
