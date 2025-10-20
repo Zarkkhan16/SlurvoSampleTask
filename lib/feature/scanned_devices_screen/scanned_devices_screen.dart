@@ -1,5 +1,4 @@
 // import 'dart:async';
-//
 // import 'package:onegolf/core/di/injection_container.dart';
 // import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,15 +50,15 @@
 //         listener: (context, state) {
 //           if (state is BleConnected && !_isNavigating) {
 //             _isNavigating = true;
-//             Navigator.pushReplacement(
-//               context,
-//               MaterialPageRoute(
-//                 builder: (_) => BlocProvider.value(
-//                   value: context.read<BleBloc>(), // pass the same instance
-//                   child: const ShotAnalysisPage(),
-//                 ),
-//               ),
-//             ).then((_) => _isNavigating = false);
+//             // Navigator.pushReplacement(
+//             //   context,
+//             //   MaterialPageRoute(
+//             //     builder: (_) => BlocProvider.value(
+//             //       value: context.read<BleBloc>(), // pass the same instance
+//             //       child: ShotAnalysisPage(connectedDevice: null,),
+//             //     ),
+//             //   ),
+//             // ).then((_) => _isNavigating = false);
 //
 //           }
 //           if (state is BlePairingRequested) {

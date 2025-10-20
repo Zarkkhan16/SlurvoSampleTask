@@ -371,7 +371,7 @@ class _ShotAnalysisBodyState extends State<ShotAnalysisBody> {
                   ),
                 ),
                 const SizedBox(height: 17),
-                const SessionViewButton(),
+                SessionViewButton(onSessionClick: () {  },),
                 const SizedBox(height: 20),
               ],
             ),

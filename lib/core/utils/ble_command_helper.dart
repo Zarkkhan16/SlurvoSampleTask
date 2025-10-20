@@ -120,7 +120,7 @@ class BleHelper {
       ..carryDistance = ((data[11] << 8) | data[12]) / 10.0
       ..totalDistance = ((data[13] << 8) | data[14]) / 10.0;
 
-    batteryNotifier.value = golfData.battery;
+    // batteryNotifier.value = golfData.battery;
     _golfDataController.add(golfData);
   }
 

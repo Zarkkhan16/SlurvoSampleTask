@@ -11,6 +11,7 @@ class HeaderRow extends StatefulWidget {
   final Club? selectedClub;
   final Function(Club)? onClubSelected;
   final bool goScanScreen;
+  final Function()? onBackButton;
 
   const HeaderRow({
     super.key,
@@ -19,6 +20,7 @@ class HeaderRow extends StatefulWidget {
     this.selectedClub, // 👈 optional
     this.onClubSelected, // 👈 optional
     this.goScanScreen = false,
+    this.onBackButton,
   });
 
   @override
@@ -46,7 +48,7 @@ class _HeaderRowState extends State<HeaderRow> {
       widget.showClubName ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
       children: [
         GestureDetector(
-          onTap: () {
+          onTap: widget.onBackButton ?? () {
             if (widget.goScanScreen) {
               Navigator.pushReplacement(
                 context,
@@ -90,7 +92,7 @@ class _HeaderRowState extends State<HeaderRow> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => ChooseClubScreenPage(
-                    selectedClub: widget.selectedClub!, // 👈 safe because we checked above
+                    selectedClub: widget.selectedClub!,
                   ),
                 ),
               );

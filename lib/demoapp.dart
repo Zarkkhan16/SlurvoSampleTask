@@ -944,6 +944,9 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
             deviceId: deviceId,
           ),
         ).listen((data) {
+
+          print("{{{{");
+          print(data);
           if (data.length >= 3) {
             switch (data[2]) {
               case 0x01:
@@ -974,7 +977,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
 
   void _startSyncTimer() {
     syncTimer?.cancel();
-    syncTimer = Timer.periodic(Duration(seconds: 1), (_) {
+    syncTimer = Timer.periodic(Duration(seconds: 10), (_) {
       if (!isLoading) _sendSyncPacket();
     });
   }
@@ -1027,7 +1030,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
 
     setState(() {
       golfData.battery = data[3];
-      batteryNotifier.value = golfData.battery;
+      // batteryNotifier.value = golfData.battery;
       golfData.recordNumber = (data[4] << 8) | data[5];
       golfData.clubName = data[6];
       golfData.clubSpeed = ((data[7] << 8) | data[8]) / 10.0;
@@ -1050,12 +1053,12 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
         ? Scaffold(
       backgroundColor: AppColors.primaryBackground,
       bottomNavigationBar: BottomNavBar(),
-      appBar: CustomAppBar(
-        connectedDevice: connectedDevice,
-        showSettingButton: true,
-        services: _services,
-        selectedUnit: units,
-      ),
+      // appBar: CustomAppBar(
+      //   // connectedDevice: connectedDevice,
+      //   showSettingButton: true,
+      //   services: _services,
+      //   selectedUnit: units,
+      // ),
       body: _buildConnectedView(),
     )
         : _buildScanScreen();
@@ -1131,7 +1134,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
                       mainAxisSpacing: 20,
                       childAspectRatio: 1.42,
                     ),
-                    itemCount: 5,
+                    itemCount: 6,
                     itemBuilder: (context, index) {
                       final metrics = [
                         {"metric": "Club Speed", "value": golfData.clubSpeed.toStringAsFixed(1), "unit": "MPH"},
@@ -1139,6 +1142,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
                         {"metric": "Carry Distance", "value": golfData.carryDistance.toStringAsFixed(1), "unit": units ? "M" : "YDS"},
                         {"metric": "Total Distance", "value": golfData.totalDistance.toStringAsFixed(1), "unit": units ? "M" : "YDS"},
                         {"metric": "Smash Factor", "value": golfData.smashFactor.toStringAsFixed(2), "unit": ""},
+                        {"metric": "Shot Number", "value": golfData.recordNumber.toStringAsFixed(2), "unit": ""},
                       ];
                       return GlassmorphismCard(
                         value: metrics[index]["value"]!,
@@ -1167,7 +1171,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
                   ),
                 ),
                 const SizedBox(height: 17),
-                const SessionViewButton(),
+                SessionViewButton(onSessionClick: () {  },),
                 const SizedBox(height: 20),
               ],
             ),

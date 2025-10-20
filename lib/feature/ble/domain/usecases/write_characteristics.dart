@@ -1,5 +1,5 @@
 import '../../../../core/usecases/usecase.dart';
-import '../repositories/ble_repository.dart';
+import '../repositories/ble_repository_old.dart';
 
 class WriteCharacteristic implements UseCase<bool, WriteCharacteristicParams> {
   final BleRepository repository;

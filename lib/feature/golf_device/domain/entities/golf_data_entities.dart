@@ -1,0 +1,41 @@
+class GolfDataEntity {
+  final int battery;
+  final int recordNumber;
+  final int clubName;
+  final double clubSpeed;
+  final double ballSpeed;
+  final double carryDistance;
+  final double totalDistance;
+
+  GolfDataEntity({
+    required this.battery,
+    required this.recordNumber,
+    required this.clubName,
+    required this.clubSpeed,
+    required this.ballSpeed,
+    required this.carryDistance,
+    required this.totalDistance,
+  });
+
+  double get smashFactor => clubSpeed > 0 ? ballSpeed / clubSpeed : 0.0;
+
+  GolfDataEntity copyWith({
+    int? battery,
+    int? recordNumber,
+    int? clubName,
+    double? clubSpeed,
+    double? ballSpeed,
+    double? carryDistance,
+    double? totalDistance,
+  }) {
+    return GolfDataEntity(
+      battery: battery ?? this.battery,
+      recordNumber: recordNumber ?? this.recordNumber,
+      clubName: clubName ?? this.clubName,
+      clubSpeed: clubSpeed ?? this.clubSpeed,
+      ballSpeed: ballSpeed ?? this.ballSpeed,
+      carryDistance: carryDistance ?? this.carryDistance,
+      totalDistance: totalDistance ?? this.totalDistance,
+    );
+  }
+}

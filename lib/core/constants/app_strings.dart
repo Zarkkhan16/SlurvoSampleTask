@@ -4,8 +4,8 @@ class AppStrings {
   static const String shotAnalysisTitle = 'Shot Analysis';
   static const String customizeText = 'Customize';
   static const String deleteShotText = 'Delete Shot';
-  static const String dispersionText = 'Dispersion';
-  static const String sessionViewText = 'Session View';
+  static const String dispersionText = 'History';
+  static const String sessionViewText = 'Session End';
 
   // Navigation labels
   static const String homePageLabel = 'Home Page';

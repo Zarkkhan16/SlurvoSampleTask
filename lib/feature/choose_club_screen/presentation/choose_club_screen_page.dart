@@ -120,7 +120,7 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
       bottomNavigationBar: const BottomNavBar(),
-      appBar: const CustomAppBar(showSettingButton: true,),
+      appBar: const CustomAppBar(),
       body: Column(
         children: [
           const Divider(thickness: 1, color: AppColors.dividerColor),
@@ -130,12 +130,6 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // SizedBox(
-                  //   height: 60,
-                  //   child: HeaderRow(
-                  //     headingName: 'Choose a Club', onClubSelected: (Club p1) {  },
-                  //   ),
-                  // ),
                   Expanded(child: _buildBody()),
                 ],
               ),

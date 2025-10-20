@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "717127649123",
+    "project_id": "one-golf-41677",
+    "storage_bucket": "one-golf-41677.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717127649123:android:09f78e96d20a6b8e483556",
+        "android_client_info": {
+          "package_name": "com.slurvo.aonegolf"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACYPeiJWhgSLWdPOEfoqFFh-a9EvrANvI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

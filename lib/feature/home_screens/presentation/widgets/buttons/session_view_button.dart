@@ -4,7 +4,8 @@ import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_strings.dart';
 
 class SessionViewButton extends StatelessWidget {
-  const SessionViewButton({super.key});
+  final VoidCallback? onSessionClick;
+  const SessionViewButton({super.key, required this.onSessionClick});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,7 @@ class SessionViewButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: onSessionClick,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.buttonBackground,
           foregroundColor: AppColors.buttonText,

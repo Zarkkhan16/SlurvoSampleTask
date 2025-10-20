@@ -26,6 +26,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:onegolf/feature/auth/presentation/pages/sign_in_screen.dart';
 import 'package:onegolf/feature/scanned_devices_screen/scanned_devices_screen.dart';
 
 import '../../demoapp.dart';
@@ -38,6 +39,7 @@ class NavigationHelper {
           context,
           MaterialPageRoute(
             builder: (_) => GolfDeviceScreen(),
+            // builder: (_) => SignInScreen(),
           ),
         );
       });

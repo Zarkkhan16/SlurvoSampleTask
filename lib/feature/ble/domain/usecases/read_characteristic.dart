@@ -1,5 +1,5 @@
 import '../../../../core/usecases/usecase.dart';
-import '../repositories/ble_repository.dart';
+import '../repositories/ble_repository_old.dart';
 
 class ReadCharacteristic implements UseCase<List<int>, ReadCharacteristicParams> {
   final BleRepository repository;
