@@ -104,6 +104,8 @@ class ErrorState extends GolfDeviceState {
 
 class NavigateToLandDashboardState extends GolfDeviceState {}
 
+class SaveShots extends GolfDeviceState {}
+
 class ShotRecordsLoadedState extends GolfDeviceState {
   final List<Map<String, dynamic>> shotRecords;
 
@@ -119,3 +121,7 @@ class ShotHistoryErrorState extends GolfDeviceState {
   final String message;
   ShotHistoryErrorState(this.message);
 }
+
+class DisconnectingState extends GolfDeviceState {}
+class GolfDeviceSaveSuccessState extends GolfDeviceState {}
+class GolfDeviceSaveDataLoading extends GolfDeviceState {}

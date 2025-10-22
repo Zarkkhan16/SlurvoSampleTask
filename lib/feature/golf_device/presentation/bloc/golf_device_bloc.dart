@@ -86,16 +86,16 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onStartScanning(
-      StartScanningEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    StartScanningEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     _discoveredDevices.clear();
     emit(ScanningState([]));
 
     await _scanSubscription?.cancel();
     _scanSubscription = scanDevicesUseCase.call().listen(
           (device) => add(DeviceDiscoveredEvent(device)),
-    );
+        );
 
     _scanTimer?.cancel();
     _scanTimer = Timer(Duration(seconds: 1), () {
@@ -104,9 +104,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onStopScanning(
-      StopScanningEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    StopScanningEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     await _scanSubscription?.cancel();
     _scanTimer?.cancel();
     scanDevicesUseCase.stop();
@@ -114,9 +114,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   void _onDeviceDiscovered(
-      DeviceDiscoveredEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) {
+    DeviceDiscoveredEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) {
     final index = _discoveredDevices.indexWhere((d) => d.id == event.device.id);
     if (index >= 0) {
       _discoveredDevices[index] = event.device;
@@ -127,9 +127,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onUpdateElapsedTime(
-      UpdateElapsedTimeEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    UpdateElapsedTimeEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     if (state is ConnectedState) {
       final currentState = state as ConnectedState;
       emit(currentState.copyWith(
@@ -140,27 +140,26 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onConnectToDevice(
-      ConnectToDeviceEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
-
+    ConnectToDeviceEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     emit(ConnectingState(List.from(_discoveredDevices)));
     _connectedDevice = event.device;
 
     await _connectionSubscription?.cancel();
     _connectionSubscription = connectDeviceUseCase.call(event.device.id).listen(
-          (state) {
-
-            add(ConnectionStateChangedEvent(state));
-          },
+      (state) {
+        add(ConnectionStateChangedEvent(state));
+      },
     );
   }
 
   Future<void> _onConnectionStateChanged(
-      ConnectionStateChangedEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
-    if (event.state == DeviceConnectionState.connected && _connectedDevice != null) {
+    ConnectionStateChangedEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
+    if (event.state == DeviceConnectionState.connected &&
+        _connectedDevice != null) {
       _hasWrittenInitialSync = false;
       try {
         await discoverServicesUseCase.call(_connectedDevice!.id);
@@ -168,7 +167,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
         await _notificationSubscription?.cancel();
         _notificationSubscription = subscribeNotificationsUseCase.call().listen(
               (data) => add(NotificationReceivedEvent(data)),
-        );
+            );
 
         _startSyncTimer();
 
@@ -202,9 +201,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   void _onNotificationReceived(
-      NotificationReceivedEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) {
+    NotificationReceivedEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) {
     final data = event.data;
 
     if (data.length >= 3) {
@@ -239,9 +238,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onSendSyncPacket(
-      SendSyncPacketEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    SendSyncPacketEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     if (state is ConnectedState && !(state as ConnectedState).isLoading) {
       try {
         await sendSyncPacketUseCase.call(_golfData.clubName);
@@ -252,9 +251,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onUpdateClub(
-      UpdateClubEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    UpdateClubEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     if (state is ConnectedState) {
       final currentState = state as ConnectedState;
       _golfData = _golfData.copyWith(clubName: event.clubId);
@@ -273,9 +272,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   void _onToggleUnits(
-      ToggleUnitsEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) {
+    ToggleUnitsEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) {
     if (state is ConnectedState) {
       _units = !_units;
       emit((state as ConnectedState).copyWith(units: _units));
@@ -283,10 +282,13 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onDisconnect(
-      DisconnectDeviceEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    DisconnectDeviceEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     try {
+      if (event.navigateToLanding) {
+        emit(DisconnectingState());
+      }
       // await _saveToLocal();
       await _saveAllShotsToFirebase();
       await disconnectDeviceUseCase.call();
@@ -304,10 +306,12 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onSaveAllShots(
-      SaveAllShotsEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    SaveAllShotsEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
+    emit(GolfDeviceSaveDataLoading());
     await _saveAllShotsToFirebase();
+    emit(GolfDeviceSaveSuccessState());
   }
 
   Future<void> _saveAllShotsToFirebase() async {
@@ -323,18 +327,16 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
         await bleRepository.saveShot(shotModel);
       }
       print("✅ All shots saved successfully!");
-
-      // Save hone ke baad local records clear karen (optional)
       _shotRecords.clear();
-
     } catch (e) {
       print("❌ Error saving shots: $e");
     }
   }
+
   Future<void> _onLoadShotHistory(
-      LoadShotHistoryEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    LoadShotHistoryEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     emit(ShotHistoryLoadingState());
     try {
       final userId = user?.uid ?? '';
@@ -430,7 +432,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   // }
   void _startSyncTimer() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(Duration(seconds: 10), (_) {
+    _syncTimer = Timer.periodic(Duration(seconds: 30), (_) {
       if (state is ConnectedState && !(state as ConnectedState).isLoading) {
         add(SendSyncPacketEvent());
       }
@@ -453,8 +455,10 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
 
   void _storeShotData(GolfDataEntity data) {
     final now = DateTime.now();
-    final date = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-    final time = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
+    final date =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final time =
+        "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
 
     String formatElapsedTime(int seconds) {
       final hours = (seconds ~/ 3600).toString().padLeft(2, '0');
@@ -490,7 +494,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     print("📊 Stored Shots: $_shotRecords");
   }
 
-
   void _startElapsedTimer() {
     _elapsedTimer?.cancel();
     _elapsedSeconds = 0;
@@ -507,16 +510,24 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   String _weekdayName(int weekday) {
-    const names = [
-      "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
-    ];
+    const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     return names[weekday - 1];
   }
 
   String _monthName(int month) {
     const months = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
     ];
     return months[month - 1];
   }

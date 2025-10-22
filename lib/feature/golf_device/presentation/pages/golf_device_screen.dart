@@ -70,7 +70,9 @@ class GolfDeviceView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<GolfDeviceBloc, GolfDeviceState>(
-      listener: (context, state) {
+      listener: (context, state) async {
+        print("{{{{{{{{{{");
+        print(state);
         if (state is ClubUpdatedState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("✅ Club updated")),
@@ -84,14 +86,70 @@ class GolfDeviceView extends StatelessWidget {
             SnackBar(content: Text('Connected to ${state.device.name}')),
           );
         } else if (state is NavigateToLandDashboardState) {
+          print("navigate to landing dashboard");
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/landingDashboard',
             (route) => false,
           );
+        } else if (state is GolfDeviceSaveSuccessState){
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BlocProvider.value(
+                value: context.read<GolfDeviceBloc>(),
+                child: const ShotHistoryScreen(),
+              ),
+            ),
+          );
+
+          if (result == 'connected') {
+            final currentState = context.read<GolfDeviceBloc>().state;
+
+            if (currentState is! ConnectedState) {
+              print("lsdkkljaskldfjasjflaskljf;klas");
+              print(currentState);
+            }
+          }
         }
       },
       builder: (context, state) {
+        if (state is DisconnectingState) {
+          return const Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Colors.white),
+                  SizedBox(height: 16),
+                  Text(
+                    'Disconnecting device...',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        if (state is GolfDeviceSaveDataLoading){
+          return const Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Colors.white),
+                  SizedBox(height: 16),
+                  Text(
+                    'Save Data...',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         if (state is ConnectedState) {
           return _buildConnectedScreen(context, state);
         }
@@ -321,33 +379,27 @@ class GolfDeviceView extends StatelessWidget {
           Divider(thickness: 1, color: AppColors.dividerColor),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.symmetric(horizontal: 16,vertical: 10),
               child: Column(
                 children: [
-                  SizedBox(
-                    height: 50,
-                    child: HeaderRow(
-                      showClubName: true,
-                      goScanScreen: true,
-                      headingName: "Shot Analysis",
-                      selectedClub: Club(
-                        code: state.golfData.clubName.toString(),
-                        name: _clubs[state.golfData.clubName],
-                      ),
-                      onClubSelected: (value) {
-                        context
-                            .read<GolfDeviceBloc>()
-                            .add(UpdateClubEvent(int.parse(value.code)));
-                      },
-                      onBackButton: () async {
-                        final confirm = await SessionEndDialogSimple.show(context);
-                        if (confirm){
-                          context
-                              .read<GolfDeviceBloc>()
-                              .add(DisconnectDeviceEvent());
-                        }
-                      },
+                  HeaderRow(
+                    showClubName: true,
+                    goScanScreen: true,
+                    headingName: "Shot Analysis",
+                    selectedClub: Club(
+                      code: state.golfData.clubName.toString(),
+                      name: _clubs[state.golfData.clubName],
                     ),
+                    onClubSelected: (value) {
+                      context
+                          .read<GolfDeviceBloc>()
+                          .add(UpdateClubEvent(int.parse(value.code)));
+                    },
+                    onBackButton: () async {
+                      context
+                          .read<GolfDeviceBloc>()
+                          .add(DisconnectDeviceEvent());
+                    },
                   ),
                   SizedBox(height: 14),
                   CustomizeBar(),
@@ -386,7 +438,7 @@ class GolfDeviceView extends StatelessWidget {
                               mainAxisSpacing: 20,
                               childAspectRatio: 1.42,
                             ),
-                            itemCount: 6,
+                            itemCount: 5,
                             itemBuilder: (context, index) {
                               final metrics = [
                                 {
@@ -419,12 +471,6 @@ class GolfDeviceView extends StatelessWidget {
                                       .toStringAsFixed(2),
                                   "unit": ""
                                 },
-                                {
-                                  "metric": "Shot Number",
-                                  "value": state.golfData.recordNumber
-                                      .toStringAsFixed(0),
-                                  "unit": ""
-                                },
                               ];
                               return GlassmorphismCard(
                                 value: metrics[index]["value"]!,
@@ -447,25 +493,7 @@ class GolfDeviceView extends StatelessWidget {
                         ActionButton(
                           svgAssetPath: AppImages.groupIcon,
                           text: AppStrings.dispersionText,
-                          onPressed: () async {
-                            final confirmed =
-                                await SessionEndDialogSimple.show(context);
-                            if (confirmed) {
-                              context.read<GolfDeviceBloc>().add(
-                                DisconnectDeviceEvent(navigateToLanding: false),
-                              );
-                              await Future.delayed(const Duration(seconds: 1));
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => BlocProvider.value(
-                                    value: context.read<GolfDeviceBloc>(),
-                                    child: const ShotHistoryScreen(),
-                                  ),
-                                ),
-                              );
-                            }
-                          },
+                          onPressed: () {},
                         ),
                       ],
                     ),
@@ -473,13 +501,7 @@ class GolfDeviceView extends StatelessWidget {
                   const SizedBox(height: 17),
                   SessionViewButton(
                     onSessionClick: () async {
-                      final confirmed =
-                          await SessionEndDialogSimple.show(context);
-                      if (confirmed) {
-                        context
-                            .read<GolfDeviceBloc>()
-                            .add(DisconnectDeviceEvent());
-                      }
+                      context.read<GolfDeviceBloc>().add(SaveAllShotsEvent());
                     },
                   ),
                 ],

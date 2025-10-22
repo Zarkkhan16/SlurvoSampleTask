@@ -5,7 +5,8 @@ import 'package:onegolf/core/constants/app_strings.dart';
 
 class SessionViewButton extends StatelessWidget {
   final VoidCallback? onSessionClick;
-  const SessionViewButton({super.key, required this.onSessionClick});
+  final String buttonText;
+  const SessionViewButton({super.key, required this.onSessionClick, this.buttonText = AppStrings.sessionViewText});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,7 @@ class SessionViewButton extends StatelessWidget {
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
-            AppStrings.sessionViewText,
+            buttonText,
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
               textStyle: TextStyle(

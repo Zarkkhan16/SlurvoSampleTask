@@ -59,13 +59,18 @@ class ShotFirestoreDatasourceImpl implements ShotFirestoreDatasource {
 
   Future<List<ShotAnalysisModel>> fetchShotsForUser(String userUid,
       {int limit = 100}) async {
+    // final querySnap = await firestore
+    //     .collection(collectionName)
+    //     .where('userUid', isEqualTo: userUid)
+    //     .orderBy('timestamp', descending: true)
+    //     .limit(limit)
+    //     .get();
+
     final querySnap = await firestore
         .collection(collectionName)
         .where('userUid', isEqualTo: userUid)
-        .orderBy('timestamp', descending: true)
-        .limit(limit)
+        .orderBy('shotNumber',)
         .get();
-
     print("📊 Fetched ${querySnap.docs.length} shots for user: $userUid");
 
     return querySnap.docs

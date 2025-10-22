@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import '../../domain/entities/device_entity.dart';
+import 'golf_device_state.dart';
 
 abstract class GolfDeviceEvent extends Equatable {
   @override
@@ -48,7 +49,6 @@ class NotificationReceivedEvent extends GolfDeviceEvent {
 }
 
 class SendSyncPacketEvent extends GolfDeviceEvent {}
-
 class UpdateClubEvent extends GolfDeviceEvent {
   final int clubId;
 

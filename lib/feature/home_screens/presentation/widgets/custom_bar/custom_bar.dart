@@ -17,36 +17,51 @@ class CustomizeBar extends StatelessWidget {
 
     return Container(
       height: barHeight.clamp(40.0, 56.0),
-      padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding.clamp(12.0, 20.0),
-      ),
       decoration: BoxDecoration(
-        color: AppColors.searchBarBackground,
         borderRadius: BorderRadius.circular(barHeight / 2),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.fromRGBO(128, 128, 128, 1.0),
+            Color.fromRGBO(128, 128, 128, 0.05),
+            Color.fromRGBO(128, 128, 128, 0.3),
+          ],
+        ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: Text(
-              AppStrings.customizeText,
-              style: TextStyle(
-                color: AppColors.primaryText,
-                fontSize: fontSize.clamp(14.0, 18.0),
-                fontWeight: FontWeight.w400,
-                height: 1.2,
-                letterSpacing: 0,
+      child: Container(
+        margin: const EdgeInsets.all(1), // 1px perfect margin
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding.clamp(12.0, 20.0),
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.searchBarBackground,
+          borderRadius: BorderRadius.circular((barHeight / 2) - 1),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Text(
+                AppStrings.customizeText,
+                style: TextStyle(
+                  color: AppColors.primaryText,
+                  fontSize: fontSize.clamp(14.0, 18.0),
+                  fontWeight: FontWeight.w400,
+                  height: 1.2,
+                  letterSpacing: 0,
+                ),
+                textAlign: TextAlign.left,
+                overflow: TextOverflow.ellipsis,
               ),
-              textAlign: TextAlign.left,
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          Icon(
-            Icons.tune,
-            color: AppColors.primaryText,
-            size: iconSize.clamp(18.0, 26.0),
-          ),
-        ],
+            Icon(
+              Icons.tune,
+              color: AppColors.primaryText,
+              size: iconSize.clamp(18.0, 26.0),
+            ),
+          ],
+        ),
       ),
     );
   }
