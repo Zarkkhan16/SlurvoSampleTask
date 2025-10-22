@@ -1,16 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repository/auth_repository.dart';
+import '../model/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuth firebaseAuth;
+  final FirebaseFirestore firestore;
 
-  AuthRepositoryImpl({required this.firebaseAuth});
+  AuthRepositoryImpl({required this.firebaseAuth, required this.firestore,});
 
   @override
   Future<UserEntity?> login(String email, String password) async {
-    // try {
       final userCredential = await firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -24,9 +26,6 @@ class AuthRepositoryImpl implements AuthRepository {
         );
       }
       return null;
-    // } catch (e) {
-    //   throw Exception('Login failed: ${e.toString()}');
-    // }
   }
 
   @override
@@ -35,26 +34,34 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String name,
   }) async {
-    // try {
-      final userCredential = await firebaseAuth.createUserWithEmailAndPassword(
+    final userCredential = await firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    await userCredential.user?.updateDisplayName(name);
+
+    if (userCredential.user != null) {
+      final uid = userCredential.user!.uid;
+
+      final newUser = UserModel(
+        uid: uid,
+        name: name,
         email: email,
-        password: password,
+        profileImage: '',
+        createdAt: Timestamp.now(),
       );
 
-      // Update display name
-      await userCredential.user?.updateDisplayName(name);
+      await firestore.collection('users').doc(uid).set(newUser.toMap());
 
-      if (userCredential.user != null) {
-        return UserEntity(
-          uid: userCredential.user!.uid,
-          email: userCredential.user!.email ?? '',
-          name: name,
-        );
-      }
-      return null;
-    // } catch (e) {
-    //   throw Exception('Sign up failed: ${e.toString()}');
-    // }
+      return UserEntity(
+        uid: uid,
+        email: email,
+        name: name,
+      );
+    }
+
+    return null;
   }
 
   @override

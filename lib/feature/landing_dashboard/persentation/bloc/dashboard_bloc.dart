@@ -1,5 +1,5 @@
-// feature/landing_dashboard/presentation/bloc/dashboard_bloc.dart
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/usecases/get_user_profile.dart';
 import 'dashboard_event.dart';
@@ -7,14 +7,15 @@ import 'dashboard_state.dart';
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final GetUserProfile getUserProfile;
+  final FirebaseAuth firebaseAuth;
 
-  DashboardBloc({required this.getUserProfile}) : super(DashboardInitial()) {
+  DashboardBloc({required this.getUserProfile, required this.firebaseAuth}) : super(DashboardInitial()) {
 
     on<LoadUserProfile>((event, emit) async {
       emit(DashboardLoading());
 
       try {
-        final profile = await getUserProfile(event.uid);
+        final profile = await getUserProfile(firebaseAuth.currentUser?.uid ?? '');
 
         if (profile != null) {
           emit(DashboardLoaded(profile));

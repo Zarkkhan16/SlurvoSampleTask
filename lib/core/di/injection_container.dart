@@ -75,6 +75,7 @@ import '../../feature/auth/domain/usecases/logout_user.dart';
 import '../../feature/auth/domain/usecases/signup_user.dart';
 import '../../feature/auth/presentation/bloc/auth_bloc.dart';
 import '../../feature/golf_device/data/datasources/shot_firestore_datasource.dart';
+import '../../feature/golf_device/data/model/shot_anaylsis_model.dart';
 import '../../feature/golf_device/data/repositories/ble_repository_impl.dart';
 import '../../feature/golf_device/data/services/ble_service.dart';
 import '../../feature/golf_device/domain/repositories/ble_repository.dart';
@@ -95,6 +96,7 @@ import '../../feature/landing_dashboard/domain/repositories/dashboard_repository
 import '../../feature/landing_dashboard/domain/usecases/get_user_profile.dart';
 import '../../feature/landing_dashboard/persentation/bloc/dashboard_bloc.dart';
 import '../../feature/setting/persentation/bloc/setting_bloc.dart';
+import '../../feature/shots_history/presentation/bloc/shot_selection_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -127,7 +129,7 @@ Future<void> init() async {
 
   // Repository
   sl.registerLazySingleton<BleRepository>(
-        () => BleRepositoryImpl(
+    () => BleRepositoryImpl(
       sl<BleService>(),
       sl<ShotFirestoreDatasource>(),
     ),
@@ -135,7 +137,8 @@ Future<void> init() async {
 
   // Services
   sl.registerLazySingleton(() => BleService());
-  sl.registerLazySingleton<ShotFirestoreDatasource>(() => ShotFirestoreDatasourceImpl());
+  sl.registerLazySingleton<ShotFirestoreDatasource>(
+      () => ShotFirestoreDatasourceImpl());
 
   // usecases
   sl.registerLazySingleton(() => SaveShotUseCase(sl<BleRepository>()));
@@ -149,7 +152,7 @@ Future<void> init() async {
       ));
 
   sl.registerFactory(
-        () => AuthBloc(
+    () => AuthBloc(
       loginUser: sl<LoginUser>(),
       signUpUser: sl<SignUpUser>(),
       checkAuthStatus: sl<CheckAuthStatus>(),
@@ -164,12 +167,16 @@ Future<void> init() async {
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(firebaseAuth: sl()),
+    () => AuthRepositoryImpl(
+      firebaseAuth: sl<FirebaseAuth>(),
+      firestore: sl<FirebaseFirestore>(),
+    ),
   );
 
   sl.registerFactory(
-        () => DashboardBloc(
+    () => DashboardBloc(
       getUserProfile: sl<GetUserProfile>(),
+      firebaseAuth: sl<FirebaseAuth>(),
     ),
   );
 
@@ -177,19 +184,27 @@ Future<void> init() async {
 
   // ✅ Dashboard Repository
   sl.registerLazySingleton<DashboardRepository>(
-        () => DashboardRepositoryImpl(
+    () => DashboardRepositoryImpl(
       remoteDataSource: sl<UserRemoteDataSource>(),
     ),
   );
 
   // ✅ Dashboard Data Source
   sl.registerLazySingleton<UserRemoteDataSource>(
-        () => UserRemoteDataSourceImpl(
+    () => UserRemoteDataSourceImpl(
       firebaseAuth: sl<FirebaseAuth>(),
       firestore: sl<FirebaseFirestore>(),
     ),
   );
 
+  sl.registerFactory(
+    () => ShotHistoryBloc(
+      bleRepository: sl<BleRepository>(),
+      user: sl<FirebaseAuth>().currentUser,
+      sendCommandUseCase: sl<SendCommandUseCase>(),
+      golfDeviceBloc: sl<GolfDeviceBloc>(),
+    ),
+  );
 
   sl.registerLazySingleton(() => FirebaseAuth.instance);
   sl.registerLazySingleton(() => FirebaseFirestore.instance);

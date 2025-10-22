@@ -11,7 +11,7 @@ import 'package:onegolf/feature/golf_device/domain/usecases/subscribe_notificati
 import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_bloc.dart';
 import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_event.dart';
 import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_state.dart';
-import 'package:onegolf/feature/golf_device/presentation/pages/shot_history_screen.dart';
+import 'package:onegolf/feature/shots_history/presentation/pages/shot_history_screen.dart';
 import 'package:onegolf/feature/home_screens/presentation/widgets/buttons/action_button.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_images.dart';
@@ -28,50 +28,12 @@ import '../../../setting/persentation/pages/setting_screen.dart';
 import '../../domain/repositories/ble_repository.dart';
 import '../widgets/session_end_dialog.dart';
 
-class GolfDeviceScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => di.sl<GolfDeviceBloc>(),
-      child: GolfDeviceView(),
-    );
-  }
-}
-
 class GolfDeviceView extends StatelessWidget {
-  static const List<String> _clubs = [
-    "1W",
-    "2W",
-    "3W",
-    "5W",
-    "7W",
-    "2H",
-    "3H",
-    "4H",
-    "5H",
-    "1i",
-    "2i",
-    "3i",
-    "4i",
-    "5i",
-    "6i",
-    "7i",
-    "8i",
-    "9i",
-    "PW",
-    "GW",
-    "GW1",
-    "SW",
-    "SW1",
-    "LW",
-    "LW1"
-  ];
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<GolfDeviceBloc, GolfDeviceState>(
       listener: (context, state) async {
-        print("{{{{{{{{{{");
+        print("On Listener State Change");
         print(state);
         if (state is ClubUpdatedState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -86,13 +48,12 @@ class GolfDeviceView extends StatelessWidget {
             SnackBar(content: Text('Connected to ${state.device.name}')),
           );
         } else if (state is NavigateToLandDashboardState) {
-          print("navigate to landing dashboard");
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/landingDashboard',
             (route) => false,
           );
-        } else if (state is GolfDeviceSaveSuccessState){
+        } else if (state is SaveShotsSuccessfully) {
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -109,6 +70,7 @@ class GolfDeviceView extends StatelessWidget {
             if (currentState is! ConnectedState) {
               print("lsdkkljaskldfjasjflaskljf;klas");
               print(currentState);
+              context.read<GolfDeviceBloc>().add(ReturnToConnectedStateEvent());
             }
           }
         }
@@ -132,7 +94,7 @@ class GolfDeviceView extends StatelessWidget {
             ),
           );
         }
-        if (state is GolfDeviceSaveDataLoading){
+        if (state is SaveDataLoading) {
           return const Scaffold(
             backgroundColor: Colors.black,
             body: Center(
@@ -153,116 +115,15 @@ class GolfDeviceView extends StatelessWidget {
         if (state is ConnectedState) {
           return _buildConnectedScreen(context, state);
         }
-        if (state is ShotRecordsLoadedState) {
-          if (state.shotRecords.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.golf_course, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'No shots recorded yet',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: state.shotRecords.length,
-            itemBuilder: (context, index) {
-              final shot = state.shotRecords[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Shot #${shot['shotNumber']}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Chip(
-                            label: Text(AppStrings.getClub(shot['clubName'])),
-                            backgroundColor: Colors.green.shade100,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _StatItem(
-                              label: 'Club Speed',
-                              value: '${shot['clubSpeed']} mph',
-                            ),
-                          ),
-                          Expanded(
-                            child: _StatItem(
-                              label: 'Ball Speed',
-                              value: '${shot['ballSpeed']} mph',
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _StatItem(
-                              label: 'Carry',
-                              value: '${shot['carryDistance']} yds',
-                            ),
-                          ),
-                          Expanded(
-                            child: _StatItem(
-                              label: 'Total',
-                              value: '${shot['totalDistance']} yds',
-                              valueColor: Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${shot['date']} at ${shot['time']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          if (shot['sessionTime'] != null)
-                            Text(
-                              'Session: ${shot['sessionTime']}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        } else {
+        else {
           return _buildScanScreen(context, state);
         }
+        // else {
+        //   return Scaffold(
+        //     backgroundColor: Colors.black,
+        //     body: Center(child: Text("Error: $state")),
+        //   );
+        // }
       },
     );
   }
@@ -379,7 +240,7 @@ class GolfDeviceView extends StatelessWidget {
           Divider(thickness: 1, color: AppColors.dividerColor),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16,vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Column(
                 children: [
                   HeaderRow(
@@ -388,7 +249,7 @@ class GolfDeviceView extends StatelessWidget {
                     headingName: "Shot Analysis",
                     selectedClub: Club(
                       code: state.golfData.clubName.toString(),
-                      name: _clubs[state.golfData.clubName],
+                      name: AppStrings.clubs[state.golfData.clubName],
                     ),
                     onClubSelected: (value) {
                       context
@@ -481,72 +342,73 @@ class GolfDeviceView extends StatelessWidget {
                           ),
                         ),
                   const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ActionButton(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: ActionButton(
                           text: AppStrings.deleteShotText,
-                          onPressed: () {},
+                          onPressed: () {
+                            context.read<GolfDeviceBloc>().add(DeleteLatestShotEvent());
+                          },
                         ),
-                        ActionButton(
+                      ),
+                      SizedBox(width: 10,),
+                      Expanded(
+                        child: ActionButton(
                           svgAssetPath: AppImages.groupIcon,
                           text: AppStrings.dispersionText,
                           onPressed: () {},
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 17),
-                  SessionViewButton(
-                    onSessionClick: () async {
-                      context.read<GolfDeviceBloc>().add(SaveAllShotsEvent());
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ActionButton(
+                          text: 'Session View',
+                          onPressed: () {
+                            context.read<GolfDeviceBloc>().add(SaveAllShotsEvent());
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 10,),
+                      Expanded(
+                        child: ActionButton(
+                          text: 'Session End',
+                          buttonBackgroundColor: Colors.red,
+                          textColor: AppColors.primaryText,
+                          onPressed: () {
+                            context
+                                .read<GolfDeviceBloc>()
+                                .add(DisconnectDeviceEvent());
+                          },
+                        ),
+                      ),
+                    ],
                   ),
+                  // SessionViewButton(
+                  //   onSessionClick: () {
+                  //     context.read<GolfDeviceBloc>().add(SaveAllShotsEvent());
+                  //   },
+                  // ),
+                  // SessionViewButton(
+                  //   onSessionClick: () {
+                  //     context
+                  //         .read<GolfDeviceBloc>()
+                  //         .add(DisconnectDeviceEvent());
+                  //   },
+                  //   backgroundColor: Colors.red,
+                  //   buttonText: 'End Session',
+                  // ),
                 ],
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color? valueColor;
-
-  const _StatItem({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: valueColor ?? Colors.black87,
-          ),
-        ),
-      ],
     );
   }
 }

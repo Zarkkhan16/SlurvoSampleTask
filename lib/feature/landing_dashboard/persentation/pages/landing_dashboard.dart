@@ -5,9 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import '../../../../core/di/injection_container.dart' as di;
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../golf_device/presentation/bloc/golf_device_bloc.dart';
 import '../../../golf_device/presentation/pages/golf_device_screen.dart';
 import '../../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
 import '../../../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
@@ -24,13 +26,10 @@ class LandingDashboard extends StatefulWidget {
 
 class _LandingDashboardState extends State<LandingDashboard> {
 
-  final currentUser = FirebaseAuth.instance.currentUser;
   @override
   void initState() {
     super.initState();
-    if (currentUser != null) {
-      context.read<DashboardBloc>().add(LoadUserProfile(currentUser!.uid));
-    }
+      context.read<DashboardBloc>().add(LoadUserProfile());
   }
   @override
   Widget build(BuildContext context) {
@@ -98,8 +97,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
             }
 
             final userName = state is DashboardLoaded
-                ? state.userProfile.name
-                : currentUser?.displayName ?? 'User';
+                ? state.userProfile.name : 'User';
 
             return Column(
               children: [
@@ -144,13 +142,15 @@ class _LandingDashboardState extends State<LandingDashboard> {
                   ),
                 ),
 
-                // Shot Analysis Card
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => GolfDeviceScreen(),
+                        builder: (context) => BlocProvider(
+                          create: (context) => di.sl<GolfDeviceBloc>(),
+                          child: GolfDeviceView(),
+                        ),
                       ),
                     );
                   },

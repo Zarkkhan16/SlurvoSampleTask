@@ -123,5 +123,5 @@ class ShotHistoryErrorState extends GolfDeviceState {
 }
 
 class DisconnectingState extends GolfDeviceState {}
-class GolfDeviceSaveSuccessState extends GolfDeviceState {}
-class GolfDeviceSaveDataLoading extends GolfDeviceState {}
+class SaveShotsSuccessfully extends GolfDeviceState {}
+class SaveDataLoading extends GolfDeviceState {}

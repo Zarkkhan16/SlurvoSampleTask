@@ -7,13 +7,6 @@ abstract class DashboardEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadUserProfile extends DashboardEvent {
-  final String uid;
-
-  LoadUserProfile(this.uid);
-
-  @override
-  List<Object?> get props => [uid];
-}
+class LoadUserProfile extends DashboardEvent {}
 
 class RefreshDashboard extends DashboardEvent {}

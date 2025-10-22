@@ -90,4 +90,9 @@ class BleRepositoryImpl implements BleRepository {
     final raw = await datasource.fetchShotsForUser(userUid, limit: limit);
     return raw;
   }
+
+  @override
+  Future<void> deleteAllShotsForUser(String userId) async {
+    await datasource.deleteAllShotsForUser(userId);
+  }
 }

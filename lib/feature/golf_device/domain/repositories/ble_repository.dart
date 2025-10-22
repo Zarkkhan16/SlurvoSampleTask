@@ -16,4 +16,5 @@ abstract class BleRepository {
   Future<void> saveShot(ShotAnalysisModel shot);
   Future<void> deleteShot(String userId, String shotId);
   Future<List<ShotAnalysisModel>> fetchShotsForUser(String userUid, {int limit = 100});
+  Future<void> deleteAllShotsForUser(String userId,);
 }

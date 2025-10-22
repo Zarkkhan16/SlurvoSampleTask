@@ -52,6 +52,8 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   Timer? _elapsedTimer;
   int _elapsedSeconds = 0;
   final user = FirebaseAuth.instance.currentUser;
+  final _bleResponseController = StreamController<List<int>>.broadcast();
+  Stream<List<int>> get bleResponseStream => _bleResponseController.stream;
 
   GolfDeviceBloc({
     required this.scanDevicesUseCase,
@@ -76,7 +78,8 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     on<SaveAllShotsEvent>(_onSaveAllShots);
     on<DisconnectDeviceEvent>(_onDisconnect);
     on<UpdateElapsedTimeEvent>(_onUpdateElapsedTime);
-    on<LoadShotHistoryEvent>(_onLoadShotHistory);
+    on<ReturnToConnectedStateEvent>(_onReturnToConnectedState);
+    on<DeleteLatestShotEvent>(_onDeleteLatestShot);
 
     bleRepository.statusStream.listen((status) {
       if (status == BleStatus.ready) {
@@ -206,6 +209,8 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   ) {
     final data = event.data;
 
+    _bleResponseController.add(data);
+
     if (data.length >= 3) {
       switch (data[2]) {
         case 0x01:
@@ -309,9 +314,11 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     SaveAllShotsEvent event,
     Emitter<GolfDeviceState> emit,
   ) async {
-    emit(GolfDeviceSaveDataLoading());
-    await _saveAllShotsToFirebase();
-    emit(GolfDeviceSaveSuccessState());
+    if (_shotRecords.isNotEmpty) {
+      emit(SaveDataLoading());
+      await _saveAllShotsToFirebase();
+    }
+    emit(SaveShotsSuccessfully());
   }
 
   Future<void> _saveAllShotsToFirebase() async {
@@ -323,116 +330,61 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     print("💾 Saving ${_shotRecords.length} shots to Firebase...");
 
     try {
+      final sortedKeys = _shotRecords.keys.toList()..sort();
+      final latestKey = sortedKeys.last;
+      final latestShot = _shotRecords[latestKey];
+
       for (var shotModel in _shotRecords.values) {
         await bleRepository.saveShot(shotModel);
       }
       print("✅ All shots saved successfully!");
-      _shotRecords.clear();
+      _shotRecords
+        ..clear()
+        ..[latestKey] = latestShot!;
     } catch (e) {
       print("❌ Error saving shots: $e");
     }
   }
+  Future<void> _onReturnToConnectedState(
+      ReturnToConnectedStateEvent event,
+      Emitter<GolfDeviceState> emit,
+      ) async {
+    if (_connectedDevice != null) {
+      if (_shotRecords.isNotEmpty) {
+        final latestShot = _shotRecords.values.first;
 
-  Future<void> _onLoadShotHistory(
-    LoadShotHistoryEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) async {
-    emit(ShotHistoryLoadingState());
-    try {
-      final userId = user?.uid ?? '';
-      if (userId.isEmpty) {
-        emit(ShotHistoryErrorState('User not authenticated'));
-        return;
+        _golfData = _golfData.copyWith(
+          clubName: latestShot.clubName,
+          clubSpeed: latestShot.clubSpeed,
+          ballSpeed: latestShot.ballSpeed,
+          carryDistance: latestShot.carryDistance,
+          totalDistance: latestShot.totalDistance,
+          recordNumber: latestShot.shotNumber,
+        );
+      } else {
+        _golfData = _golfData.copyWith(
+          clubSpeed: 0.0,
+          ballSpeed: 0.0,
+          carryDistance: 0.0,
+          totalDistance: 0.0,
+          recordNumber: 0,
+        );
       }
 
-      final shots = await bleRepository.fetchShotsForUser(userId);
-      emit(ShotHistoryLoadedState(shots));
-    } catch (e) {
-      emit(ShotHistoryErrorState(e.toString()));
+      emit(ConnectedState(
+        device: _connectedDevice!,
+        golfData: _golfData,
+        units: _units,
+        currentDate: _formattedDate(),
+        elapsedTime: _formatElapsedTime(_elapsedSeconds),
+      ));
     }
   }
 
-  // Future<void> _saveToLocal() async {
-  //   try {
-  //     final sessionTime = _formatElapsedTime(_elapsedSeconds);
-  //
-  //     // Convert shot records to a JSON-serializable format
-  //     final updatedRecords = <String, dynamic>{};
-  //
-  //     _shotRecords.forEach((key, value) {
-  //       // Convert the integer key to string for JSON compatibility
-  //       final shotKey = key.toString();
-  //
-  //       updatedRecords[shotKey] = {
-  //         'date': value['date']?.toString() ?? '',
-  //         'time': value['time']?.toString() ?? '',
-  //         'clubName': value['clubName'] is int ? value['clubName'] : (value['clubName'] as num?)?.toInt() ?? 0,
-  //         'clubSpeed': value['clubSpeed'] is double ? value['clubSpeed'] : (value['clubSpeed'] as num?)?.toDouble() ?? 0.0,
-  //         'ballSpeed': value['ballSpeed'] is double ? value['ballSpeed'] : (value['ballSpeed'] as num?)?.toDouble() ?? 0.0,
-  //         'carryDistance': value['carryDistance'] is double ? value['carryDistance'] : (value['carryDistance'] as num?)?.toDouble() ?? 0.0,
-  //         'totalDistance': value['totalDistance'] is double ? value['totalDistance'] : (value['totalDistance'] as num?)?.toDouble() ?? 0.0,
-  //         'shotNumber': value['shotNumber'] is int ? value['shotNumber'] : (value['shotNumber'] as num?)?.toInt() ?? 0,
-  //         'sessionTime': sessionTime,
-  //       };
-  //     });
-  //
-  //     // Save JSON string
-  //     final jsonString = jsonEncode(updatedRecords);
-  //     await sharedPreferences.setString('shot_records', jsonString);
-  //
-  //     print("💾 Shot data saved locally with session time. Total shots: ${updatedRecords.length}");
-  //   } catch (e, stack) {
-  //     print("❌ Error saving local shot data: $e");
-  //     print(stack);
-  //   }
-  // }
 
-  // Future<Map<int, Map<String, dynamic>>> loadShotRecordsFromLocal() async {
-  //   try {
-  //     final jsonString = sharedPreferences.getString('shot_records');
-  //
-  //     if (jsonString == null || jsonString.isEmpty) {
-  //       print("📭 No shot records found in local storage");
-  //       return {};
-  //     }
-  //
-  //     final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
-  //     final Map<int, Map<String, dynamic>> shotRecords = {};
-  //
-  //     decoded.forEach((key, value) {
-  //       final recordNumber = int.tryParse(key);
-  //       if (recordNumber != null && value is Map) {
-  //         shotRecords[recordNumber] = Map<String, dynamic>.from(value as Map);
-  //       }
-  //     });
-  //
-  //     print("📂 Loaded ${shotRecords.length} shot records from local storage");
-  //     return shotRecords;
-  //   } catch (e, stack) {
-  //     print("❌ Error loading shot data: $e");
-  //     print(stack);
-  //     return {};
-  //   }
-  // }
-
-  // Future<List<Map<String, dynamic>>> getFormattedShotHistory() async {
-  //   try {
-  //     final records = await loadShotRecordsFromLocal();
-  //
-  //     final sortedShots = records.entries
-  //         .map((entry) => entry.value)
-  //         .toList()
-  //       ..sort((a, b) => (b['shotNumber'] as int).compareTo(a['shotNumber'] as int));
-  //
-  //     return sortedShots;
-  //   } catch (e) {
-  //     print("❌ Error getting formatted shot history: $e");
-  //     return [];
-  //   }
-  // }
   void _startSyncTimer() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(Duration(seconds: 30), (_) {
+    _syncTimer = Timer.periodic(Duration(seconds: 15), (_) {
       if (state is ConnectedState && !(state as ConnectedState).isLoading) {
         add(SendSyncPacketEvent());
       }
@@ -442,15 +394,30 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   void _parseGolfData(Uint8List data) {
     if (data[0] != 0x47 || data[1] != 0x46) return;
 
+    bool isMeters = (data[11] & 0x80) != 0;
+
+    // Clear bit 7 to get actual distance value
+    int carryHigh = data[11] & 0x7F;
+    int carryLow = data[12];
+    double carryDistance = ((carryHigh << 8) | carryLow) / 10.0;
+
     _golfData = GolfDataEntity(
       battery: data[3],
       recordNumber: (data[4] << 8) | data[5],
       clubName: data[6],
       clubSpeed: ((data[7] << 8) | data[8]) / 10.0,
       ballSpeed: ((data[9] << 8) | data[10]) / 10.0,
-      carryDistance: ((data[11] << 8) | data[12]) / 10.0,
+      carryDistance: carryDistance,
       totalDistance: ((data[13] << 8) | data[14]) / 10.0,
     );
+
+    _units = isMeters;
+    print("📊 Parsed Golf Data:");
+    print("   Record: ${_golfData.recordNumber}");
+    print("   Club: ${_golfData.clubName}");
+    print("   Carry: ${_golfData.carryDistance} ${isMeters ? 'M' : 'YD'}");
+    print("   Total: ${_golfData.totalDistance}");
+    print("   Unit Mode: ${isMeters ? 'METERS' : 'YARDS'}");
   }
 
   void _storeShotData(GolfDataEntity data) {
@@ -492,6 +459,55 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       _shotRecords[data.recordNumber] = shotModel;
     }
     print("📊 Stored Shots: $_shotRecords");
+  }
+
+  Future<void> _onDeleteLatestShot(
+      DeleteLatestShotEvent event,
+      Emitter<GolfDeviceState> emit,
+      ) async {
+    if (_shotRecords.isEmpty) return;
+
+    // Sort keys to identify latest shot number
+    final sortedKeys = _shotRecords.keys.toList()..sort();
+
+    // Latest shot number
+    final latestKey = sortedKeys.last;
+    _shotRecords.remove(latestKey);
+
+    print("🗑️ Deleted Shot #$latestKey");
+
+    // If there’s a previous shot, show it
+    if (_shotRecords.isNotEmpty) {
+      final prevKey = sortedKeys.length > 1 ? sortedKeys[sortedKeys.length - 2] : sortedKeys.first;
+      final prevShot = _shotRecords[prevKey];
+
+      _golfData = _golfData.copyWith(
+        clubName: prevShot!.clubName,
+        clubSpeed: prevShot.clubSpeed,
+        ballSpeed: prevShot.ballSpeed,
+        carryDistance: prevShot.carryDistance,
+        totalDistance: prevShot.totalDistance,
+        recordNumber: prevShot.shotNumber,
+      );
+
+      if (state is ConnectedState) {
+        final currentState = state as ConnectedState;
+        emit(currentState.copyWith(golfData: _golfData));
+      }
+    } else {
+      _golfData = _golfData.copyWith(
+        clubSpeed: 0.0,
+        ballSpeed: 0.0,
+        carryDistance: 0.0,
+        totalDistance: 0.0,
+        recordNumber: 0,
+      );
+
+      if (state is ConnectedState) {
+        final currentState = state as ConnectedState;
+        emit(currentState.copyWith(golfData: _golfData));
+      }
+    }
   }
 
   void _startElapsedTimer() {

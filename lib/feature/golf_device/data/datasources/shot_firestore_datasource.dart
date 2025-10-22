@@ -4,6 +4,7 @@ import '../model/shot_anaylsis_model.dart';
 abstract class ShotFirestoreDatasource {
   Future<String> saveShot(ShotAnalysisModel model);
   Future<void> deleteShot(String userId, String shotId);
+  Future<void> deleteAllShotsForUser(String userId);
   Future<List<ShotAnalysisModel>> fetchShotsForUser(String userId, {int limit = 100});
 }
 
@@ -77,4 +78,16 @@ class ShotFirestoreDatasourceImpl implements ShotFirestoreDatasource {
         .map((d) => ShotAnalysisModel.fromMap(d.data(), d.id))
         .toList();
   }
+
+  @override
+  Future<void> deleteAllShotsForUser(String userUid) async {
+    final collection = firestore.collection('shots_analysis');
+    final snapshots = await collection.where('userUid', isEqualTo: userUid).get();
+
+    for (final doc in snapshots.docs) {
+      await doc.reference.delete();
+    }
+    print("✅ Deleted ${snapshots.docs.length} shots for user $userUid");
+  }
+
 }

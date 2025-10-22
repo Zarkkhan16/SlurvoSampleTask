@@ -6,23 +6,24 @@ import 'package:onegolf/core/constants/app_strings.dart';
 class SessionViewButton extends StatelessWidget {
   final VoidCallback? onSessionClick;
   final String buttonText;
-  const SessionViewButton({super.key, required this.onSessionClick, this.buttonText = AppStrings.sessionViewText});
+  final Color? backgroundColor;
+  const SessionViewButton({super.key, required this.onSessionClick, this.buttonText = AppStrings.sessionViewText, this.backgroundColor = AppColors.buttonBackground});
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final buttonHeight = screenHeight * 0.07; // ~7% of screen height
-    final fontSize = screenWidth * 0.05; // ~5% of screen width
-    final verticalPadding = screenHeight * 0.018; // ~1.8% of screen height
+    final buttonHeight = screenHeight * 0.07;
+    final fontSize = screenWidth * 0.05;
+    final verticalPadding = screenHeight * 0.018;
 
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: onSessionClick,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.buttonBackground,
+          backgroundColor: backgroundColor,
           foregroundColor: AppColors.buttonText,
           padding: EdgeInsets.symmetric(
             vertical: verticalPadding.clamp(12.0, 20.0),

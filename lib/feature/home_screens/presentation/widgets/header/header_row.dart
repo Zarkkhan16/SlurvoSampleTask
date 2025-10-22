@@ -101,7 +101,7 @@ class _HeaderRowState extends State<HeaderRow> {
                 setState(() {
                   _club = int.parse(result.code);
                 });
-                widget.onClubSelected?.call(result); // 👈 safe call
+                widget.onClubSelected?.call(result);
               }
             },
             child: Text(
