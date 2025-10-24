@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_strings.dart';
+import '../../../../choose_club_screen/model/club_model.dart';
 import '../../../../choose_club_screen/presentation/choose_club_screen_page.dart';
 import '../../../../scanned_devices_screen/scanned_devices_screen.dart';
 

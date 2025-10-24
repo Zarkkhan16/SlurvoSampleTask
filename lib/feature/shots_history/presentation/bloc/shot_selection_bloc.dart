@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/feature/shots_history/presentation/bloc/shot_selection_event.dart';
 import 'package:onegolf/feature/shots_history/presentation/bloc/shot_selection_state.dart';
+import '../../../choose_club_screen/model/club_model.dart';
 import '../../../golf_device/data/model/shot_anaylsis_model.dart';
 import '../../../golf_device/domain/repositories/ble_repository.dart';
 import '../../../golf_device/domain/usecases/send_command_usecase.dart';
@@ -36,6 +37,7 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
     on<LoadInitialShotEvent>(_onLoadInitialShot);
     on<ClearRecordEvent>(_onClearRecord);
     on<ClearRecordResponseReceivedEvent>(_onClearRecordResponse);
+    on<UpdateFilterEvent>(_onUpdateFilter);
   }
 
   Future<void> _onLoadShotHistory(
@@ -132,5 +134,45 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
     } catch (e) {
       emit(ShotHistoryErrorState("Failed to clear records: $e"));
     }
+  }
+
+  void _onUpdateFilter(
+      UpdateFilterEvent event,
+      Emitter<ShotHistoryState> emit,
+      ) {
+    final currentState = state;
+    if (currentState is ShotHistoryLoadedState) {
+      print('📊 Updating filter with ${event.selectedClubs.length} clubs');
+      event.selectedClubs.forEach((club) {
+        print('   - ${club.name} (${club.code})');
+      });
+
+      final filteredShots = _getFilteredShots(currentState.shots, event.selectedClubs);
+      print('🎯 Filtered shots count: ${filteredShots.length} out of ${currentState.shots.length}');
+
+      emit(currentState.copyWith(
+        selectedClubs: event.selectedClubs,
+        selectedIndex: filteredShots.isNotEmpty ? 0 : -1,
+        selectedShot: filteredShots.isNotEmpty ? filteredShots[0] : null,
+        clearSelectedShot: filteredShots.isEmpty,
+      ));
+    }
+  }
+
+  List<ShotAnalysisModel> _getFilteredShots(
+      List<ShotAnalysisModel> allShots,
+      List<Club> selectedClubs,
+      ) {
+    if (selectedClubs.isEmpty) {
+      return allShots;
+    }
+
+    // Convert club codes to integers for comparison
+    final selectedClubCodes = selectedClubs
+        .map((c) => int.tryParse(c.code) ?? -1)
+        .where((code) => code != -1)
+        .toSet();
+
+    return allShots.where((shot) => selectedClubCodes.contains(shot.clubName)).toList();
   }
 }

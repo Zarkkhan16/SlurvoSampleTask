@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../choose_club_screen/model/club_model.dart';
+
 abstract class ShotHistoryEvent extends Equatable {
   const ShotHistoryEvent();
 
@@ -28,4 +30,13 @@ class ClearRecordEvent extends ShotHistoryEvent {
 }
 class ClearRecordResponseReceivedEvent extends ShotHistoryEvent {
   const ClearRecordResponseReceivedEvent();
+}
+
+class UpdateFilterEvent extends ShotHistoryEvent {
+  final List<Club> selectedClubs;
+
+  const UpdateFilterEvent(this.selectedClubs);
+
+  @override
+  List<Object?> get props => [selectedClubs];
 }

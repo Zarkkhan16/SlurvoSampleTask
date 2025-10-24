@@ -74,3 +74,12 @@ class ReturnToConnectedStateEvent extends GolfDeviceEvent {
   List<Object?> get props => [];
 }
 class DeleteLatestShotEvent extends GolfDeviceEvent {}
+
+class UpdateMetricFilterEvent extends GolfDeviceEvent {
+  final Set<String> selectedMetrics;
+
+  UpdateMetricFilterEvent(this.selectedMetrics);
+
+  @override
+  List<Object?> get props => [selectedMetrics];
+}

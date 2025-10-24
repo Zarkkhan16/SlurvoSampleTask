@@ -774,6 +774,7 @@ import 'dart:async';
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_images.dart';
 import 'core/constants/app_strings.dart';
+import 'feature/choose_club_screen/model/club_model.dart';
 import 'feature/choose_club_screen/presentation/choose_club_screen_page.dart';
 import 'feature/home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
 import 'feature/home_screens/presentation/widgets/buttons/action_button.dart';
@@ -1121,7 +1122,7 @@ class _GolfDeviceScreenState extends State<GolfDeviceScreen> {
                   ),
                 ),
                 SizedBox(height: 14),
-                CustomizeBar(),
+                CustomizeBar(onPressed: () {  },),
                 SizedBox(height: 15),
                 isLoading
                     ? Center(child: CircularProgressIndicator(color: Colors.white))

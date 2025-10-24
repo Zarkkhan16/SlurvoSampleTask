@@ -1,29 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import '../../../core/constants/app_colors.dart';
-import '../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
-import '../../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
-import '../../home_screens/presentation/widgets/header/header_row.dart';
-import '../model/club_model.dart';
-class ChooseClubScreenPage extends StatefulWidget {
-  final Club? selectedClub;
+import '../../../../core/constants/app_colors.dart';
+import '../../../choose_club_screen/model/club_model.dart';
+import '../../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
+import '../../../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
+import '../../../home_screens/presentation/widgets/header/header_row.dart';
 
-  const ChooseClubScreenPage({super.key, this.selectedClub,});
+class FilterScreen extends StatefulWidget {
+  final List<Club> selectedClubs;
+
+  const FilterScreen({
+    super.key,
+    this.selectedClubs = const [],
+  });
 
   @override
-  State<ChooseClubScreenPage> createState() => _ChooseClubScreenPageState();
+  State<FilterScreen> createState() => _FilterScreenState();
 }
 
-class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
+class _FilterScreenState extends State<FilterScreen> {
   List<Club> clubs = [];
-  Club? selectedClub;
+  late List<Club> selectedClubs;
   bool isLoading = true;
   String? error;
 
   @override
   void initState() {
     super.initState();
-    selectedClub = widget.selectedClub;
+    selectedClubs = widget.selectedClubs
+        .map((club) => Club(code: club.code, name: club.name))
+        .toList();
     _loadClubs();
   }
 
@@ -63,6 +70,37 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
     });
   }
 
+  void _toggleClubSelection(Club club) {
+    setState(() {
+      final index = selectedClubs.indexWhere((c) => c.code == club.code);
+      if (index != -1) {
+        selectedClubs.removeAt(index);
+        print('🔴 Removed: ${club.name} (${club.code})');
+      } else {
+        selectedClubs.add(club);
+        print('🟢 Added: ${club.name} (${club.code})');
+      }
+      print(
+          '📋 Currently selected: ${selectedClubs.map((c) => c.name).join(", ")}');
+    });
+  }
+
+  void _clearAllFilters() {
+    setState(() {
+      selectedClubs.clear();
+      print('🧹 Cleared all filters');
+    });
+  }
+
+  void _applyFilters() {
+    print(
+        '✅ Applying filters: ${selectedClubs.map((c) => '${c.name} (${c.code})').join(", ")}');
+    final result = selectedClubs
+        .map((club) => Club(code: club.code, name: club.name))
+        .toList();
+    Navigator.pop(context, result);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,28 +111,74 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: HeaderRow(headingName: 'Choose a Club',),
+            child: HeaderRow(
+              headingName: 'Filter by Club',
+            ),
           ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: _buildBody()),
-                ],
+              child: _buildBody(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                _applyFilters();
+              },
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(32),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(0.3),
+                      Colors.white.withOpacity(0.05),
+                      Colors.white.withOpacity(0.2),
+                    ],
+                  ),
+                ),
+                child: Container(
+                  margin: const EdgeInsets.all(1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C1C1C),
+                    borderRadius: BorderRadius.circular(31),
+                  ),
+                  child: Center(
+                    child: Text(
+                      selectedClubs.isEmpty ? 'Show All Shots' : 'Apply Filter',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
   Widget _buildBody() {
-    if (isLoading) return const Center(child: CircularProgressIndicator(color: Colors.white,));
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
     if (error != null) {
-      return Center(child: Text(error!, style: const TextStyle(color: Colors.white)));
+      return Center(
+        child: Text(error!, style: const TextStyle(color: Colors.white)),
+      );
     }
     final woods = clubs.where((c) => c.name.contains("Wood")).toList();
     final hybrids = clubs.where((c) => c.name.contains("Hybrid")).toList();
@@ -113,6 +197,7 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
           _buildCategory("IRONS", irons),
           const SizedBox(height: 20),
           _buildCategory("WEDGES", wedges),
+          const SizedBox(height: 80),
         ],
       ),
     );
@@ -122,9 +207,14 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 10),
         GridView.builder(
           physics: const NeverScrollableScrollPhysics(),
@@ -138,14 +228,12 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
           ),
           itemBuilder: (context, index) {
             final club = categoryClubs[index];
-            final isSelected = selectedClub?.code == club.code;
+            final isSelected = selectedClubs.any((c) => c.code == club.code);
 
             return GestureDetector(
               onTap: () {
-                setState(() {
-                  selectedClub = club;
-                });
-                Navigator.pop(context, club);
+                HapticFeedback.lightImpact();
+                _toggleClubSelection(club);
               },
               child: Container(
                 decoration: BoxDecoration(

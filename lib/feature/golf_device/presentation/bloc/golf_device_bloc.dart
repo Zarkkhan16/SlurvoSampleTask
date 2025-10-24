@@ -80,12 +80,23 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     on<UpdateElapsedTimeEvent>(_onUpdateElapsedTime);
     on<ReturnToConnectedStateEvent>(_onReturnToConnectedState);
     on<DeleteLatestShotEvent>(_onDeleteLatestShot);
+    on<UpdateMetricFilterEvent>(_onUpdateMetricFilter);
 
     bleRepository.statusStream.listen((status) {
       if (status == BleStatus.ready) {
         add(StartScanningEvent());
       }
     });
+  }
+
+  Future<void> _onUpdateMetricFilter(
+      UpdateMetricFilterEvent event,
+      Emitter<GolfDeviceState> emit,
+      ) async {
+    if (state is ConnectedState) {
+      final currentState = state as ConnectedState;
+      emit(currentState.copyWith(selectedMetrics: event.selectedMetrics));
+    }
   }
 
   Future<void> _onStartScanning(
@@ -508,6 +519,12 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
         emit(currentState.copyWith(golfData: _golfData));
       }
     }
+  }
+
+  ShotAnalysisModel? get latestShot {
+    if (_shotRecords.isEmpty) return null;
+    final sortedKeys = _shotRecords.keys.toList()..sort();
+    return _shotRecords[sortedKeys.last];
   }
 
   void _startElapsedTimer() {

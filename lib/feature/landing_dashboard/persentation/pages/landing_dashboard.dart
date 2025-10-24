@@ -1,10 +1,11 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/feature/golf_device/data/model/shot_anaylsis_model.dart';
+import 'package:onegolf/feature/golf_device/presentation/pages/dispersion_screen.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
@@ -25,40 +26,39 @@ class LandingDashboard extends StatefulWidget {
 }
 
 class _LandingDashboardState extends State<LandingDashboard> {
-
   @override
   void initState() {
     super.initState();
-      context.read<DashboardBloc>().add(LoadUserProfile());
+    context.read<DashboardBloc>().add(LoadUserProfile());
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is Unauthenticated) {
+      listener: (context, state) {
+        if (state is Unauthenticated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Logout successful!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Logout successful!'),
-                backgroundColor: Colors.green,
-                duration: Duration(seconds: 2),
-              ),
-            );
-
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              '/SignInScreen',
-                  (route) => false,
-            );
-          }
-        },
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/SignInScreen',
+            (route) => false,
+          );
+        }
+      },
       child: Scaffold(
         backgroundColor: AppColors.primaryBackground,
         bottomNavigationBar: BottomNavBar(),
         appBar: CustomAppBar(
           showSettingButton: false,
           showBatteryLevel: false,
-          onProfilePressed: (){
+          onProfilePressed: () {
             context.read<AuthBloc>().add(LogoutRequested());
           },
         ),
@@ -75,7 +75,8 @@ class _LandingDashboardState extends State<LandingDashboard> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 60),
+                    const Icon(Icons.error_outline,
+                        color: Colors.red, size: 60),
                     const SizedBox(height: 16),
                     Text(
                       state.message,
@@ -96,14 +97,11 @@ class _LandingDashboardState extends State<LandingDashboard> {
               );
             }
 
-            final userName = state is DashboardLoaded
-                ? state.userProfile.name : 'User';
+            final userName =
+                state is DashboardLoaded ? state.userProfile.name : 'User';
 
             return Column(
               children: [
-                const Divider(thickness: 1, color: AppColors.dividerColor),
-
-                // Welcome Banner
                 Container(
                   margin: const EdgeInsets.all(12),
                   width: double.infinity,
@@ -141,7 +139,6 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     ],
                   ),
                 ),
-
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -155,8 +152,10 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     );
                   },
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                     decoration: BoxDecoration(
                       color: AppColors.cardBackground,
                       borderRadius: BorderRadius.circular(20),

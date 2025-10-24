@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../../../../core/constants/app_colors.dart';
 class ShotComparisonButton extends StatelessWidget {
-  const ShotComparisonButton({super.key, this.onTap, required this.headingText, this.icon = Icons.bar_chart_rounded});
+  const ShotComparisonButton({super.key, this.onTap, required this.headingText, this.svgAssetPath,});
   final VoidCallback? onTap;
   final String headingText;
-  final IconData icon;
+  final String? svgAssetPath;
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final iconSize = size.width * 0.05;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -25,22 +28,25 @@ class ShotComparisonButton extends StatelessWidget {
           ),
         ),
         child: Container(
-          margin: const EdgeInsets.all(1), // perfect 1px margin
+          margin: const EdgeInsets.all(1),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             color: const Color(0xFF2A2A2A),
-            borderRadius: BorderRadius.circular(31), // slightly smaller for perfect fit
+            borderRadius: BorderRadius.circular(31),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
+              if (svgAssetPath != null) ...[
+                SvgPicture.asset(
+                  svgAssetPath!,
+                  height: iconSize.clamp(16.0, 24.0),
+                  width: iconSize.clamp(16.0, 24.0),
+                  color: AppColors.primaryText,
+                ),
+                SizedBox(width: size.width * 0.02),
+              ],
               Text(
                 headingText,
                 style: const TextStyle(

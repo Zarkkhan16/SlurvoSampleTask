@@ -323,7 +323,7 @@ class _ShotAnalysisBodyState extends State<ShotAnalysisBody> {
                 //   ),
                 // ),
                 const SizedBox(height: 14),
-                const CustomizeBar(),
+                CustomizeBar(onPressed: () {  },),
                 const SizedBox(height: 15),
                 Expanded(
                   child: _shots.isEmpty

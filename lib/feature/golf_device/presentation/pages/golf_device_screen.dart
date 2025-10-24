@@ -17,6 +17,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_images.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/di/injection_container.dart' as di;
+import '../../../choose_club_screen/model/club_model.dart';
 import '../../../choose_club_screen/presentation/choose_club_screen_page.dart';
 import '../../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
 import '../../../home_screens/presentation/widgets/buttons/session_view_button.dart';
@@ -27,6 +28,8 @@ import '../../../home_screens/presentation/widgets/header/header_row.dart';
 import '../../../setting/persentation/pages/setting_screen.dart';
 import '../../domain/repositories/ble_repository.dart';
 import '../widgets/session_end_dialog.dart';
+import 'dispersion_screen.dart';
+import 'metric_filter_screen.dart';
 
 class GolfDeviceView extends StatelessWidget {
   @override
@@ -66,10 +69,7 @@ class GolfDeviceView extends StatelessWidget {
 
           if (result == 'connected') {
             final currentState = context.read<GolfDeviceBloc>().state;
-
             if (currentState is! ConnectedState) {
-              print("lsdkkljaskldfjasjflaskljf;klas");
-              print(currentState);
               context.read<GolfDeviceBloc>().add(ReturnToConnectedStateEvent());
             }
           }
@@ -114,17 +114,322 @@ class GolfDeviceView extends StatelessWidget {
         }
         if (state is ConnectedState) {
           return _buildConnectedScreen(context, state);
-        }
-        else {
+        } else {
           return _buildScanScreen(context, state);
         }
-        // else {
-        //   return Scaffold(
-        //     backgroundColor: Colors.black,
-        //     body: Center(child: Text("Error: $state")),
-        //   );
-        // }
       },
+    );
+  }
+
+  Widget _buildConnectedScreen(BuildContext context, ConnectedState state) {
+    final allMetrics = [
+      {
+        "metric": "Club Speed",
+        "value": state.golfData.clubSpeed.toStringAsFixed(1),
+        "unit": "MPH"
+      },
+      {
+        "metric": "Ball Speed",
+        "value": state.golfData.ballSpeed.toStringAsFixed(1),
+        "unit": "MPH"
+      },
+      {
+        "metric": "Carry Distance",
+        "value": state.golfData.carryDistance.toStringAsFixed(1),
+        "unit": state.units ? "M" : "YDS"
+      },
+      {
+        "metric": "Total Distance",
+        "value": state.golfData.totalDistance.toStringAsFixed(1),
+        "unit": state.units ? "M" : "YDS"
+      },
+      {
+        "metric": "Smash Factor",
+        "value": state.golfData.smashFactor.toStringAsFixed(2),
+        "unit": ""
+      },
+    ];
+
+    // Filter metrics based on selection
+    final filteredMetrics = allMetrics
+        .where((metric) => state.selectedMetrics.contains(metric["metric"]))
+        .toList();
+
+    return Scaffold(
+      backgroundColor: AppColors.primaryBackground,
+      bottomNavigationBar: BottomNavBar(),
+      appBar: CustomAppBar(
+        batteryLevel: state.golfData.battery,
+        showSettingButton: true,
+        showBatteryLevel: true,
+        onSettingsPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SettingScreen(
+                connectedDevice: state.device,
+                selectedUnit: state.units,
+              ),
+            ),
+          );
+        },
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Column(
+                children: [
+                  HeaderRow(
+                    showClubName: true,
+                    goScanScreen: true,
+                    headingName: "Shot Analysis",
+                    selectedClub: Club(
+                      code: state.golfData.clubName.toString(),
+                      name: AppStrings.clubs[state.golfData.clubName],
+                    ),
+                    onClubSelected: (value) {
+                      context
+                          .read<GolfDeviceBloc>()
+                          .add(UpdateClubEvent(int.parse(value.code)));
+                    },
+                    onBackButton: () async {
+                      context
+                          .read<GolfDeviceBloc>()
+                          .add(DisconnectDeviceEvent());
+                    },
+                  ),
+                  SizedBox(height: 14),
+                  CustomizeBar(
+                    onPressed: () async {
+                      final result = await Navigator.push<Set<String>>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MetricFilterScreen(
+                            initialSelectedMetrics: state.selectedMetrics,
+                          ),
+                        ),
+                      );
+
+                      if (result != null && result.isNotEmpty) {
+                        context.read<GolfDeviceBloc>().add(
+                              UpdateMetricFilterEvent(result),
+                            );
+                      }
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text(
+                        state.currentDate,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        state.elapsedTime,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  state.isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(color: Colors.white))
+                      : Expanded(
+                          child: filteredMetrics.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.visibility_off,
+                                        size: 48,
+                                        color: Colors.white38,
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'No metrics selected',
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Tap customize to select metrics',
+                                        style: TextStyle(
+                                          color: Colors.white38,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : GridView.builder(
+                                  padding: EdgeInsets.all(16),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 30,
+                                    mainAxisSpacing: 20,
+                                    childAspectRatio: 1.42,
+                                  ),
+                                  itemCount: filteredMetrics.length,
+                                  itemBuilder: (context, index) {
+                                    return GlassmorphismCard(
+                                      value: filteredMetrics[index]["value"]!,
+                                      name: filteredMetrics[index]["metric"]!,
+                                      unit: filteredMetrics[index]["unit"]!,
+                                    );
+                                  },
+                                ),
+                        ),
+                  // GridView.builder(
+                  //   padding: EdgeInsets.all(16),
+                  //   gridDelegate:
+                  //       SliverGridDelegateWithFixedCrossAxisCount(
+                  //     crossAxisCount: 2,
+                  //     crossAxisSpacing: 30,
+                  //     mainAxisSpacing: 20,
+                  //     childAspectRatio: 1.42,
+                  //   ),
+                  //   itemCount: 5,
+                  //   itemBuilder: (context, index) {
+                  //     final metrics = [
+                  //       {
+                  //         "metric": "Club Speed",
+                  //         "value": state.golfData.clubSpeed
+                  //             .toStringAsFixed(1),
+                  //         "unit": "MPH"
+                  //       },
+                  //       {
+                  //         "metric": "Ball Speed",
+                  //         "value": state.golfData.ballSpeed
+                  //             .toStringAsFixed(1),
+                  //         "unit": "MPH"
+                  //       },
+                  //       {
+                  //         "metric": "Carry Distance",
+                  //         "value": state.golfData.carryDistance
+                  //             .toStringAsFixed(1),
+                  //         "unit": state.units ? "M" : "YDS"
+                  //       },
+                  //       {
+                  //         "metric": "Total Distance",
+                  //         "value": state.golfData.totalDistance
+                  //             .toStringAsFixed(1),
+                  //         "unit": state.units ? "M" : "YDS"
+                  //       },
+                  //       {
+                  //         "metric": "Smash Factor",
+                  //         "value": state.golfData.smashFactor
+                  //             .toStringAsFixed(2),
+                  //         "unit": ""
+                  //       },
+                  //     ];
+                  //     return GlassmorphismCard(
+                  //       value: metrics[index]["value"]!,
+                  //       name: metrics[index]["metric"]!,
+                  //       unit: metrics[index]["unit"]!,
+                  //     );
+                  //   },
+                  // ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: ActionButton(
+                          text: AppStrings.deleteShotText,
+                          onPressed: () {
+                            context
+                                .read<GolfDeviceBloc>()
+                                .add(DeleteLatestShotEvent());
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        child: ActionButton(
+                          svgAssetPath: AppImages.groupIcon,
+                          text: AppStrings.dispersionText,
+                          onPressed: () {
+                            final latestShot = context.read<GolfDeviceBloc>().latestShot;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<GolfDeviceBloc>(),
+                                  child: DispersionScreen(selectedShot: latestShot,),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 17),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ActionButton(
+                          text: 'Session View',
+                          onPressed: () {
+                            context
+                                .read<GolfDeviceBloc>()
+                                .add(SaveAllShotsEvent());
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        child: ActionButton(
+                          text: 'Session End',
+                          buttonBackgroundColor: Colors.red,
+                          textColor: AppColors.primaryText,
+                          onPressed: () {
+                            context
+                                .read<GolfDeviceBloc>()
+                                .add(DisconnectDeviceEvent());
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  // SessionViewButton(
+                  //   onSessionClick: () {
+                  //     context.read<GolfDeviceBloc>().add(SaveAllShotsEvent());
+                  //   },
+                  // ),
+                  // SessionViewButton(
+                  //   onSessionClick: () {
+                  //     context
+                  //         .read<GolfDeviceBloc>()
+                  //         .add(DisconnectDeviceEvent());
+                  //   },
+                  //   backgroundColor: Colors.red,
+                  //   buttonText: 'End Session',
+                  // ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -156,7 +461,6 @@ class GolfDeviceView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Divider(thickness: 1, color: AppColors.dividerColor),
             const HeaderRow(headingName: "Scan Devices"),
             const SizedBox(height: 12),
             Expanded(
@@ -211,203 +515,6 @@ class GolfDeviceView extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildConnectedScreen(BuildContext context, ConnectedState state) {
-    return Scaffold(
-      backgroundColor: AppColors.primaryBackground,
-      bottomNavigationBar: BottomNavBar(),
-      appBar: CustomAppBar(
-        batteryLevel: state.golfData.battery,
-        showSettingButton: true,
-        showBatteryLevel: true,
-        onSettingsPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => SettingScreen(
-                connectedDevice: state.device,
-                selectedUnit: state.units,
-              ),
-            ),
-          );
-        },
-      ),
-      body: Column(
-        children: [
-          Divider(thickness: 1, color: AppColors.dividerColor),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Column(
-                children: [
-                  HeaderRow(
-                    showClubName: true,
-                    goScanScreen: true,
-                    headingName: "Shot Analysis",
-                    selectedClub: Club(
-                      code: state.golfData.clubName.toString(),
-                      name: AppStrings.clubs[state.golfData.clubName],
-                    ),
-                    onClubSelected: (value) {
-                      context
-                          .read<GolfDeviceBloc>()
-                          .add(UpdateClubEvent(int.parse(value.code)));
-                    },
-                    onBackButton: () async {
-                      context
-                          .read<GolfDeviceBloc>()
-                          .add(DisconnectDeviceEvent());
-                    },
-                  ),
-                  SizedBox(height: 14),
-                  CustomizeBar(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text(
-                        state.currentDate,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        state.elapsedTime,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  state.isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(color: Colors.white))
-                      : Expanded(
-                          child: GridView.builder(
-                            padding: EdgeInsets.all(16),
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 30,
-                              mainAxisSpacing: 20,
-                              childAspectRatio: 1.42,
-                            ),
-                            itemCount: 5,
-                            itemBuilder: (context, index) {
-                              final metrics = [
-                                {
-                                  "metric": "Club Speed",
-                                  "value": state.golfData.clubSpeed
-                                      .toStringAsFixed(1),
-                                  "unit": "MPH"
-                                },
-                                {
-                                  "metric": "Ball Speed",
-                                  "value": state.golfData.ballSpeed
-                                      .toStringAsFixed(1),
-                                  "unit": "MPH"
-                                },
-                                {
-                                  "metric": "Carry Distance",
-                                  "value": state.golfData.carryDistance
-                                      .toStringAsFixed(1),
-                                  "unit": state.units ? "M" : "YDS"
-                                },
-                                {
-                                  "metric": "Total Distance",
-                                  "value": state.golfData.totalDistance
-                                      .toStringAsFixed(1),
-                                  "unit": state.units ? "M" : "YDS"
-                                },
-                                {
-                                  "metric": "Smash Factor",
-                                  "value": state.golfData.smashFactor
-                                      .toStringAsFixed(2),
-                                  "unit": ""
-                                },
-                              ];
-                              return GlassmorphismCard(
-                                value: metrics[index]["value"]!,
-                                name: metrics[index]["metric"]!,
-                                unit: metrics[index]["unit"]!,
-                              );
-                            },
-                          ),
-                        ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: ActionButton(
-                          text: AppStrings.deleteShotText,
-                          onPressed: () {
-                            context.read<GolfDeviceBloc>().add(DeleteLatestShotEvent());
-                          },
-                        ),
-                      ),
-                      SizedBox(width: 10,),
-                      Expanded(
-                        child: ActionButton(
-                          svgAssetPath: AppImages.groupIcon,
-                          text: AppStrings.dispersionText,
-                          onPressed: () {},
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 17),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ActionButton(
-                          text: 'Session View',
-                          onPressed: () {
-                            context.read<GolfDeviceBloc>().add(SaveAllShotsEvent());
-                          },
-                        ),
-                      ),
-                      SizedBox(width: 10,),
-                      Expanded(
-                        child: ActionButton(
-                          text: 'Session End',
-                          buttonBackgroundColor: Colors.red,
-                          textColor: AppColors.primaryText,
-                          onPressed: () {
-                            context
-                                .read<GolfDeviceBloc>()
-                                .add(DisconnectDeviceEvent());
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  // SessionViewButton(
-                  //   onSessionClick: () {
-                  //     context.read<GolfDeviceBloc>().add(SaveAllShotsEvent());
-                  //   },
-                  // ),
-                  // SessionViewButton(
-                  //   onSessionClick: () {
-                  //     context
-                  //         .read<GolfDeviceBloc>()
-                  //         .add(DisconnectDeviceEvent());
-                  //   },
-                  //   backgroundColor: Colors.red,
-                  //   buttonText: 'End Session',
-                  // ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

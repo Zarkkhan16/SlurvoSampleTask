@@ -44,6 +44,7 @@ class ConnectedState extends GolfDeviceState {
   final bool units;
   final String currentDate;
   final String elapsedTime;
+  final Set<String> selectedMetrics;
 
   ConnectedState({
     required this.device,
@@ -52,7 +53,14 @@ class ConnectedState extends GolfDeviceState {
     this.units = false,
     this.currentDate = '',
     this.elapsedTime = '00:00:00',
-  });
+    Set<String>? selectedMetrics,
+  }) : selectedMetrics = selectedMetrics ?? {
+    'Club Speed',
+    'Ball Speed',
+    'Carry Distance',
+    'Total Distance',
+    'Smash Factor',
+  };
 
   ConnectedState copyWith({
     DeviceEntity? device,
@@ -61,6 +69,7 @@ class ConnectedState extends GolfDeviceState {
     bool? units,
     String? currentDate,
     String? elapsedTime,
+    Set<String>? selectedMetrics,
   }) {
     return ConnectedState(
       device: device ?? this.device,
@@ -69,11 +78,12 @@ class ConnectedState extends GolfDeviceState {
       units: units ?? this.units,
       currentDate: currentDate ?? this.currentDate,
       elapsedTime: elapsedTime ?? this.elapsedTime,
+      selectedMetrics: selectedMetrics ?? this.selectedMetrics,
     );
   }
 
   @override
-  List<Object?> get props => [device, golfData, isLoading, units, currentDate, elapsedTime];
+  List<Object?> get props => [device, golfData, isLoading, units, currentDate, elapsedTime,selectedMetrics,];
 }
 
 class DisconnectedState extends GolfDeviceState {
@@ -90,7 +100,8 @@ class ClubUpdatedState extends ConnectedState {
     required DeviceEntity device,
     required GolfDataEntity golfData,
     required bool units,
-  }) : super(device: device, golfData: golfData, isLoading: false, units: units);
+    Set<String>? selectedMetrics,
+  }) : super(device: device, golfData: golfData, isLoading: false, units: units, selectedMetrics: selectedMetrics,);
 }
 
 class ErrorState extends GolfDeviceState {

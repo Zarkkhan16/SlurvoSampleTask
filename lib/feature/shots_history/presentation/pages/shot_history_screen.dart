@@ -5,10 +5,13 @@ import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_bloc.d
 import 'package:onegolf/feature/shots_history/presentation/bloc/shot_selection_state.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_images.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_text_style.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../choose_club_screen/model/club_model.dart';
 import '../../../golf_device/presentation/bloc/golf_device_event.dart';
+import '../../../golf_device/presentation/pages/dispersion_screen.dart';
 import '../../../golf_device/presentation/widgets/shot_comparison_button.dart';
 import '../../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
 import '../../../home_screens/presentation/widgets/buttons/action_button.dart';
@@ -19,6 +22,7 @@ import '../../../home_screens/presentation/widgets/custom_bar/custom_bar.dart';
 import '../../../home_screens/presentation/widgets/header/header_row.dart';
 import '../bloc/shot_selection_bloc.dart';
 import '../bloc/shot_selection_event.dart';
+import 'filter_screen.dart';
 
 class ShotHistoryScreen extends StatelessWidget {
   const ShotHistoryScreen({super.key});
@@ -39,6 +43,29 @@ class ShotHistoryScreen extends StatelessWidget {
       return formattedDate;
     } catch (e) {
       return date;
+    }
+  }
+
+  Future<void> _openFilterScreen(
+      BuildContext context, ShotHistoryLoadedState state) async {
+    print(
+        '🔍 Opening filter with selected clubs: ${state.selectedClubs.map((c) => '${c.name} (${c.code})').join(", ")}');
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FilterScreen(
+          selectedClubs: state.selectedClubs,
+        ),
+      ),
+    );
+
+    if (result != null && context.mounted) {
+      print(
+          '🎯 Filter result received: ${(result as List<Club>).map((c) => '${c.name} (${c.code})').join(", ")}');
+      context.read<ShotHistoryBloc>().add(UpdateFilterEvent(result));
+    } else {
+      print('❌ No filter result or context not mounted');
     }
   }
 
@@ -76,9 +103,9 @@ class ShotHistoryScreen extends StatelessWidget {
                       backgroundColor: Colors.green,
                     ),
                   );
-      
-                  // Reload the shot list
-                  context.read<ShotHistoryBloc>().add(const LoadShotHistoryEvent());
+                  context
+                      .read<ShotHistoryBloc>()
+                      .add(const LoadShotHistoryEvent());
                 }
               },
               child: BlocBuilder<ShotHistoryBloc, ShotHistoryState>(
@@ -104,7 +131,7 @@ class ShotHistoryScreen extends StatelessWidget {
                       ),
                     );
                   }
-      
+
                   if (state is ShotHistoryErrorState) {
                     return Center(
                       child: Padding(
@@ -167,20 +194,18 @@ class ShotHistoryScreen extends StatelessWidget {
                       ),
                     );
                   }
-      
-                  if (state is ClearingRecordState)
-                    {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                        ),
-                      );
-                    }
+
+                  if (state is ClearingRecordState) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    );
+                  }
                   if (state is ShotHistoryLoadedState) {
                     if (state.shots.isEmpty) {
                       return Column(
                         children: [
-                          Divider(thickness: 1, color: AppColors.dividerColor),
                           HeaderRow(
                             headingName: "Session View",
                             goScanScreen: false,
@@ -221,10 +246,10 @@ class ShotHistoryScreen extends StatelessWidget {
                         ],
                       );
                     }
-      
+
                     return _buildShotHistoryContent(context, state);
                   }
-      
+
                   return const SizedBox();
                 },
               ),
@@ -237,9 +262,9 @@ class ShotHistoryScreen extends StatelessWidget {
 
   Widget _buildShotHistoryContent(
       BuildContext context, ShotHistoryLoadedState state) {
+    final filteredShots = state.filteredShots;
     return Column(
       children: [
-        Divider(thickness: 1, color: AppColors.dividerColor),
         Column(
           children: [
             HeaderRow(
@@ -265,8 +290,8 @@ class ShotHistoryScreen extends StatelessWidget {
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 30,
-              mainAxisSpacing: 20,
-              childAspectRatio: 1.60,
+              mainAxisSpacing: 15,
+              childAspectRatio: 1.7,
             ),
             itemCount: 4,
             itemBuilder: (context, index) {
@@ -302,105 +327,189 @@ class ShotHistoryScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        CustomizeBar(),
+        CustomizeBar(
+          headingText: state.selectedClubs.isEmpty
+              ? 'Filter'
+              : 'Filter (${state.selectedClubs.length})',
+          onPressed: () {
+            _openFilterScreen(context, state);
+          },
+        ),
         const SizedBox(height: 10),
         Row(
           children: [
             const Expanded(
-              child: ShotComparisonButton(headingText: "Shot Comparison"),
+              child: ShotComparisonButton(
+                headingText: "Shot Comparison",
+                svgAssetPath: AppImages.analysisIcon,
+              ),
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: ShotComparisonButton(
                 headingText: "Dispersion",
-                icon: Icons.my_location,
+                svgAssetPath: AppImages.groupIcon,
+                onTap: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<GolfDeviceBloc>(),
+                        child: DispersionScreen(selectedShot: state.selectedShot,),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
         const SizedBox(height: 10),
-        _buildTableHeader(),
+        if (filteredShots.isNotEmpty) _buildTableHeader(),
         Expanded(
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: ListView.builder(
-              padding: const EdgeInsets.only(top: 5, bottom: 20),
-              itemCount: state.shots.length,
-              itemBuilder: (context, index) {
-                final shot = state.shots[index];
-                final isSelected = index == state.selectedIndex;
-
-                return InkWell(
-                  onTap: () {
-                    context.read<ShotHistoryBloc>().add(SelectShotEvent(index));
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 5),
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.black : Colors.transparent,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    child: Row(
+          child: filteredShots.isEmpty
+              ? Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 25,
-                              height: 25,
-                              decoration: const BoxDecoration(
-                                color: Colors.teal,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  AppStrings.getClub(shot.clubName),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Text(
-                              ' ${shot.shotNumber.toString()}',
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
-                              ),
-                            ),
-                          ],
+                        Icon(
+                          Icons.filter_alt_off,
+                          size: 50,
+                          color: Colors.grey[400],
                         ),
-                        const SizedBox(width: 8),
-                        _buildDataCell(
-                            shot.clubSpeed.toStringAsFixed(1), isSelected,
-                            flex: 1),
-                        _buildDataCell(
-                            shot.ballSpeed.toStringAsFixed(1), isSelected,
-                            flex: 1),
-                        _buildDataCell(
-                            shot.smashFactor.toStringAsFixed(1), isSelected,
-                            flex: 1),
-                        _buildDataCell(
-                            shot.carryDistance.toStringAsFixed(1), isSelected,
-                            flex: 1),
-                        _buildDataCell(
-                            shot.totalDistance.toStringAsFixed(1), isSelected,
-                            flex: 1),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No shots match the selected filters',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        // ElevatedButton.icon(
+                        //   onPressed: () {
+                        //     context.read<ShotHistoryBloc>().add(
+                        //       const UpdateFilterEvent([]),
+                        //     );
+                        //   },
+                        //   icon: const Icon(Icons.clear_all),
+                        //   label: const Text('Clear Filters'),
+                        //   style: ElevatedButton.styleFrom(
+                        //     backgroundColor: Colors.tealAccent,
+                        //     foregroundColor: Colors.black,
+                        //     padding: const EdgeInsets.symmetric(
+                        //       horizontal: 24,
+                        //       vertical: 12,
+                        //     ),
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(25),
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
-                );
-              },
-            ),
-          ),
+                )
+              : Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(top: 5, bottom: 20),
+                    itemCount: filteredShots.length,
+                    itemBuilder: (context, index) {
+                      final shot = filteredShots[index];
+                      final isSelected = index == state.selectedIndex;
+
+                      return InkWell(
+                        onTap: () {
+                          context
+                              .read<ShotHistoryBloc>()
+                              .add(SelectShotEvent(index));
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 5),
+                          decoration: BoxDecoration(
+                            color:
+                                isSelected ? Colors.black : Colors.transparent,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 8),
+                          child: Row(
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 25,
+                                    height: 25,
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : AppColors.cardBackground,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        AppStrings.getClub(shot.clubName),
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? Colors.black
+                                              : Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    ' ${shot.shotNumber.toString()}',
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 8),
+                              _buildDataCell(
+                                  shot.clubSpeed.toStringAsFixed(1), isSelected,
+                                  flex: 1),
+                              _buildDataCell(
+                                  shot.ballSpeed.toStringAsFixed(1), isSelected,
+                                  flex: 1),
+                              _buildDataCell(
+                                  shot.smashFactor.toStringAsFixed(1),
+                                  isSelected,
+                                  flex: 1),
+                              _buildDataCell(
+                                  shot.carryDistance.toStringAsFixed(1),
+                                  isSelected,
+                                  flex: 1),
+                              _buildDataCell(
+                                  shot.totalDistance.toStringAsFixed(1),
+                                  isSelected,
+                                  flex: 1),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
         ),
         const SizedBox(height: 10),
         Row(

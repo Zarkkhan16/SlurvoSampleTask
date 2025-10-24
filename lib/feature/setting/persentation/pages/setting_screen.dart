@@ -44,7 +44,6 @@ class SettingScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Divider(thickness: 1, color: AppColors.dividerColor),
                   const SizedBox(
                     height: 60,
                     child: HeaderRow(headingName: "Setting & Security"),
