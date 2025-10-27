@@ -229,7 +229,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
             _parseGolfData(Uint8List.fromList(data));
             _storeShotData(_golfData);
             if (state is ConnectedState) {
-              emit((state as ConnectedState).copyWith(golfData: _golfData));
+              emit((state as ConnectedState).copyWith(golfData: _golfData, units: _units,));
             }
           }
           break;
@@ -246,7 +246,27 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
         case 0x04:
           _units = !_units;
           if (state is ConnectedState) {
-            emit((state as ConnectedState).copyWith(units: _units));
+            double newCarryDistance;
+            double newTotalDistance;
+
+            if (_units) {
+              // Converting to Meters (from Yards)
+              newCarryDistance = _golfData.carryDistance * 0.9144;
+              newTotalDistance = _golfData.totalDistance * 0.9144;
+            } else {
+              // Converting to Yards (from Meters)
+              newCarryDistance = _golfData.carryDistance * 1.093613298;
+              newTotalDistance = _golfData.totalDistance * 1.093613298;
+            }
+
+            // Update golf data with converted distances
+            _golfData = _golfData.copyWith(
+              carryDistance: newCarryDistance,
+              totalDistance: newTotalDistance,
+            );
+
+            emit((state as ConnectedState).copyWith( units: _units,
+              golfData: _golfData,));
           }
           break;
       }
@@ -346,7 +366,20 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       final latestShot = _shotRecords[latestKey];
 
       for (var shotModel in _shotRecords.values) {
-        await bleRepository.saveShot(shotModel);
+        // Check if shot is in meters, convert to yards before saving
+        if (shotModel.isMeter) {
+          final convertedShot = shotModel.copyWith(
+            carryDistance: shotModel.carryDistance * 1.093613298,
+            totalDistance: shotModel.totalDistance * 1.093613298,
+            isMeter: false, // Set to false after conversion
+          );
+          await bleRepository.saveShot(convertedShot);
+          print("🔄 Converted & Saved Shot #${shotModel.shotNumber}: "
+              "${shotModel.carryDistance}M → ${convertedShot.carryDistance.toStringAsFixed(1)}YD");
+        } else {
+          await bleRepository.saveShot(shotModel);
+          print("✅ Saved Shot #${shotModel.shotNumber} (already in yards)");
+        }
       }
       print("✅ All shots saved successfully!");
       _shotRecords
@@ -395,11 +428,11 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
 
   void _startSyncTimer() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(Duration(seconds: 15), (_) {
+    // _syncTimer = Timer.periodic(Duration(seconds: 20), (_) {
       if (state is ConnectedState && !(state as ConnectedState).isLoading) {
         add(SendSyncPacketEvent());
       }
-    });
+    // });
   }
 
   void _parseGolfData(Uint8List data) {
@@ -448,6 +481,10 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     final sessionTime = formatElapsedTime(_elapsedSeconds);
     final userUid = user?.uid ?? '';
 
+    if (data.recordNumber == 0) {
+      return;
+    }
+
     final shotModel = ShotAnalysisModel(
       id: '',
       userUid: userUid,
@@ -462,6 +499,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       time: time,
       sessionTime: sessionTime,
       timestamp: DateTime.now().millisecondsSinceEpoch,
+      isMeter: _units,
     );
 
     if (_shotRecords.containsKey(data.recordNumber)) {

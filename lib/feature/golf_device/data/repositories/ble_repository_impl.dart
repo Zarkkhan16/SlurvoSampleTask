@@ -74,6 +74,7 @@ class BleRepositoryImpl implements BleRepository {
       time: shot.time,
       sessionTime: shot.sessionTime,
       timestamp: shot.timestamp,
+      isMeter: shot.isMeter,
     );
 
     await datasource.saveShot(model);

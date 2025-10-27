@@ -12,6 +12,7 @@ class ShotAnalysisEntity {
   final String time; // HH:mm:ss
   final String sessionTime; // formatted elapsed
   final int timestamp; // epoch millis for sorting
+  final bool isMeter;
 
   ShotAnalysisEntity({
     required this.id,
@@ -27,5 +28,6 @@ class ShotAnalysisEntity {
     required this.time,
     required this.sessionTime,
     required this.timestamp,
+    required this.isMeter,
   });
 }

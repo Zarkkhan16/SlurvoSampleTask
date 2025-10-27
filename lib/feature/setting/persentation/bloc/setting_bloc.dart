@@ -32,7 +32,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
     final backlight = sharedPreferences.getBool('backlight') ?? false;
     final sleepTime = sharedPreferences.getInt('sleepTime') ?? 5;
-    final meters = sharedPreferences.getBool('unit') ?? event.initialUnit;
+    final meters = event.initialUnit;
 
     emit(SettingLoaded(backlight: backlight, sleepTime: sleepTime, meters: meters));
   }
@@ -81,7 +81,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     emit(cur.copyWith(isSending: true));
     try {
       await sendCommandUseCase.call(0x04, event.meters ? 1 : 0, 0x00);
-      await sharedPreferences.setBool('unit', event.meters);
+      // await sharedPreferences.setBool('unit', event.meters);
       emit(cur.copyWith(meters: event.meters, isSending: false));
     } catch (e) {
       emit(SettingError('Failed to set unit: $e'));

@@ -566,7 +566,7 @@ class ShotHistoryScreen extends StatelessWidget {
           _buildHeaderCell('Club\nSpeed', 'mph', flex: 1),
           _buildHeaderCell('Ball\nSpeed', 'deg', flex: 1),
           _buildHeaderCell('Smash\nFactor', 'rmp', flex: 1),
-          _buildHeaderCell('Carry\nDistance', 'ft', flex: 1),
+          _buildHeaderCell('Carry\nDistance', 'yds', flex: 1),
           _buildHeaderCell('Total\nDistance', 'yds', flex: 1),
         ],
       ),

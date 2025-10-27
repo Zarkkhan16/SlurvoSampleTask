@@ -16,6 +16,7 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
     required String time,
     required String sessionTime,
     required int timestamp,
+    required bool isMeter,
   }) : super(
     id: id,
     userUid: userUid,
@@ -30,7 +31,42 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
     time: time,
     sessionTime: sessionTime,
     timestamp: timestamp,
+    isMeter: isMeter,
   );
+
+  ShotAnalysisModel copyWith({
+    String? id,
+    String? userUid,
+    int? shotNumber,
+    int? clubName,
+    double? clubSpeed,
+    double? ballSpeed,
+    double? smashFactor,
+    double? carryDistance,
+    double? totalDistance,
+    String? date,
+    String? time,
+    String? sessionTime,
+    int? timestamp,
+    bool? isMeter,
+  }) {
+    return ShotAnalysisModel(
+      id: id ?? this.id,
+      userUid: userUid ?? this.userUid,
+      shotNumber: shotNumber ?? this.shotNumber,
+      clubName: clubName ?? this.clubName,
+      clubSpeed: clubSpeed ?? this.clubSpeed,
+      ballSpeed: ballSpeed ?? this.ballSpeed,
+      smashFactor: smashFactor ?? this.smashFactor,
+      carryDistance: carryDistance ?? this.carryDistance,
+      totalDistance: totalDistance ?? this.totalDistance,
+      date: date ?? this.date,
+      time: time ?? this.time,
+      sessionTime: sessionTime ?? this.sessionTime,
+      timestamp: timestamp ?? this.timestamp,
+      isMeter: isMeter ?? this.isMeter,
+    );
+  }
 
   factory ShotAnalysisModel.fromMap(Map<String, dynamic> map, String docId) {
     return ShotAnalysisModel(
@@ -47,6 +83,7 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
       time: map['time'] as String? ?? '',
       sessionTime: map['sessionTime'] as String? ?? '',
       timestamp: (map['timestamp'] as num?)?.toInt() ?? 0,
+      isMeter: map['isMeter'] as bool? ?? false,
     );
   }
 
@@ -64,6 +101,7 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
       'time': time,
       'sessionTime': sessionTime,
       'timestamp': timestamp,
+      'isMeter': isMeter,
     };
   }
 }
