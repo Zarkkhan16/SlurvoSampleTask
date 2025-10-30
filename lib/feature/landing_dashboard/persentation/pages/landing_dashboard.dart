@@ -1,11 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
-import 'package:onegolf/feature/golf_device/data/model/shot_anaylsis_model.dart';
-import 'package:onegolf/feature/golf_device/presentation/pages/dispersion_screen.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
@@ -44,7 +41,6 @@ class _LandingDashboardState extends State<LandingDashboard> {
               duration: Duration(seconds: 2),
             ),
           );
-
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/SignInScreen',

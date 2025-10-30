@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +18,7 @@ import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_event.
 import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/constants/app_strings.dart';
 import '../../../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
 import '../../domain/repositories/ble_repository.dart';
 
@@ -36,6 +38,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   Timer? _syncTimer;
   Timer? _scanTimer;
   final Map<int, ShotAnalysisModel> _shotRecords = {};
+  final Map<int, ShotAnalysisModel> _sessionData = {};
   final List<DeviceEntity> _discoveredDevices = [];
   DeviceEntity? _connectedDevice;
   GolfDataEntity _golfData = GolfDataEntity(
@@ -53,6 +56,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   int _elapsedSeconds = 0;
   final user = FirebaseAuth.instance.currentUser;
   final _bleResponseController = StreamController<List<int>>.broadcast();
+
   Stream<List<int>> get bleResponseStream => _bleResponseController.stream;
 
   GolfDeviceBloc({
@@ -90,9 +94,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onUpdateMetricFilter(
-      UpdateMetricFilterEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    UpdateMetricFilterEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     if (state is ConnectedState) {
       final currentState = state as ConnectedState;
       emit(currentState.copyWith(selectedMetrics: event.selectedMetrics));
@@ -229,7 +233,10 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
             _parseGolfData(Uint8List.fromList(data));
             _storeShotData(_golfData);
             if (state is ConnectedState) {
-              emit((state as ConnectedState).copyWith(golfData: _golfData, units: _units,));
+              emit((state as ConnectedState).copyWith(
+                golfData: _golfData,
+                units: _units,
+              ));
             }
           }
           break;
@@ -265,8 +272,10 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
               totalDistance: newTotalDistance,
             );
 
-            emit((state as ConnectedState).copyWith( units: _units,
-              golfData: _golfData,));
+            emit((state as ConnectedState).copyWith(
+              units: _units,
+              golfData: _golfData,
+            ));
           }
           break;
       }
@@ -322,24 +331,123 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     Emitter<GolfDeviceState> emit,
   ) async {
     try {
-      if (event.navigateToLanding) {
-        emit(DisconnectingState());
-      }
+      emit(DisconnectingState());
+
       // await _saveToLocal();
       await _saveAllShotsToFirebase();
+
+      if (_sessionData.isNotEmpty) {
+        final sessionSummary = _generateSessionSummary();
+        print("📊 SESSION SUMMARY:");
+        print(sessionSummary);
+      }
+      emit(NavigateToSessionSummaryState(summaryData: sessionSummary));
       await disconnectDeviceUseCase.call();
       await _notificationSubscription?.cancel();
       _syncTimer?.cancel();
+      _sessionData.clear();
       _connectedDevice = null;
       _hasWrittenInitialSync = false;
-      if (event.navigateToLanding) {
-        emit(NavigateToLandDashboardState());
-      }
+      // if (event.navigateToLanding) {
+      //   emit(NavigateToLandDashboardState());
+      // }
     } catch (e) {
       print(e);
       emit(ErrorState('Failed to disconnect: $e'));
     }
   }
+
+  Map<String, dynamic> _generateSessionSummary() {
+    if (_sessionData.isEmpty) return {};
+
+    final shots = _sessionData.values.toList();
+
+    // 1. Shot Averages (Per Club)
+    Map<int, List<ShotAnalysisModel>> shotsByClub = {};
+    for (var shot in shots) {
+      if (!shotsByClub.containsKey(shot.clubName)) {
+        shotsByClub[shot.clubName] = [];
+      }
+      shotsByClub[shot.clubName]!.add(shot);
+    }
+
+    List<Map<String, dynamic>> shotAverages = [];
+    shotsByClub.forEach((clubName, clubShots) {
+      double avgClubSpeed =
+          clubShots.map((s) => s.clubSpeed).reduce((a, b) => a + b) /
+              clubShots.length;
+      double avgBallSpeed =
+          clubShots.map((s) => s.ballSpeed).reduce((a, b) => a + b) /
+              clubShots.length;
+      double avgCarryDistance =
+          clubShots.map((s) => s.carryDistance).reduce((a, b) => a + b) /
+              clubShots.length;
+      double avgTotalDistance =
+          clubShots.map((s) => s.totalDistance).reduce((a, b) => a + b) /
+              clubShots.length;
+
+      // Calculate standard deviations for +/- values
+      double clubSpeedStdDev = _calculateStdDev(
+          clubShots.map((s) => s.clubSpeed).toList(), avgClubSpeed);
+      double ballSpeedStdDev = _calculateStdDev(
+          clubShots.map((s) => s.ballSpeed).toList(), avgBallSpeed);
+      double carryStdDev = _calculateStdDev(
+          clubShots.map((s) => s.carryDistance).toList(), avgCarryDistance);
+      double totalStdDev = _calculateStdDev(
+          clubShots.map((s) => s.totalDistance).toList(), avgTotalDistance);
+
+      shotAverages.add({
+        'clubName': clubName,
+        'clubDisplayName': AppStrings.clubs[clubName] ?? 'Unknown',
+        'avgClubSpeed': avgClubSpeed,
+        'clubSpeedStdDev': clubSpeedStdDev,
+        'avgBallSpeed': avgBallSpeed,
+        'ballSpeedStdDev': ballSpeedStdDev,
+        'avgCarryDistance': avgCarryDistance,
+        'carryStdDev': carryStdDev,
+        'avgTotalDistance': avgTotalDistance,
+        'totalStdDev': totalStdDev,
+        'shotCount': clubShots.length,
+      });
+    });
+
+    // 2. Session Summary
+    int totalBalls = shots.length;
+    String sessionTime = _formatElapsedTime(_elapsedSeconds);
+    int clubsUsed = shotsByClub.keys.length;
+
+    // 3. Shot Summary (individual shots with carry distance)
+    List<Map<String, dynamic>> shotSummary = [];
+    for (int i = 0; i < shots.length; i++) {
+      shotSummary.add({
+        'shotNumber': i + 1,
+        'carryDistance': shots[i].carryDistance,
+        'clubName': shots[i].clubName,
+        'clubDisplayName': AppStrings.clubs[shots[i].clubName] ?? 'Unknown',
+      });
+    }
+
+    return {
+      'shotAverages': shotAverages,
+      'sessionSummary': {
+        'totalBalls': totalBalls,
+        'sessionTime': sessionTime,
+        'clubsUsed': clubsUsed,
+      },
+      'shotSummary': shotSummary,
+    };
+  }
+  double _calculateStdDev(List<double> values, double mean) {
+    if (values.length <= 1) return 0.0;
+
+    double sumSquaredDiff = 0;
+    for (var value in values) {
+      sumSquaredDiff += (value - mean) * (value - mean);
+    }
+
+    return sqrt(sumSquaredDiff / values.length);
+  }
+  Map<String, dynamic> get sessionSummary => _generateSessionSummary();
 
   Future<void> _onSaveAllShots(
     SaveAllShotsEvent event,
@@ -366,22 +474,32 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       final latestShot = _shotRecords[latestKey];
 
       for (var shotModel in _shotRecords.values) {
+        ShotAnalysisModel shotToSave;
+
         // Check if shot is in meters, convert to yards before saving
         if (shotModel.isMeter) {
-          final convertedShot = shotModel.copyWith(
+          shotToSave = shotModel.copyWith(
             carryDistance: shotModel.carryDistance * 1.093613298,
             totalDistance: shotModel.totalDistance * 1.093613298,
-            isMeter: false, // Set to false after conversion
+            isMeter: false,
           );
-          await bleRepository.saveShot(convertedShot);
           print("🔄 Converted & Saved Shot #${shotModel.shotNumber}: "
-              "${shotModel.carryDistance}M → ${convertedShot.carryDistance.toStringAsFixed(1)}YD");
+              "${shotModel.carryDistance}M → ${shotToSave.carryDistance.toStringAsFixed(1)}YD");
         } else {
-          await bleRepository.saveShot(shotModel);
+          shotToSave = shotModel;
           print("✅ Saved Shot #${shotModel.shotNumber} (already in yards)");
         }
+
+        // Save to Firebase
+        await bleRepository.saveShot(shotToSave);
+
+        // ✅ Update session data (always, whether converted or not)
+        _sessionData[shotModel.shotNumber] = shotToSave;
       }
+
       print("✅ All shots saved successfully!");
+      print("📦 Total Session Shots: ${_sessionData.length}");
+
       _shotRecords
         ..clear()
         ..[latestKey] = latestShot!;
@@ -389,10 +507,11 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       print("❌ Error saving shots: $e");
     }
   }
+
   Future<void> _onReturnToConnectedState(
-      ReturnToConnectedStateEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    ReturnToConnectedStateEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     if (_connectedDevice != null) {
       if (_shotRecords.isNotEmpty) {
         final latestShot = _shotRecords.values.first;
@@ -425,14 +544,13 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     }
   }
 
-
   void _startSyncTimer() {
     _syncTimer?.cancel();
-    // _syncTimer = Timer.periodic(Duration(seconds: 20), (_) {
+    _syncTimer = Timer.periodic(Duration(seconds: 2), (_) {
       if (state is ConnectedState && !(state as ConnectedState).isLoading) {
         add(SendSyncPacketEvent());
       }
-    // });
+    });
   }
 
   void _parseGolfData(Uint8List data) {
@@ -502,18 +620,17 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       isMeter: _units,
     );
 
-    if (_shotRecords.containsKey(data.recordNumber)) {
-      _shotRecords[data.recordNumber] = shotModel;
-    } else {
-      _shotRecords[data.recordNumber] = shotModel;
-    }
+    _shotRecords[data.recordNumber] = shotModel;
+    _sessionData[data.recordNumber] = shotModel;
+
     print("📊 Stored Shots: $_shotRecords");
+    print("📦 Session Data Count: ${_sessionData.length}");
   }
 
   Future<void> _onDeleteLatestShot(
-      DeleteLatestShotEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    DeleteLatestShotEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     if (_shotRecords.isEmpty) return;
 
     // Sort keys to identify latest shot number
@@ -527,7 +644,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
 
     // If there’s a previous shot, show it
     if (_shotRecords.isNotEmpty) {
-      final prevKey = sortedKeys.length > 1 ? sortedKeys[sortedKeys.length - 2] : sortedKeys.first;
+      final prevKey = sortedKeys.length > 1
+          ? sortedKeys[sortedKeys.length - 2]
+          : sortedKeys.first;
       final prevShot = _shotRecords[prevKey];
 
       _golfData = _golfData.copyWith(

@@ -54,13 +54,14 @@ class ConnectedState extends GolfDeviceState {
     this.currentDate = '',
     this.elapsedTime = '00:00:00',
     Set<String>? selectedMetrics,
-  }) : selectedMetrics = selectedMetrics ?? {
-    'Club Speed',
-    'Ball Speed',
-    'Carry Distance',
-    'Total Distance',
-    'Smash Factor',
-  };
+  }) : selectedMetrics = selectedMetrics ??
+            {
+              'Club Speed',
+              'Ball Speed',
+              'Carry Distance',
+              'Total Distance',
+              'Smash Factor',
+            };
 
   ConnectedState copyWith({
     DeviceEntity? device,
@@ -83,7 +84,15 @@ class ConnectedState extends GolfDeviceState {
   }
 
   @override
-  List<Object?> get props => [device, golfData, isLoading, units, currentDate, elapsedTime,selectedMetrics,];
+  List<Object?> get props => [
+        device,
+        golfData,
+        isLoading,
+        units,
+        currentDate,
+        elapsedTime,
+        selectedMetrics,
+      ];
 }
 
 class DisconnectedState extends GolfDeviceState {
@@ -101,7 +110,13 @@ class ClubUpdatedState extends ConnectedState {
     required GolfDataEntity golfData,
     required bool units,
     Set<String>? selectedMetrics,
-  }) : super(device: device, golfData: golfData, isLoading: false, units: units, selectedMetrics: selectedMetrics,);
+  }) : super(
+          device: device,
+          golfData: golfData,
+          isLoading: false,
+          units: units,
+          selectedMetrics: selectedMetrics,
+        );
 }
 
 class ErrorState extends GolfDeviceState {
@@ -122,17 +137,15 @@ class ShotRecordsLoadedState extends GolfDeviceState {
 
   ShotRecordsLoadedState(this.shotRecords);
 }
-class ShotHistoryLoadingState extends GolfDeviceState {}
-class ShotHistoryLoadedState extends GolfDeviceState {
-  final List<ShotAnalysisModel> shots;
-  ShotHistoryLoadedState(this.shots);
-}
-
-class ShotHistoryErrorState extends GolfDeviceState {
-  final String message;
-  ShotHistoryErrorState(this.message);
-}
 
 class DisconnectingState extends GolfDeviceState {}
+
 class SaveShotsSuccessfully extends GolfDeviceState {}
+
 class SaveDataLoading extends GolfDeviceState {}
+
+class NavigateToSessionSummaryState extends GolfDeviceState {
+  final Map<String, dynamic> summaryData;
+
+  NavigateToSessionSummaryState({required this.summaryData});
+}

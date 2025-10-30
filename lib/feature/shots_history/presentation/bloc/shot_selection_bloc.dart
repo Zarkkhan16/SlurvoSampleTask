@@ -13,7 +13,7 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
   final User? user;
   final SendCommandUseCase sendCommandUseCase;
   final GolfDeviceBloc golfDeviceBloc;
-
+  List<ShotAnalysisModel> shots = [];
   ShotHistoryBloc({
     required this.bleRepository,
     required this.user,
@@ -52,7 +52,7 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
         return;
       }
 
-      final shots = await bleRepository.fetchShotsForUser(userId);
+      shots = await bleRepository.fetchShotsForUser(userId);
 
       if (shots.isEmpty) {
         emit(ShotHistoryLoadedState(

@@ -11,6 +11,7 @@ import 'package:onegolf/feature/golf_device/domain/usecases/subscribe_notificati
 import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_bloc.dart';
 import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_event.dart';
 import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_state.dart';
+import 'package:onegolf/feature/golf_device/presentation/pages/session_summary_screen.dart';
 import 'package:onegolf/feature/shots_history/presentation/pages/shot_history_screen.dart';
 import 'package:onegolf/feature/home_screens/presentation/widgets/buttons/action_button.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -49,6 +50,15 @@ class GolfDeviceView extends StatelessWidget {
         } else if (state is ConnectedState && state != state) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Connected to ${state.device.name}')),
+          );
+        } else if (state is NavigateToSessionSummaryState) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SessionSummaryScreen(
+                summaryData: state.summaryData,
+              ),
+            ),
           );
         } else if (state is NavigateToLandDashboardState) {
           Navigator.pushNamedAndRemoveUntil(
@@ -293,56 +303,6 @@ class GolfDeviceView extends StatelessWidget {
                                   },
                                 ),
                         ),
-                  // GridView.builder(
-                  //   padding: EdgeInsets.all(16),
-                  //   gridDelegate:
-                  //       SliverGridDelegateWithFixedCrossAxisCount(
-                  //     crossAxisCount: 2,
-                  //     crossAxisSpacing: 30,
-                  //     mainAxisSpacing: 20,
-                  //     childAspectRatio: 1.42,
-                  //   ),
-                  //   itemCount: 5,
-                  //   itemBuilder: (context, index) {
-                  //     final metrics = [
-                  //       {
-                  //         "metric": "Club Speed",
-                  //         "value": state.golfData.clubSpeed
-                  //             .toStringAsFixed(1),
-                  //         "unit": "MPH"
-                  //       },
-                  //       {
-                  //         "metric": "Ball Speed",
-                  //         "value": state.golfData.ballSpeed
-                  //             .toStringAsFixed(1),
-                  //         "unit": "MPH"
-                  //       },
-                  //       {
-                  //         "metric": "Carry Distance",
-                  //         "value": state.golfData.carryDistance
-                  //             .toStringAsFixed(1),
-                  //         "unit": state.units ? "M" : "YDS"
-                  //       },
-                  //       {
-                  //         "metric": "Total Distance",
-                  //         "value": state.golfData.totalDistance
-                  //             .toStringAsFixed(1),
-                  //         "unit": state.units ? "M" : "YDS"
-                  //       },
-                  //       {
-                  //         "metric": "Smash Factor",
-                  //         "value": state.golfData.smashFactor
-                  //             .toStringAsFixed(2),
-                  //         "unit": ""
-                  //       },
-                  //     ];
-                  //     return GlassmorphismCard(
-                  //       value: metrics[index]["value"]!,
-                  //       name: metrics[index]["metric"]!,
-                  //       unit: metrics[index]["unit"]!,
-                  //     );
-                  //   },
-                  // ),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -365,13 +325,16 @@ class GolfDeviceView extends StatelessWidget {
                           svgAssetPath: AppImages.groupIcon,
                           text: AppStrings.dispersionText,
                           onPressed: () {
-                            final latestShot = context.read<GolfDeviceBloc>().latestShot;
+                            final latestShot =
+                                context.read<GolfDeviceBloc>().latestShot;
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => BlocProvider.value(
                                   value: context.read<GolfDeviceBloc>(),
-                                  child: DispersionScreen(selectedShot: latestShot,),
+                                  child: DispersionScreen(
+                                    selectedShot: latestShot,
+                                  ),
                                 ),
                               ),
                             );
@@ -410,20 +373,6 @@ class GolfDeviceView extends StatelessWidget {
                       ),
                     ],
                   ),
-                  // SessionViewButton(
-                  //   onSessionClick: () {
-                  //     context.read<GolfDeviceBloc>().add(SaveAllShotsEvent());
-                  //   },
-                  // ),
-                  // SessionViewButton(
-                  //   onSessionClick: () {
-                  //     context
-                  //         .read<GolfDeviceBloc>()
-                  //         .add(DisconnectDeviceEvent());
-                  //   },
-                  //   backgroundColor: Colors.red,
-                  //   buttonText: 'End Session',
-                  // ),
                 ],
               ),
             ),

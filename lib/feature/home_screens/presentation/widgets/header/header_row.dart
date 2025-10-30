@@ -51,12 +51,12 @@ class _HeaderRowState extends State<HeaderRow> {
         GestureDetector(
           onTap: widget.onBackButton ?? () {
             if (widget.goScanScreen) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const ScannedDevicesScreen(),
-                ),
-              );
+              // Navigator.pushReplacement(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (_) => const ScannedDevicesScreen(),
+              //   ),
+              // );
             } else {
               Navigator.pop(context);
             }

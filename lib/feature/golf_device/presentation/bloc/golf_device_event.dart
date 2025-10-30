@@ -8,7 +8,6 @@ abstract class GolfDeviceEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-
 class StartScanningEvent extends GolfDeviceEvent {}
 
 class StopScanningEvent extends GolfDeviceEvent {}
@@ -50,6 +49,7 @@ class NotificationReceivedEvent extends GolfDeviceEvent {
 }
 
 class SendSyncPacketEvent extends GolfDeviceEvent {}
+
 class UpdateClubEvent extends GolfDeviceEvent {
   final int clubId;
 
@@ -61,18 +61,21 @@ class UpdateClubEvent extends GolfDeviceEvent {
 
 class ToggleUnitsEvent extends GolfDeviceEvent {}
 
-class DisconnectDeviceEvent extends GolfDeviceEvent {
-  final bool navigateToLanding;
-  DisconnectDeviceEvent({this.navigateToLanding = true});
-}
+class DisconnectDeviceEvent extends GolfDeviceEvent {}
+
 class UpdateElapsedTimeEvent extends GolfDeviceEvent {}
+
 class LoadShotRecordsEvent extends GolfDeviceEvent {}
+
 class SaveAllShotsEvent extends GolfDeviceEvent {}
+
 class ReturnToConnectedStateEvent extends GolfDeviceEvent {
   ReturnToConnectedStateEvent();
+
   @override
   List<Object?> get props => [];
 }
+
 class DeleteLatestShotEvent extends GolfDeviceEvent {}
 
 class UpdateMetricFilterEvent extends GolfDeviceEvent {

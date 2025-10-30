@@ -12,4 +12,5 @@ class AppColors {
   static const Color unselectedIcon = Colors.grey;
   static const Color buttonBackground = Colors.white;
   static const Color buttonText = Colors.black;
+  static const Color red = Colors.red;
 }

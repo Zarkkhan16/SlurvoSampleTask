@@ -6,8 +6,15 @@ import 'package:onegolf/core/constants/app_strings.dart';
 class SessionViewButton extends StatelessWidget {
   final VoidCallback? onSessionClick;
   final String buttonText;
-  final Color? backgroundColor;
-  const SessionViewButton({super.key, required this.onSessionClick, this.buttonText = AppStrings.sessionViewText, this.backgroundColor = AppColors.buttonBackground});
+  final Color? backgroundColor, textColor;
+
+  const SessionViewButton({
+    super.key,
+    required this.onSessionClick,
+    this.buttonText = AppStrings.sessionViewText,
+    this.backgroundColor = AppColors.buttonBackground,
+    this.textColor = AppColors.buttonText,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +47,7 @@ class SessionViewButton extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
               textStyle: TextStyle(
-                color: AppColors.buttonText,
+                color: textColor,
                 fontSize: fontSize.clamp(16.0, 24.0),
                 fontWeight: FontWeight.w700,
                 height: 1.0,
