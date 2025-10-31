@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
-import '../../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
-import '../../home_screens/presentation/widgets/header/header_row.dart';
+import '../../widget/bottom_nav_bar.dart';
+import '../../widget/custom_app_bar.dart';
+import '../../widget/header_row.dart';
 import '../model/club_model.dart';
 class ChooseClubScreenPage extends StatefulWidget {
   final Club? selectedClub;

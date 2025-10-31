@@ -10,6 +10,10 @@ class AppImages {
   static const String googleIcon = 'assets/svgs/google_icon.svg';
   static const String appleIcon = 'assets/svgs/apple_icon.svg';
   static const String analysisIcon = 'assets/svgs/analysis_icon.svg';
+  static const String combineTestIcon = 'assets/svgs/combine_test.svg';
+  static const String ladderDrillIcon = 'assets/svgs/ladder_drill.svg';
+  static const String longestDriveIcon = 'assets/svgs/longest_drive.svg';
+  static const String clubGappingIcon = 'assets/svgs/club_gapping.svg';
 
   //png
   static const String slurvoLogo = 'assets/png/slurvo.png';
@@ -17,4 +21,6 @@ class AppImages {
   static const String groundGreen = 'assets/png/ground_green.png';
   static const String deviceImage = 'assets/png/device.png';
   static const String dispersionGround = 'assets/png/dispersion_ground.png';
+  static const String longestDriveImage = 'assets/png/longest_drive_image.png';
+  static const String trophyImage = 'assets/png/trophy.png';
 }

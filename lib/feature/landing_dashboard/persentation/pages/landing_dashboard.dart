@@ -9,11 +9,15 @@ import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../golf_device/presentation/bloc/golf_device_bloc.dart';
 import '../../../golf_device/presentation/pages/golf_device_screen.dart';
-import '../../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
-import '../../../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
+import '../../../widget/bottom_nav_bar.dart';
+import '../../../widget/custom_app_bar.dart';
+import '../../../practice_games/presentation/bloc/practice_games_bloc.dart';
+import '../../../practice_games/presentation/pages/practice_games_screen.dart';
+import '../../../widget/gradient_border_container.dart';
 import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
+import '../widget/game_mode_icon.dart';
 
 class LandingDashboard extends StatefulWidget {
   const LandingDashboard({super.key});
@@ -101,7 +105,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                 Container(
                   margin: const EdgeInsets.all(12),
                   width: double.infinity,
-                  height: 136,
+                  height: 150,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -135,91 +139,201 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BlocProvider(
-                          create: (context) => di.sl<GolfDeviceBloc>(),
-                          child: GolfDeviceView(),
+                // Shot Analysis Card
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BlocProvider(
+                            create: (context) => di.sl<GolfDeviceBloc>(),
+                            child: GolfDeviceView(),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardBackground,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.4),
-                        width: 0.5,
+                      );
+                    },
+                    child: GradientBorderContainer(
+                      borderRadius: 32,
+                      borderWidth: 1,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Colors.white,
+                                        Colors.white54,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    "Free",
+                                    style: AppTextStyle.roboto(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  "Shot Analysis",
+                                  style: AppTextStyle.roboto(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  "Track your shots in real-time with accurate ball and club metrics.",
+                                  style: AppTextStyle.roboto(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Transform.scale(
+                            scale: 2.0,
+                            child: Image.asset(
+                              AppImages.deviceImage,
+                              width: 100,
+                              height: 140,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Colors.white,
-                                      Colors.white54,
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
+                  ),
+                ),
+                SizedBox(height: 12),
+                // Practice Games Card
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BlocProvider(
+                            create: (context) => di.sl<PracticeGamesBloc>(),
+                            child: PracticeGamesScreen(),
+                          ),
+                        ),
+                      );
+                    },
+                    child: GradientBorderContainer(
+                      borderRadius: 32,
+                      borderWidth: 1,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xffFCD56A),
+                                        Color(0xffFCD56A),
+                                        Color(0xffB6782A),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
-                                  borderRadius: BorderRadius.circular(4),
+                                  child: Text(
+                                    "Premium",
+                                    style: AppTextStyle.roboto(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black),
+                                  ),
                                 ),
-                                child: Text(
-                                  "Free",
+                                const SizedBox(height: 5),
+                                Text(
+                                  "Practice Games",
                                   style: AppTextStyle.roboto(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black),
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                "SHOT ANALYSIS",
-                                style: AppTextStyle.roboto(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
+                                const SizedBox(height: 5),
+                                Text(
+                                  "Improve your skills with engaging and competitive practice modes.",
+                                  style: AppTextStyle.roboto(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                "Track your shots in real-time with accurate ball and club metrics.",
-                                style: AppTextStyle.roboto(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Transform.scale(
-                          scale: 2.0,
-                          child: Image.asset(
-                            AppImages.deviceImage,
-                            width: 100,
-                            height: 140,
-                            fit: BoxFit.cover,
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    GameModeIcon(
+                                      icon: AppImages.combineTestIcon,
+                                      label: "Combine Test",
+                                    ),
+                                    GameModeIcon(
+                                      icon: AppImages.ladderDrillIcon,
+                                      label: "Ladder Drill",
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    GameModeIcon(
+                                      icon: AppImages.longestDriveIcon,
+                                      label: "Longest Drive",
+                                    ),
+                                    GameModeIcon(
+                                      icon: AppImages.clubGappingIcon,
+                                      label: "Club Gapping",
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

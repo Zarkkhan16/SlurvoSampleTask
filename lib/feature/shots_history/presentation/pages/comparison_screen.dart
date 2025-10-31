@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_strings.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
-import 'package:onegolf/feature/home_screens/presentation/widgets/buttons/session_view_button.dart';
-import 'package:onegolf/feature/home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
-import 'package:onegolf/feature/home_screens/presentation/widgets/header/header_row.dart';
-import 'package:onegolf/feature/home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
+import 'package:onegolf/feature/widget/custom_app_bar.dart';
+import 'package:onegolf/feature/widget/header_row.dart';
+import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/golf_device/data/model/shot_anaylsis_model.dart';
 import 'package:onegolf/feature/shots_history/presentation/pages/view_comparison_screen.dart';
+
+import '../../../widget/session_view_button.dart';
 class ComparisonScreen extends StatefulWidget {
   final List<ShotAnalysisModel> shots;
   const ComparisonScreen({

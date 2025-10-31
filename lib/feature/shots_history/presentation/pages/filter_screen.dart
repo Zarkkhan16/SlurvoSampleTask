@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../choose_club_screen/model/club_model.dart';
-import '../../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
-import '../../../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
-import '../../../home_screens/presentation/widgets/header/header_row.dart';
+import '../../../widget/bottom_nav_bar.dart';
+import '../../../widget/custom_app_bar.dart';
+import '../../../widget/header_row.dart';
 
 class FilterScreen extends StatefulWidget {
   final List<Club> selectedClubs;

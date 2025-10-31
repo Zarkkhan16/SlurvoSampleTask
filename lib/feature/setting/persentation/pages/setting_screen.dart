@@ -10,9 +10,9 @@ import '../../../../core/di/injection_container.dart';
 import '../../../golf_device/data/services/ble_service.dart';
 import '../../../golf_device/domain/entities/device_entity.dart';
 import '../../../golf_device/domain/usecases/send_command_usecase.dart';
-import '../../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
-import '../../../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
-import '../../../home_screens/presentation/widgets/header/header_row.dart';
+import '../../../widget/bottom_nav_bar.dart';
+import '../../../widget/custom_app_bar.dart';
+import '../../../widget/header_row.dart';
 
 class SettingScreen extends StatelessWidget {
   final DeviceEntity connectedDevice;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:onegolf/feature/home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
-import 'package:onegolf/feature/home_screens/presentation/widgets/header/header_row.dart';
+import 'package:onegolf/feature/widget/custom_app_bar.dart';
+import 'package:onegolf/feature/widget/header_row.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../home_screens/presentation/widgets/bottom_nav_bar/bottom_nav_bar.dart';
+import '../../../widget/bottom_nav_bar.dart';
 
 class MetricFilterScreen extends StatefulWidget {
   final Set<String> initialSelectedMetrics;

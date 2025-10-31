@@ -19,7 +19,7 @@ import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_state.
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../home_screens/presentation/widgets/custom_app_bar/custom_app_bar.dart';
+import '../../../widget/custom_app_bar.dart';
 import '../../domain/repositories/ble_repository.dart';
 
 class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {

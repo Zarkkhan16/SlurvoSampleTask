@@ -1,71 +1,7 @@
-//
-// import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-// import 'package:get_it/get_it.dart';
-// import 'package:onegolf/feature/ble/domain/usecases/discover_devices.dart';
-// import 'package:onegolf/feature/ble/domain/usecases/write_characteristics.dart';
-// import 'package:onegolf/feature/ble/presentation/block/ble_bloc.dart';
-// import 'package:onegolf/feature/home_screens/data/%20datasources/shot_local_data_source.dart';
-// import 'package:onegolf/feature/home_screens/data/repositories/shot_repository_impl.dart';
-// import 'package:onegolf/feature/home_screens/domain/repositories/shot_repository.dart';
-// import 'package:onegolf/feature/home_screens/domain/usecases/get_shot_data.dart';
-//
-// // BLE imports
-// import 'package:onegolf/feature/ble/data/repositories/ble_repository_impl.dart';
-// import 'package:onegolf/feature/ble/domain/repositories/ble_repository_old.dart';
-// import 'package:onegolf/feature/ble/domain/usecases/scan_for_devices.dart';
-// import 'package:onegolf/feature/ble/domain/usecases/connect_to_device.dart';
-// import 'package:onegolf/feature/ble/domain/usecases/read_characteristic.dart';
-//
-//
-// final sl = GetIt.instance;
-//
-// Future<void> init() async {
-//   //
-//   // sl.registerFactory(() => BleBloc(
-//   //   scanForDevices: sl(),
-//   //   connectToDevice: sl(),
-//   //   discoverServices: sl(),
-//   //   readCharacteristic: sl(),
-//   //   writeCharacteristic: sl(),
-//   //   shotRepository: sl()
-//   //
-//   // ));
-// // Register reactive ble singleton
-//   sl.registerLazySingleton(() => FlutterReactiveBle());
-//
-// // Register repository
-//
-// // Register bloc
-//   sl.registerFactory(() => BleBloc(
-//     ble: sl<FlutterReactiveBle>(),
-//     shotRepository: sl<ShotRepository>(),
-//   ));
-//
-//
-//   // Use cases
-//   sl.registerLazySingleton(() => GetShotData(sl()));
-//
-//   // Repository
-//   sl.registerLazySingleton<BleRepository>(() => BleRepositoryImpl());
-//
-//   sl.registerLazySingleton<ShotRepository>(() => ShotRepositoryImpl(localDataSource: sl()));
-//
-//   // Data source
-//   sl.registerLazySingleton<ShotLocalDataSource>(() => ShotLocalDataSourceImpl());
-//
-//
-//   // Use cases
-//   sl.registerLazySingleton(() => ScanForDevices(sl()));
-//   sl.registerLazySingleton(() => ConnectToDevice(sl()));
-//   sl.registerLazySingleton(() => DiscoverServices(sl()));
-//   sl.registerLazySingleton(() => ReadCharacteristic(sl()));
-//   sl.registerLazySingleton(() => WriteCharacteristic(sl()));
-//
-// }
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:onegolf/feature/practice_games/presentation/bloc/practice_games_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../feature/auth/data/repository/auth_repository_impl.dart';
 import '../../feature/auth/domain/repository/auth_repository.dart';
@@ -208,4 +144,6 @@ Future<void> init() async {
 
   sl.registerLazySingleton(() => FirebaseAuth.instance);
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
+
+  sl.registerFactory<PracticeGamesBloc>(() => PracticeGamesBloc());
 }
