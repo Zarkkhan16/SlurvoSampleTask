@@ -10,6 +10,7 @@ import 'feature/auth/domain/usecases/login_user.dart';
 import 'feature/auth/domain/usecases/signup_user.dart';
 import 'feature/auth/presentation/bloc/auth_bloc.dart';
 import 'feature/auth/presentation/pages/sign_up_screen.dart';
+import 'feature/ble_management/presentation/bloc/ble_management_bloc.dart';
 import 'feature/golf_device/domain/repositories/ble_repository.dart';
 import 'feature/landing_dashboard/persentation/bloc/dashboard_bloc.dart';
 import 'feature/splash/splash_screen.dart';
@@ -51,6 +52,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => di.sl<DashboardBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.sl<BleManagementBloc>(),
         ),
       ],
       child: MaterialApp(

@@ -342,22 +342,22 @@ class ShotHistoryScreen extends StatelessWidget {
               final metrics = [
                 {
                   "metric": "Club Speed",
-                  "value": shot?.clubSpeed.toStringAsFixed(1) ?? '0.0',
+                  "value": shot?.clubSpeed.toStringAsFixed(2) ?? '0.0',
                   "unit": "MPH"
                 },
                 {
                   "metric": "Ball Speed",
-                  "value": shot?.ballSpeed.toStringAsFixed(1) ?? '0.0',
+                  "value": shot?.ballSpeed.toStringAsFixed(2) ?? '0.0',
                   "unit": "MPH"
                 },
                 {
                   "metric": "Carry Distance",
-                  "value": shot?.carryDistance.toStringAsFixed(1) ?? '0.0',
+                  "value": shot?.carryDistance.toStringAsFixed(2) ?? '0.0',
                   "unit": "YDS"
                 },
                 {
                   "metric": "Smash Factor",
-                  "value": shot?.smashFactor.toStringAsFixed(1) ?? '0.0',
+                  "value": shot?.smashFactor.toStringAsFixed(2) ?? '0.0',
                   "unit": ""
                 },
               ];
@@ -542,21 +542,21 @@ class ShotHistoryScreen extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               _buildDataCell(
-                                  shot.clubSpeed.toStringAsFixed(1), isSelected,
+                                  shot.clubSpeed.toStringAsFixed(2), isSelected,
                                   flex: 1),
                               _buildDataCell(
-                                  shot.ballSpeed.toStringAsFixed(1), isSelected,
+                                  shot.ballSpeed.toStringAsFixed(2), isSelected,
                                   flex: 1),
                               _buildDataCell(
-                                  shot.smashFactor.toStringAsFixed(1),
+                                  shot.smashFactor.toStringAsFixed(2),
                                   isSelected,
                                   flex: 1),
                               _buildDataCell(
-                                  shot.carryDistance.toStringAsFixed(1),
+                                  shot.carryDistance.toStringAsFixed(2),
                                   isSelected,
                                   flex: 1),
                               _buildDataCell(
-                                  shot.totalDistance.toStringAsFixed(1),
+                                  shot.totalDistance.toStringAsFixed(2),
                                   isSelected,
                                   flex: 1),
                             ],

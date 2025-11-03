@@ -1,6 +1,9 @@
+import 'package:onegolf/feature/landing_dashboard/domain/entities/user_profile.dart';
+
 class AppStrings {
   static const String appTitle = 'BLE App';
   static const String slurvoTitle = 'SLURVO';
+  static UserProfile userProfileData = UserProfile(uid: "", name: "", email: "");
   static const String shotAnalysisTitle = 'Shot Analysis';
   static const String customizeText = 'Customize';
   static const String deleteShotText = 'Delete Shot';

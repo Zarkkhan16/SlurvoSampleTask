@@ -201,11 +201,11 @@ class SessionSummaryScreen extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                avg['avgClubSpeed'].toStringAsFixed(1),
+                avg['avgClubSpeed'].toStringAsFixed(2),
                 style: _tableHeaderStyle(),
               ),
               Text(
-                '+${avg['clubSpeedStdDev'].toStringAsFixed(1)}',
+                '+${avg['clubSpeedStdDev'].toStringAsFixed(2)}',
                 style: _tableHeaderStyle(fontSized: 8),
               ),
             ],
@@ -216,11 +216,11 @@ class SessionSummaryScreen extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                avg['avgCarryDistance'].toStringAsFixed(1),
+                avg['avgCarryDistance'].toStringAsFixed(2),
                 style: _tableHeaderStyle(),
               ),
               Text(
-                '+${avg['carryStdDev'].toStringAsFixed(1)}',
+                '+${avg['carryStdDev'].toStringAsFixed(2)}',
                 style: _tableHeaderStyle(fontSized: 8),
               ),
             ],
@@ -231,11 +231,11 @@ class SessionSummaryScreen extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                avg['avgTotalDistance'].toStringAsFixed(1),
+                avg['avgTotalDistance'].toStringAsFixed(2),
                 style: _tableHeaderStyle(),
               ),
               Text(
-                '+${avg['totalStdDev'].toStringAsFixed(1)}',
+                '+${avg['totalStdDev'].toStringAsFixed(2)}',
                 style: _tableHeaderStyle(fontSized: 8),
               ),
             ],
@@ -399,7 +399,7 @@ class SessionSummaryScreen extends StatelessWidget {
             style: _tableHeaderStyle(),
           ),
           Text(
-            '${shot['carryDistance'].toStringAsFixed(1)}y',
+            '${shot['carryDistance'].toStringAsFixed(2)}y',
             style: _tableHeaderStyle(),
           ),
         ],

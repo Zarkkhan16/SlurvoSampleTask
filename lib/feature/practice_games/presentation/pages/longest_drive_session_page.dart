@@ -21,6 +21,18 @@ class LongestDriveSessionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PracticeGamesBloc, PracticeGamesState>(
       builder: (context, state) {
+        String getSafeValue(double Function() valueGetter) {
+          final index = state.currentAttempt - 1;
+          if (state.latestBleData.isEmpty || index < 0 || index >= state.latestBleData.length) {
+            return '0.00';
+          }
+          return valueGetter().toStringAsFixed(2);
+        }
+
+        final carryDistance = getSafeValue(() => state.latestBleData[state.currentAttempt - 1].carryDistance);
+        final totalDistance = getSafeValue(() => state.latestBleData[state.currentAttempt - 1].totalDistance);
+        final ballSpeed = getSafeValue(() => state.latestBleData[state.currentAttempt - 1].ballSpeed);
+
         return Scaffold(
           backgroundColor: AppColors.primaryBackground,
           appBar: CustomAppBar(),
@@ -29,7 +41,15 @@ class LongestDriveSessionPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
             child: Column(
               children: [
-                HeaderRow(headingName: "Longest Drive"),
+                HeaderRow(
+                  headingName: "Longest Drive",
+                  onBackButton: () {
+                    context
+                        .read<PracticeGamesBloc>()
+                        .add(StopListeningToBleDataEvent());
+                    Navigator.pop(context);
+                  },
+                ),
                 SizedBox(height: 10),
                 Text(
                   "Attempt ${state.currentAttempt} of $totalShots",
@@ -39,25 +59,33 @@ class LongestDriveSessionPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
-                MetricDisplay(value: "0.00", label: "Carry Distance", unit: "YDS"),
-                MetricDisplay(value: "0.00", label: "Total Distance", unit: "YDS"),
-                MetricDisplay(value: "0.00", label: "Ball Speed", unit: "MPH"),
+                MetricDisplay(
+                    value: carryDistance, label: "Carry Distance", unit: "YDS"),
+                MetricDisplay(
+                    value: totalDistance, label: "Total Distance", unit: "YDS"),
+                MetricDisplay(value: ballSpeed, label: "Ball Speed", unit: "MPH"),
                 const Spacer(),
+                if(state.currentAttempt <= state.latestBleData.length)
                 SessionViewButton(
                   onSessionClick: () {
                     if (state.currentAttempt < totalShots) {
                       context.read<PracticeGamesBloc>().add(NextAttemptEvent());
                     } else {
-                      context.read<PracticeGamesBloc>().add(ResetSessionEvent());
+                      context.read<PracticeGamesBloc>().add(SessionEndAttemptEvent());
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => LongestDriveSessionEndPage(),
+                          builder: (_) => BlocProvider.value(
+                            value: BlocProvider.of<PracticeGamesBloc>(context),
+                            child: LongestDriveSessionEndPage(),
+                          ),
                         ),
                       );
                     }
                   },
-                  buttonText: state.currentAttempt == totalShots ? "End Session" : "Next",
+                  buttonText: state.currentAttempt == totalShots
+                      ? "End Session"
+                      : "Next",
                 ),
                 const SizedBox(height: 20),
               ],

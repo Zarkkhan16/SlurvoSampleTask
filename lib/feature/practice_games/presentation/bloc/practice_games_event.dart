@@ -15,5 +15,31 @@ class UpdateCustomShotsEvent extends PracticeGamesEvent {
 class AddPlayerEvent extends PracticeGamesEvent {}
 
 class NextAttemptEvent extends PracticeGamesEvent {}
+class SessionEndAttemptEvent extends PracticeGamesEvent {}
 
 class ResetSessionEvent extends PracticeGamesEvent {}
+
+class StartListeningToBleDataEvent extends PracticeGamesEvent {}
+
+/// Stop listening to BLE notifications
+class StopListeningToBleDataEvent extends PracticeGamesEvent {}
+
+/// Send command/packet to BLE device
+class SendBleCommandEvent extends PracticeGamesEvent {
+  final List<int> command;
+
+  SendBleCommandEvent(this.command);
+
+  @override
+  List<Object?> get props => [command];
+}
+
+/// BLE data received from device
+class BleDataReceivedEvent extends PracticeGamesEvent {
+  final List<int> data;
+
+  BleDataReceivedEvent(this.data);
+
+  @override
+  List<Object?> get props => [data];
+}

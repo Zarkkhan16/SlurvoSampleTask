@@ -7,7 +7,7 @@ class GolfDataEntity {
   final double carryDistance;
   final double totalDistance;
 
-  GolfDataEntity({
+  const GolfDataEntity({
     required this.battery,
     required this.recordNumber,
     required this.clubName,

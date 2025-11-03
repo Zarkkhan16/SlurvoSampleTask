@@ -44,17 +44,17 @@ class ViewComparisonScreen extends StatelessWidget {
     final metrics = [
       {
         "metric": "Ball Speed",
-        "value": shot.ballSpeed.toStringAsFixed(1),
+        "value": shot.ballSpeed.toStringAsFixed(2),
         "unit": "MPH"
       },
       {
         "metric": "Club Speed",
-        "value": shot.clubSpeed.toStringAsFixed(1),
+        "value": shot.clubSpeed.toStringAsFixed(2),
         "unit": "MPH"
       },
       {
         "metric": "Carry Distance",
-        "value": shot.carryDistance.toStringAsFixed(1),
+        "value": shot.carryDistance.toStringAsFixed(2),
         "unit": "YDS"
       },
       {

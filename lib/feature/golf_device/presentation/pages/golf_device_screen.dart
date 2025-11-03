@@ -123,22 +123,22 @@ class GolfDeviceView extends StatelessWidget {
     final allMetrics = [
       {
         "metric": "Club Speed",
-        "value": state.golfData.clubSpeed.toStringAsFixed(1),
+        "value": state.golfData.clubSpeed.toStringAsFixed(2),
         "unit": "MPH"
       },
       {
         "metric": "Ball Speed",
-        "value": state.golfData.ballSpeed.toStringAsFixed(1),
+        "value": state.golfData.ballSpeed.toStringAsFixed(2),
         "unit": "MPH"
       },
       {
         "metric": "Carry Distance",
-        "value": state.golfData.carryDistance.toStringAsFixed(1),
+        "value": state.golfData.carryDistance.toStringAsFixed(2),
         "unit": state.units ? "M" : "YDS"
       },
       {
         "metric": "Total Distance",
-        "value": state.golfData.totalDistance.toStringAsFixed(1),
+        "value": state.golfData.totalDistance.toStringAsFixed(2),
         "unit": state.units ? "M" : "YDS"
       },
       {

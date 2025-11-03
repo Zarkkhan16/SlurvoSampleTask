@@ -15,7 +15,7 @@ import '../bloc/practice_games_event.dart';
 import '../widgets/add_player_chip.dart';
 import '../widgets/player_chip.dart';
 import '../widgets/shot_option.dart';
-import 'longest_drive_session_page.dart';
+import 'longest_drive_session_page.dart' hide SessionViewButton;
 
 class LongestDriveMainPage extends StatefulWidget {
   const LongestDriveMainPage({super.key});
@@ -163,6 +163,7 @@ class _LongestDriveMainPageState extends State<LongestDriveMainPage> {
                 if (MediaQuery.of(context).viewInsets.bottom > 0) const Spacer(),
                 SessionViewButton(
                   onSessionClick: () {
+                    context.read<PracticeGamesBloc>().add(StartListeningToBleDataEvent());
                     Navigator.push(
                       context,
                       MaterialPageRoute(

@@ -1,6 +1,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onegolf/core/constants/app_strings.dart';
 import '../../domain/usecases/get_user_profile.dart';
 import 'dashboard_event.dart';
 import 'dashboard_state.dart';
@@ -18,6 +19,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         final profile = await getUserProfile(firebaseAuth.currentUser?.uid ?? '');
 
         if (profile != null) {
+          AppStrings.userProfileData = profile;
           emit(DashboardLoaded(profile));
         } else {
           emit(DashboardError('Failed to load user profile'));

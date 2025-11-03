@@ -87,18 +87,18 @@ class DispersionScreen extends StatelessWidget {
                             {
                               "metric": "Club Speed",
                               "value":
-                                  shot?.clubSpeed.toStringAsFixed(1) ?? '0.0',
+                                  shot?.clubSpeed.toStringAsFixed(2) ?? '0.0',
                               "unit": "MPH"
                             },
                             {
                               "metric": "Ball Speed",
                               "value":
-                                  shot?.ballSpeed.toStringAsFixed(1) ?? '0.0',
+                                  shot?.ballSpeed.toStringAsFixed(2) ?? '0.0',
                               "unit": "MPH"
                             },
                             {
                               "metric": "Carry Distance",
-                              "value": shot?.carryDistance.toStringAsFixed(1) ??
+                              "value": shot?.carryDistance.toStringAsFixed(2) ??
                                   '0.0',
                               "unit": "YDS"
                             },
