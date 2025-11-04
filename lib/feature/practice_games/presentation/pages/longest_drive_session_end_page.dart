@@ -23,14 +23,14 @@ class LongestDriveSessionEndPage extends StatelessWidget {
 
         final allMetrics = [
           {
-            "metric": "Total Distance",
-            "value": bestShot?.totalDistance.toStringAsFixed(2),
-            "unit": "YDS",
+            "metric": "Ball Speed",
+            "value": bestShot.ballSpeed.toStringAsFixed(1),
+            "unit": "MPH",
           },
           {
-            "metric": "Ball Speed",
-            "value": bestShot?.ballSpeed.toStringAsFixed(2),
-            "unit": "MPH",
+            "metric": "Carry Distance",
+            "value": bestShot.carryDistance.toStringAsFixed(1),
+            "unit": "YDS",
           },
         ];
 
@@ -48,8 +48,8 @@ class LongestDriveSessionEndPage extends StatelessWidget {
                 const SizedBox(height: 10),
                 Image.asset(AppImages.trophyImage),
                 MetricDisplay(
-                  value: bestShot!.carryDistance.toStringAsFixed(2),
-                  label: "Carry Distance",
+                  value: bestShot.totalDistance.toStringAsFixed(1),
+                  label: "Total Distance",
                   unit: "YDS",
                 ),
                 GridView.builder(

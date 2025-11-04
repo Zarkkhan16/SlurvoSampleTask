@@ -484,7 +484,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
             isMeter: false,
           );
           print("🔄 Converted & Saved Shot #${shotModel.shotNumber}: "
-              "${shotModel.carryDistance}M → ${shotToSave.carryDistance.toStringAsFixed(2)}YD");
+              "${shotModel.carryDistance}M → ${shotToSave.carryDistance.toStringAsFixed(1)}YD");
         } else {
           shotToSave = shotModel;
           print("✅ Saved Shot #${shotModel.shotNumber} (already in yards)");

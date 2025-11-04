@@ -26,7 +26,7 @@ class LongestDriveSessionPage extends StatelessWidget {
           if (state.latestBleData.isEmpty || index < 0 || index >= state.latestBleData.length) {
             return '0.00';
           }
-          return valueGetter().toStringAsFixed(2);
+          return valueGetter().toStringAsFixed(1);
         }
 
         final carryDistance = getSafeValue(() => state.latestBleData[state.currentAttempt - 1].carryDistance);
@@ -59,11 +59,11 @@ class LongestDriveSessionPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
+                MetricDisplay(value: ballSpeed, label: "Ball Speed", unit: "MPH"),
                 MetricDisplay(
                     value: carryDistance, label: "Carry Distance", unit: "YDS"),
                 MetricDisplay(
                     value: totalDistance, label: "Total Distance", unit: "YDS"),
-                MetricDisplay(value: ballSpeed, label: "Ball Speed", unit: "MPH"),
                 const Spacer(),
                 if(state.currentAttempt <= state.latestBleData.length)
                 SessionViewButton(

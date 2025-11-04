@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/feature/practice_games/presentation/bloc/practice_games_event.dart';
 import 'package:onegolf/feature/practice_games/presentation/bloc/practice_games_state.dart';
 
+import '../../../../core/constants/app_strings.dart';
 import '../../../ble_management/domain/repositories/ble_management_repository.dart';
 import '../../../golf_device/domain/entities/golf_data_entities.dart';
 
@@ -37,6 +38,8 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     on<SelectCustomEvent>(_onSelectCustom);
     on<UpdateCustomShotsEvent>(_onUpdateCustomShots);
     on<AddPlayerEvent>(_onAddPlayer);
+    on<EditPlayerEvent>(_onEditPlayer);
+    on<RemovePlayerEvent>(_onRemovePlayer);
     on<NextAttemptEvent>(_onNextAttempt);
     on<SessionEndAttemptEvent>(_onSessionEndAttempt);
     on<ResetSessionEvent>(_onResetSession);
@@ -74,7 +77,27 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
   void _onAddPlayer(AddPlayerEvent event, Emitter<PracticeGamesState> emit) {
     if (state.canAddPlayer) {
       final updatedPlayers = List<String>.from(state.players)
-        ..add("Player ${state.players.length}");
+        ..add(event.playerName);
+      emit(state.copyWith(players: updatedPlayers));
+    }
+  }
+
+  void _onEditPlayer(EditPlayerEvent event, Emitter<PracticeGamesState> emit) {
+    if (event.playerIndex >= 0 && event.playerIndex < state.players.length) {
+      final updatedPlayers = List<String>.from(state.players);
+      final oldName = updatedPlayers[event.playerIndex];
+      updatedPlayers[event.playerIndex] = event.newName;
+
+      emit(state.copyWith(players: updatedPlayers));
+    }
+  }
+
+  void _onRemovePlayer(
+      RemovePlayerEvent event, Emitter<PracticeGamesState> emit) {
+    if (event.playerIndex >= 0 && event.playerIndex < state.players.length) {
+      final updatedPlayers = List<String>.from(state.players)
+        ..removeAt(event.playerIndex);
+
       emit(state.copyWith(players: updatedPlayers));
     }
   }
@@ -90,11 +113,10 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
       emit(state.copyWith(bestShot: null));
     }
 
-    print(state.currentAttempt);
     final limitedList = state.latestBleData.take(state.currentAttempt).toList();
-    print(limitedList.length);
+
     final bestShot = limitedList.reduce(
-          (a, b) => a.carryDistance > b.carryDistance ? a : b,
+          (a, b) => a.totalDistance > b.totalDistance ? a : b,
     );
 
     emit(state.copyWith(bestShot: bestShot));
@@ -103,7 +125,14 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
   void _onResetSession(
       ResetSessionEvent event, Emitter<PracticeGamesState> emit) {
     _golfDataListItem.clear();
-    emit(state.copyWith(currentAttempt: 1));
+    emit(state.copyWith(
+      currentAttempt: 1,
+      selectedShots: 3,
+      isCustomSelected: false,
+      players: [AppStrings.userProfileData.name],
+      latestBleData: [],
+      bestShot: null,
+    ));
   }
 
   Future<void> _onStartListeningToBleData(
@@ -156,7 +185,6 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     print('✅ Listener started');
   }
 
-  /// Stop listening to BLE notifications
   Future<void> _onStopListeningToBleData(
     StopListeningToBleDataEvent event,
     Emitter<PracticeGamesState> emit,
@@ -178,7 +206,6 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     print('✅ BLE listener stopped');
   }
 
-  /// Send command/packet to BLE device
   Future<void> _onSendBleCommand(
     SendBleCommandEvent event,
     Emitter<PracticeGamesState> emit,
@@ -259,8 +286,8 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     print("📊 Parsed Golf Data:");
     print("   Record: ${_golfData.recordNumber}");
     print("   Club: ${_golfData.clubName}");
-    print("   Carry: ${_golfData.carryDistance.toStringAsFixed(2)} YD");
-    print("   Total: ${_golfData.totalDistance.toStringAsFixed(2)} YD");
+    print("   Carry: ${_golfData.carryDistance.toStringAsFixed(1)} YD");
+    print("   Total: ${_golfData.totalDistance.toStringAsFixed(1)} YD");
     print("   Unit Mode: YARDS");
   }
 }

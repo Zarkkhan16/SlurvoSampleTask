@@ -12,7 +12,33 @@ class UpdateCustomShotsEvent extends PracticeGamesEvent {
   UpdateCustomShotsEvent(this.value);
 }
 
-class AddPlayerEvent extends PracticeGamesEvent {}
+class AddPlayerEvent extends PracticeGamesEvent {
+  final String playerName;
+
+  AddPlayerEvent(this.playerName);
+
+  List<Object?> get props => [playerName];
+}
+
+class EditPlayerEvent extends PracticeGamesEvent {
+  final int playerIndex;
+  final String newName;
+
+  EditPlayerEvent({
+    required this.playerIndex,
+    required this.newName,
+  });
+
+  List<Object?> get props => [playerIndex, newName];
+}
+
+class RemovePlayerEvent extends PracticeGamesEvent {
+  final int playerIndex;
+
+  RemovePlayerEvent(this.playerIndex);
+
+  List<Object?> get props => [playerIndex];
+}
 
 class NextAttemptEvent extends PracticeGamesEvent {}
 class SessionEndAttemptEvent extends PracticeGamesEvent {}
