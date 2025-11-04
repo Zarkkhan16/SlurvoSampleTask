@@ -14,6 +14,8 @@ class AppImages {
   static const String ladderDrillIcon = 'assets/svgs/ladder_drill.svg';
   static const String longestDriveIcon = 'assets/svgs/longest_drive.svg';
   static const String clubGappingIcon = 'assets/svgs/club_gapping.svg';
+  static const String bluetoothIcon = 'assets/svgs/bluetooth_icon.svg';
+  static const String connectedIcon = 'assets/svgs/connected_icon.svg';
 
   //png
   static const String slurvoLogo = 'assets/png/slurvo.png';

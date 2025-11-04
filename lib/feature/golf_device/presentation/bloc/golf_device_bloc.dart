@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:onegolf/feature/golf_device/data/datasources/shot_firestore_datasource.dart';
 import 'package:onegolf/feature/golf_device/data/model/shot_anaylsis_model.dart';
 import 'package:onegolf/feature/golf_device/domain/entities/device_entity.dart';
 import 'package:onegolf/feature/golf_device/domain/entities/golf_data_entities.dart';
@@ -19,28 +20,18 @@ import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_state.
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/app_strings.dart';
+import '../../../ble_management/domain/repositories/ble_management_repository.dart';
 import '../../../widget/custom_app_bar.dart';
 import '../../domain/repositories/ble_repository.dart';
 
 class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
-  final ScanDevicesUseCase scanDevicesUseCase;
-  final ConnectDeviceUseCase connectDeviceUseCase;
-  final DiscoverServicesUseCase discoverServicesUseCase;
-  final SubscribeNotificationsUseCase subscribeNotificationsUseCase;
-  final SendSyncPacketUseCase sendSyncPacketUseCase;
-  final SendCommandUseCase sendCommandUseCase;
-  final DisconnectDeviceUseCase disconnectDeviceUseCase;
-  final BleRepository bleRepository;
+  final BleManagementRepository bleRepository;
+  final ShotFirestoreDatasource datasource;
   final SharedPreferences sharedPreferences;
-  StreamSubscription? _scanSubscription;
-  StreamSubscription? _connectionSubscription;
   StreamSubscription? _notificationSubscription;
   Timer? _syncTimer;
-  Timer? _scanTimer;
   final Map<int, ShotAnalysisModel> _shotRecords = {};
   final Map<int, ShotAnalysisModel> _sessionData = {};
-  final List<DeviceEntity> _discoveredDevices = [];
-  DeviceEntity? _connectedDevice;
   GolfDataEntity _golfData = GolfDataEntity(
     battery: 0,
     recordNumber: 0,
@@ -51,7 +42,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     totalDistance: 0.0,
   );
   bool _units = false;
-  bool _hasWrittenInitialSync = false;
   Timer? _elapsedTimer;
   int _elapsedSeconds = 0;
   final user = FirebaseAuth.instance.currentUser;
@@ -60,25 +50,14 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   Stream<List<int>> get bleResponseStream => _bleResponseController.stream;
 
   GolfDeviceBloc({
-    required this.scanDevicesUseCase,
-    required this.connectDeviceUseCase,
-    required this.discoverServicesUseCase,
-    required this.subscribeNotificationsUseCase,
-    required this.sendSyncPacketUseCase,
-    required this.sendCommandUseCase,
-    required this.disconnectDeviceUseCase,
     required this.bleRepository,
     required this.sharedPreferences,
+    required this.datasource,
   }) : super(GolfDeviceInitial()) {
-    on<StartScanningEvent>(_onStartScanning);
-    on<StopScanningEvent>(_onStopScanning);
-    on<DeviceDiscoveredEvent>(_onDeviceDiscovered);
-    on<ConnectToDeviceEvent>(_onConnectToDevice);
     on<ConnectionStateChangedEvent>(_onConnectionStateChanged);
     on<NotificationReceivedEvent>(_onNotificationReceived);
     on<SendSyncPacketEvent>(_onSendSyncPacket);
     on<UpdateClubEvent>(_onUpdateClub);
-    on<ToggleUnitsEvent>(_onToggleUnits);
     on<SaveAllShotsEvent>(_onSaveAllShots);
     on<DisconnectDeviceEvent>(_onDisconnect);
     on<UpdateElapsedTimeEvent>(_onUpdateElapsedTime);
@@ -86,11 +65,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     on<DeleteLatestShotEvent>(_onDeleteLatestShot);
     on<UpdateMetricFilterEvent>(_onUpdateMetricFilter);
 
-    bleRepository.statusStream.listen((status) {
-      if (status == BleStatus.ready) {
-        add(StartScanningEvent());
-      }
-    });
+    add(ConnectionStateChangedEvent(bleRepository.isConnected));
   }
 
   Future<void> _onUpdateMetricFilter(
@@ -103,51 +78,10 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     }
   }
 
-  Future<void> _onStartScanning(
-    StartScanningEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) async {
-    _discoveredDevices.clear();
-    emit(ScanningState([]));
-
-    await _scanSubscription?.cancel();
-    _scanSubscription = scanDevicesUseCase.call().listen(
-          (device) => add(DeviceDiscoveredEvent(device)),
-        );
-
-    _scanTimer?.cancel();
-    _scanTimer = Timer(Duration(seconds: 1), () {
-      add(StopScanningEvent());
-    });
-  }
-
-  Future<void> _onStopScanning(
-    StopScanningEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) async {
-    await _scanSubscription?.cancel();
-    _scanTimer?.cancel();
-    scanDevicesUseCase.stop();
-    emit(DevicesFoundState(List.from(_discoveredDevices)));
-  }
-
-  void _onDeviceDiscovered(
-    DeviceDiscoveredEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) {
-    final index = _discoveredDevices.indexWhere((d) => d.id == event.device.id);
-    if (index >= 0) {
-      _discoveredDevices[index] = event.device;
-    } else {
-      _discoveredDevices.add(event.device);
-    }
-    emit(ScanningState(List.from(_discoveredDevices)));
-  }
-
   Future<void> _onUpdateElapsedTime(
-    UpdateElapsedTimeEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) async {
+      UpdateElapsedTimeEvent event,
+      Emitter<GolfDeviceState> emit,
+      ) async {
     if (state is ConnectedState) {
       final currentState = state as ConnectedState;
       emit(currentState.copyWith(
@@ -157,64 +91,128 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     }
   }
 
-  Future<void> _onConnectToDevice(
-    ConnectToDeviceEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) async {
-    emit(ConnectingState(List.from(_discoveredDevices)));
-    _connectedDevice = event.device;
+  // Future<void> _onStartScanning(
+  //   StartScanningEvent event,
+  //   Emitter<GolfDeviceState> emit,
+  // ) async {
+  //   _discoveredDevices.clear();
+  //   emit(ScanningState([]));
+  //
+  //   await _scanSubscription?.cancel();
+  //   _scanSubscription = scanDevicesUseCase.call().listen(
+  //         (device) => add(DeviceDiscoveredEvent(device)),
+  //       );
+  //
+  //   _scanTimer?.cancel();
+  //   _scanTimer = Timer(Duration(seconds: 1), () {
+  //     add(StopScanningEvent());
+  //   });
+  // }
 
-    await _connectionSubscription?.cancel();
-    _connectionSubscription = connectDeviceUseCase.call(event.device.id).listen(
-      (state) {
-        add(ConnectionStateChangedEvent(state));
-      },
-    );
-  }
+  // Future<void> _onStopScanning(
+  //   StopScanningEvent event,
+  //   Emitter<GolfDeviceState> emit,
+  // ) async {
+  //   await _scanSubscription?.cancel();
+  //   _scanTimer?.cancel();
+  //   scanDevicesUseCase.stop();
+  //   emit(DevicesFoundState(List.from(_discoveredDevices)));
+  // }
+
+  // void _onDeviceDiscovered(
+  //   DeviceDiscoveredEvent event,
+  //   Emitter<GolfDeviceState> emit,
+  // ) {
+  //   final index = _discoveredDevices.indexWhere((d) => d.id == event.device.id);
+  //   if (index >= 0) {
+  //     _discoveredDevices[index] = event.device;
+  //   } else {
+  //     _discoveredDevices.add(event.device);
+  //   }
+  //   emit(ScanningState(List.from(_discoveredDevices)));
+  // }
+
+  // Future<void> _onConnectToDevice(
+  //   ConnectToDeviceEvent event,
+  //   Emitter<GolfDeviceState> emit,
+  // ) async {
+  //   emit(ConnectingState(List.from(_discoveredDevices)));
+  //   _connectedDevice = event.device;
+  //
+  //   await _connectionSubscription?.cancel();
+  //   _connectionSubscription = connectDeviceUseCase.call(event.device.id).listen(
+  //     (state) {
+  //       add(ConnectionStateChangedEvent(state));
+  //     },
+  //   );
+  // }
 
   Future<void> _onConnectionStateChanged(
     ConnectionStateChangedEvent event,
     Emitter<GolfDeviceState> emit,
   ) async {
-    if (event.state == DeviceConnectionState.connected &&
-        _connectedDevice != null) {
-      _hasWrittenInitialSync = false;
+    if (event.isConnected == bleRepository.isConnected) {
+      final deviceId = bleRepository.connectedDeviceId;
       try {
-        await discoverServicesUseCase.call(_connectedDevice!.id);
+        if (deviceId != null) {
+          print('🔍 Re-discovering services...');
+          await bleRepository.discoverServices(deviceId);
+          print('✅ Services discovered');
+          await Future.delayed(Duration(milliseconds: 500));
+        }
 
         await _notificationSubscription?.cancel();
-        _notificationSubscription = subscribeNotificationsUseCase.call().listen(
-              (data) => add(NotificationReceivedEvent(data)),
-            );
+        _notificationSubscription =
+            bleRepository.subscribeToNotifications().listen(
+                  (data) => add(NotificationReceivedEvent(data)),
+                );
 
         _startSyncTimer();
 
         _startElapsedTimer();
 
         emit(ConnectedState(
-          device: _connectedDevice!,
+          deviceId: deviceId!,
           golfData: _golfData,
           units: _units,
           currentDate: _formattedDate(),
           elapsedTime: _formatElapsedTime(_elapsedSeconds),
         ));
-
-        if (!_hasWrittenInitialSync) {
-          _hasWrittenInitialSync = true;
-          Future.delayed(Duration(milliseconds: 100), () {
-            add(SendSyncPacketEvent());
-          });
-        }
       } catch (e) {
         emit(ErrorState('Failed to setup connection: $e'));
       }
-    } else if (event.state == DeviceConnectionState.disconnected) {
-      await _notificationSubscription?.cancel();
-      _syncTimer?.cancel();
-      _elapsedTimer?.cancel();
-      _connectedDevice = null;
-      _hasWrittenInitialSync = false;
-      emit(DisconnectedState(List.from(_discoveredDevices)));
+    }
+  }
+
+  void _startSyncTimer() {
+    _syncTimer?.cancel();
+    _syncTimer = Timer.periodic(Duration(seconds: 30), (_) {
+      if (bleRepository.isConnected) {
+        add(SendSyncPacketEvent());
+      }
+    });
+  }
+
+  void _startElapsedTimer() {
+    _elapsedTimer?.cancel();
+    _elapsedSeconds = 0;
+    _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _elapsedSeconds++;
+      add(UpdateElapsedTimeEvent());
+    });
+  }
+
+  Future<void> _onSendSyncPacket(
+    SendSyncPacketEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
+    if (bleRepository.isConnected) {
+      try {
+        int checksum = (0x01 + _golfData.clubName) & 0xFF;
+        bleRepository.writeData([0x47, 0x46, 0x01, _golfData.clubName, 0x00, checksum]);
+      } catch (e) {
+        emit(ErrorState('Failed to send sync packet: $e'));
+      }
     }
   }
 
@@ -244,7 +242,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
           if (state is ConnectedState) {
             final currentState = state as ConnectedState;
             emit(ClubUpdatedState(
-              device: currentState.device,
               golfData: currentState.golfData,
               units: currentState.units,
             ));
@@ -257,16 +254,13 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
             double newTotalDistance;
 
             if (_units) {
-              // Converting to Meters (from Yards)
               newCarryDistance = _golfData.carryDistance * 0.9144;
               newTotalDistance = _golfData.totalDistance * 0.9144;
             } else {
-              // Converting to Yards (from Meters)
               newCarryDistance = _golfData.carryDistance * 1.093613298;
               newTotalDistance = _golfData.totalDistance * 1.093613298;
             }
 
-            // Update golf data with converted distances
             _golfData = _golfData.copyWith(
               carryDistance: newCarryDistance,
               totalDistance: newTotalDistance,
@@ -278,19 +272,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
             ));
           }
           break;
-      }
-    }
-  }
-
-  Future<void> _onSendSyncPacket(
-    SendSyncPacketEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) async {
-    if (state is ConnectedState && !(state as ConnectedState).isLoading) {
-      try {
-        await sendSyncPacketUseCase.call(_golfData.clubName);
-      } catch (e) {
-        emit(ErrorState('Failed to send sync packet: $e'));
       }
     }
   }
@@ -309,20 +290,11 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       ));
 
       try {
-        await sendCommandUseCase.call(0x02, event.clubId, 0x00);
+        List<int> packet = [0x47, 0x46, 0x02, event.clubId, 0x00];
+        bleRepository.writeData(packet);
       } catch (e) {
         emit(ErrorState('Failed to update club: $e'));
       }
-    }
-  }
-
-  void _onToggleUnits(
-    ToggleUnitsEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) {
-    if (state is ConnectedState) {
-      _units = !_units;
-      emit((state as ConnectedState).copyWith(units: _units));
     }
   }
 
@@ -332,8 +304,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   ) async {
     try {
       emit(DisconnectingState());
-
-      // await _saveToLocal();
       await _saveAllShotsToFirebase();
 
       if (_sessionData.isNotEmpty) {
@@ -342,18 +312,70 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
         print(sessionSummary);
       }
       emit(NavigateToSessionSummaryState(summaryData: sessionSummary));
-      await disconnectDeviceUseCase.call();
       await _notificationSubscription?.cancel();
+      _notificationSubscription = null;
       _syncTimer?.cancel();
       _sessionData.clear();
-      _connectedDevice = null;
-      _hasWrittenInitialSync = false;
-      // if (event.navigateToLanding) {
-      //   emit(NavigateToLandDashboardState());
-      // }
+      _elapsedTimer?.cancel();
     } catch (e) {
       print(e);
       emit(ErrorState('Failed to disconnect: $e'));
+    }
+  }
+
+  Future<void> _onSaveAllShots(
+      SaveAllShotsEvent event,
+      Emitter<GolfDeviceState> emit,
+      ) async {
+    if (_shotRecords.isNotEmpty) {
+      emit(SaveDataLoading());
+      await _saveAllShotsToFirebase();
+    }
+    emit(SaveShotsSuccessfully());
+  }
+
+  Future<void> _saveAllShotsToFirebase() async {
+    if (_shotRecords.isEmpty) {
+      print("⚠️ No shots to save");
+      return;
+    }
+
+    print("💾 Saving ${_shotRecords.length} shots to Firebase...");
+
+    try {
+      final sortedKeys = _shotRecords.keys.toList()..sort();
+      final latestKey = sortedKeys.last;
+      final latestShot = _shotRecords[latestKey];
+
+      for (var shotModel in _shotRecords.values) {
+        ShotAnalysisModel shotToSave;
+
+        if (shotModel.isMeter) {
+          shotToSave = shotModel.copyWith(
+            carryDistance: shotModel.carryDistance * 1.093613298,
+            totalDistance: shotModel.totalDistance * 1.093613298,
+            isMeter: false,
+          );
+          print("🔄 Converted & Saved Shot #${shotModel.shotNumber}: "
+              "${shotModel.carryDistance}M → ${shotToSave.carryDistance.toStringAsFixed(1)}YD");
+        } else {
+          shotToSave = shotModel;
+          print("✅ Saved Shot #${shotModel.shotNumber} (already in yards)");
+        }
+
+        // Save to Firebase
+        await datasource.saveShot(shotToSave);
+        _sessionData[shotModel.shotNumber] = shotToSave;
+      }
+
+      print("✅ All shots saved successfully!");
+      print("📦 Total Session Shots: ${_sessionData.length}");
+
+      _shotRecords
+        ..clear()
+        ..[latestKey] = latestShot!;
+    } catch (e) {
+      print("❌ Error saving shots: $e");
     }
   }
 
@@ -361,8 +383,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     if (_sessionData.isEmpty) return {};
 
     final shots = _sessionData.values.toList();
-
-    // 1. Shot Averages (Per Club)
     Map<int, List<ShotAnalysisModel>> shotsByClub = {};
     for (var shot in shots) {
       if (!shotsByClub.containsKey(shot.clubName)) {
@@ -386,7 +406,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
           clubShots.map((s) => s.totalDistance).reduce((a, b) => a + b) /
               clubShots.length;
 
-      // Calculate standard deviations for +/- values
       double clubSpeedStdDev = _calculateStdDev(
           clubShots.map((s) => s.clubSpeed).toList(), avgClubSpeed);
       double ballSpeedStdDev = _calculateStdDev(
@@ -437,6 +456,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       'shotSummary': shotSummary,
     };
   }
+
   double _calculateStdDev(List<double> values, double mean) {
     if (values.length <= 1) return 0.0;
 
@@ -447,72 +467,14 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
 
     return sqrt(sumSquaredDiff / values.length);
   }
+
   Map<String, dynamic> get sessionSummary => _generateSessionSummary();
-
-  Future<void> _onSaveAllShots(
-    SaveAllShotsEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) async {
-    if (_shotRecords.isNotEmpty) {
-      emit(SaveDataLoading());
-      await _saveAllShotsToFirebase();
-    }
-    emit(SaveShotsSuccessfully());
-  }
-
-  Future<void> _saveAllShotsToFirebase() async {
-    if (_shotRecords.isEmpty) {
-      print("⚠️ No shots to save");
-      return;
-    }
-
-    print("💾 Saving ${_shotRecords.length} shots to Firebase...");
-
-    try {
-      final sortedKeys = _shotRecords.keys.toList()..sort();
-      final latestKey = sortedKeys.last;
-      final latestShot = _shotRecords[latestKey];
-
-      for (var shotModel in _shotRecords.values) {
-        ShotAnalysisModel shotToSave;
-
-        // Check if shot is in meters, convert to yards before saving
-        if (shotModel.isMeter) {
-          shotToSave = shotModel.copyWith(
-            carryDistance: shotModel.carryDistance * 1.093613298,
-            totalDistance: shotModel.totalDistance * 1.093613298,
-            isMeter: false,
-          );
-          print("🔄 Converted & Saved Shot #${shotModel.shotNumber}: "
-              "${shotModel.carryDistance}M → ${shotToSave.carryDistance.toStringAsFixed(1)}YD");
-        } else {
-          shotToSave = shotModel;
-          print("✅ Saved Shot #${shotModel.shotNumber} (already in yards)");
-        }
-
-        // Save to Firebase
-        await bleRepository.saveShot(shotToSave);
-
-        // ✅ Update session data (always, whether converted or not)
-        _sessionData[shotModel.shotNumber] = shotToSave;
-      }
-
-      print("✅ All shots saved successfully!");
-      print("📦 Total Session Shots: ${_sessionData.length}");
-
-      _shotRecords
-        ..clear()
-        ..[latestKey] = latestShot!;
-    } catch (e) {
-      print("❌ Error saving shots: $e");
-    }
-  }
 
   Future<void> _onReturnToConnectedState(
     ReturnToConnectedStateEvent event,
     Emitter<GolfDeviceState> emit,
   ) async {
-    if (_connectedDevice != null) {
+    if (bleRepository.isConnected) {
       if (_shotRecords.isNotEmpty) {
         final latestShot = _shotRecords.values.first;
 
@@ -535,7 +497,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       }
 
       emit(ConnectedState(
-        device: _connectedDevice!,
         golfData: _golfData,
         units: _units,
         currentDate: _formattedDate(),
@@ -544,21 +505,11 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     }
   }
 
-  void _startSyncTimer() {
-    _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(Duration(seconds: 2), (_) {
-      if (state is ConnectedState && !(state as ConnectedState).isLoading) {
-        add(SendSyncPacketEvent());
-      }
-    });
-  }
-
   void _parseGolfData(Uint8List data) {
     if (data[0] != 0x47 || data[1] != 0x46) return;
 
     bool isMeters = (data[11] & 0x80) != 0;
 
-    // Clear bit 7 to get actual distance value
     int carryHigh = data[11] & 0x7F;
     int carryLow = data[12];
     double carryDistance = ((carryHigh << 8) | carryLow) / 10.0;
@@ -639,10 +590,10 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     // Latest shot number
     final latestKey = sortedKeys.last;
     _shotRecords.remove(latestKey);
+    _sessionData.remove(latestKey);
 
     print("🗑️ Deleted Shot #$latestKey");
 
-    // If there’s a previous shot, show it
     if (_shotRecords.isNotEmpty) {
       final prevKey = sortedKeys.length > 1
           ? sortedKeys[sortedKeys.length - 2]
@@ -682,16 +633,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     if (_shotRecords.isEmpty) return null;
     final sortedKeys = _shotRecords.keys.toList()..sort();
     return _shotRecords[sortedKeys.last];
-  }
-
-  void _startElapsedTimer() {
-    _elapsedTimer?.cancel();
-    _elapsedSeconds = 0;
-
-    _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _elapsedSeconds++;
-      add(UpdateElapsedTimeEvent());
-    });
   }
 
   String _formattedDate() {
@@ -740,14 +681,11 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   @override
-  Future<void> close() {
-    _scanSubscription?.cancel();
-    _connectionSubscription?.cancel();
-    _notificationSubscription?.cancel();
+  Future<void> close() async {
+    await _notificationSubscription?.cancel();
+    _notificationSubscription = null;
     _syncTimer?.cancel();
-    _scanTimer?.cancel();
     _elapsedTimer?.cancel();
-    _scanTimer?.cancel();
     return super.close();
   }
 }

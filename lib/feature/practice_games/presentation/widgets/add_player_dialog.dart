@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/feature/widget/gradient_border_container.dart';
 
 class AddPlayerDialog extends StatefulWidget {
   final Function(String name) onPlayerAdded;
@@ -70,7 +71,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -91,8 +91,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                 ],
               ),
               const SizedBox(height: 8),
-
-              // Description
               Text(
                 'Enter player name (max 15 characters)',
                 style: AppTextStyle.roboto(
@@ -101,8 +99,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // TextField container (not expanded)
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.cardBackground,
@@ -134,7 +130,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                       vertical: 12,
                     ),
                     counterStyle:
-                    const TextStyle(color: Colors.white54, fontSize: 12),
+                        const TextStyle(color: Colors.white54, fontSize: 12),
                   ),
                   onChanged: (value) {
                     if (_errorMessage.isNotEmpty) {
@@ -146,7 +142,6 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   onSubmitted: (value) => _validateAndAdd(),
                 ),
               ),
-
               if (_errorMessage.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Row(
@@ -169,10 +164,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                   ],
                 ),
               ],
-
               const SizedBox(height: 20),
-
-              // Action Buttons
               Row(
                 children: [
                   Expanded(
@@ -182,7 +174,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                         side: const BorderSide(color: Colors.white54),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(30),
                         ),
                       ),
                       child: Text(
@@ -200,10 +192,10 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                     child: ElevatedButton(
                       onPressed: _validateAndAdd,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(30),
                         ),
                       ),
                       child: Text(
@@ -211,7 +203,7 @@ class _AddPlayerDialogState extends State<AddPlayerDialog> {
                         style: AppTextStyle.roboto(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       ),
                     ),

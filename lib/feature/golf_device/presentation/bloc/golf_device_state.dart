@@ -38,8 +38,8 @@ class ConnectingState extends GolfDeviceState {
 }
 
 class ConnectedState extends GolfDeviceState {
-  final DeviceEntity device;
   final GolfDataEntity golfData;
+  final String deviceId;
   final bool isLoading;
   final bool units;
   final String currentDate;
@@ -47,8 +47,8 @@ class ConnectedState extends GolfDeviceState {
   final Set<String> selectedMetrics;
 
   ConnectedState({
-    required this.device,
     required this.golfData,
+    this.deviceId = '',
     this.isLoading = false,
     this.units = false,
     this.currentDate = '',
@@ -64,8 +64,8 @@ class ConnectedState extends GolfDeviceState {
             };
 
   ConnectedState copyWith({
-    DeviceEntity? device,
     GolfDataEntity? golfData,
+    String? deviceId,
     bool? isLoading,
     bool? units,
     String? currentDate,
@@ -73,8 +73,8 @@ class ConnectedState extends GolfDeviceState {
     Set<String>? selectedMetrics,
   }) {
     return ConnectedState(
-      device: device ?? this.device,
       golfData: golfData ?? this.golfData,
+      deviceId: deviceId ?? this.deviceId,
       isLoading: isLoading ?? this.isLoading,
       units: units ?? this.units,
       currentDate: currentDate ?? this.currentDate,
@@ -85,7 +85,6 @@ class ConnectedState extends GolfDeviceState {
 
   @override
   List<Object?> get props => [
-        device,
         golfData,
         isLoading,
         units,
@@ -106,13 +105,13 @@ class DisconnectedState extends GolfDeviceState {
 
 class ClubUpdatedState extends ConnectedState {
   ClubUpdatedState({
-    required DeviceEntity device,
     required GolfDataEntity golfData,
     required bool units,
+    String? deviceId,
     Set<String>? selectedMetrics,
   }) : super(
-          device: device,
           golfData: golfData,
+          deviceId: deviceId ?? "",
           isLoading: false,
           units: units,
           selectedMetrics: selectedMetrics,
@@ -127,8 +126,6 @@ class ErrorState extends GolfDeviceState {
   @override
   List<Object?> get props => [message];
 }
-
-class NavigateToLandDashboardState extends GolfDeviceState {}
 
 class SaveShots extends GolfDeviceState {}
 

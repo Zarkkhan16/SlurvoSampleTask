@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_strings.dart';
@@ -7,6 +8,7 @@ class SessionViewButton extends StatelessWidget {
   final VoidCallback? onSessionClick;
   final String buttonText;
   final Color? backgroundColor, textColor;
+  final String? iconSvg;
 
   const SessionViewButton({
     super.key,
@@ -14,6 +16,7 @@ class SessionViewButton extends StatelessWidget {
     this.buttonText = AppStrings.sessionViewText,
     this.backgroundColor = AppColors.buttonBackground,
     this.textColor = AppColors.buttonText,
+    this.iconSvg,
   });
 
   @override
@@ -42,18 +45,28 @@ class SessionViewButton extends StatelessWidget {
         ),
         child: FittedBox(
           fit: BoxFit.scaleDown,
-          child: Text(
-            buttonText,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.roboto(
-              textStyle: TextStyle(
-                color: textColor,
-                fontSize: fontSize.clamp(16.0, 24.0),
-                fontWeight: FontWeight.w700,
-                height: 1.0,
-                letterSpacing: 0.0,
+          child: Row(
+            children: [
+              if (iconSvg != null) ...[
+                SvgPicture.asset(
+                  iconSvg!,
+                ),
+                SizedBox(width: 15,),
+              ],
+              Text(
+                buttonText,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.roboto(
+                  textStyle: TextStyle(
+                    color: textColor,
+                    fontSize: fontSize.clamp(16.0, 24.0),
+                    fontWeight: FontWeight.w700,
+                    height: 1.0,
+                    letterSpacing: 0.0,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),

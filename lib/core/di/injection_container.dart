@@ -168,10 +168,14 @@ import '../../feature/ble_management/data/repositories/ble_management_repository
 import '../../feature/ble_management/data/services/ble_management_service.dart';
 import '../../feature/ble_management/domain/repositories/ble_management_repository.dart';
 import '../../feature/ble_management/domain/usecases/check_connection_status_usecase.dart';
-import '../../feature/ble_management/domain/usecases/connect_device_usecase.dart' as ble_mgmt;
-import '../../feature/ble_management/domain/usecases/disconnect_device_usecase.dart' as ble_mgmt;
-import '../../feature/ble_management/domain/usecases/discover_services_usecase.dart' as ble_mgmt;
-import '../../feature/ble_management/domain/usecases/scan_devices_usecase.dart' as ble_mgmt show ScanDevicesUseCase;
+import '../../feature/ble_management/domain/usecases/connect_device_usecase.dart'
+    as ble_mgmt;
+import '../../feature/ble_management/domain/usecases/disconnect_device_usecase.dart'
+    as ble_mgmt;
+import '../../feature/ble_management/domain/usecases/discover_services_usecase.dart'
+    as ble_mgmt;
+import '../../feature/ble_management/domain/usecases/scan_devices_usecase.dart'
+    as ble_mgmt show ScanDevicesUseCase;
 import '../../feature/ble_management/presentation/bloc/ble_management_bloc.dart';
 import '../../feature/auth/data/repository/auth_repository_impl.dart';
 import '../../feature/auth/domain/repository/auth_repository.dart';
@@ -200,6 +204,7 @@ import '../../feature/golf_device/domain/usecases/send_sync_packet_usecase.dart'
 import '../../feature/golf_device/domain/usecases/subscribe_notifications_usecase.dart';
 import '../../feature/golf_device/presentation/bloc/golf_device_bloc.dart';
 import '../../feature/practice_games/presentation/bloc/practice_games_bloc.dart';
+import '../../feature/shots_history/presentation/bloc/shot_selection_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -216,7 +221,6 @@ Future<void> init() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
 
-
   // ============================================================
   // STEP 2: SERVICES (Before Repositories!)
   // ============================================================
@@ -227,14 +231,13 @@ Future<void> init() async {
   // Golf Device BLE Service (Separate from BLE Management)
   sl.registerLazySingleton<BleService>(() => BleService());
 
-
   // ============================================================
   // STEP 3: DATA SOURCES (Before Repositories!)
   // ============================================================
 
   // Dashboard Data Source
   sl.registerLazySingleton<UserRemoteDataSource>(
-        () => UserRemoteDataSourceImpl(
+    () => UserRemoteDataSourceImpl(
       firebaseAuth: sl(),
       firestore: sl(),
     ),
@@ -242,11 +245,10 @@ Future<void> init() async {
 
   // Golf Device Data Source
   sl.registerLazySingleton<ShotFirestoreDatasource>(
-        () => ShotFirestoreDatasourceImpl(
+    () => ShotFirestoreDatasourceImpl(
       firestore: sl(),
     ),
   );
-
 
   // ============================================================
   // STEP 4: REPOSITORIES (Before Use Cases!)
@@ -254,12 +256,12 @@ Future<void> init() async {
 
   // BLE Management Repository (IMPORTANT - Must be before use cases!)
   sl.registerLazySingleton<BleManagementRepository>(
-        () => BleManagementRepositoryImpl(sl<BleManagementService>()),
+    () => BleManagementRepositoryImpl(sl<BleManagementService>()),
   );
 
   // Auth Repository
   sl.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(
+    () => AuthRepositoryImpl(
       firebaseAuth: sl(),
       firestore: sl(),
     ),
@@ -267,30 +269,34 @@ Future<void> init() async {
 
   // Dashboard Repository
   sl.registerLazySingleton<DashboardRepository>(
-        () => DashboardRepositoryImpl(
+    () => DashboardRepositoryImpl(
       remoteDataSource: sl(),
     ),
   );
 
   // Golf Device BLE Repository
   sl.registerLazySingleton<BleRepository>(
-        () => BleRepositoryImpl(
+    () => BleRepositoryImpl(
       sl<BleService>(),
       sl<ShotFirestoreDatasource>(),
     ),
   );
-
 
   // ============================================================
   // STEP 5: USE CASES (Before BLoCs!)
   // ============================================================
 
   // BLE Management Use Cases
-  sl.registerLazySingleton(() => ble_mgmt.ScanDevicesUseCase(sl<BleManagementRepository>()));
-  sl.registerLazySingleton(() => ble_mgmt.ConnectDeviceUseCase(sl<BleManagementRepository>()));
-  sl.registerLazySingleton(() => ble_mgmt.DisconnectDeviceUseCase(sl<BleManagementRepository>()));
-  sl.registerLazySingleton(() => ble_mgmt.DiscoverServicesUseCase(sl<BleManagementRepository>()));
-  sl.registerLazySingleton(() => CheckConnectionStatusUseCase(sl<BleManagementRepository>()));
+  sl.registerLazySingleton(
+      () => ble_mgmt.ScanDevicesUseCase(sl<BleManagementRepository>()));
+  sl.registerLazySingleton(
+      () => ble_mgmt.ConnectDeviceUseCase(sl<BleManagementRepository>()));
+  sl.registerLazySingleton(
+      () => ble_mgmt.DisconnectDeviceUseCase(sl<BleManagementRepository>()));
+  sl.registerLazySingleton(
+      () => ble_mgmt.DiscoverServicesUseCase(sl<BleManagementRepository>()));
+  sl.registerLazySingleton(
+      () => CheckConnectionStatusUseCase(sl<BleManagementRepository>()));
 
   // Auth Use Cases
   sl.registerLazySingleton(() => LoginUser(sl()));
@@ -320,7 +326,7 @@ Future<void> init() async {
 
   // BLE Management BLoC
   sl.registerFactory(
-        () => BleManagementBloc(
+    () => BleManagementBloc(
       scanDevicesUseCase: sl(),
       connectDeviceUseCase: sl(),
       disconnectDeviceUseCase: sl(),
@@ -331,7 +337,7 @@ Future<void> init() async {
 
   // Auth BLoC
   sl.registerFactory(
-        () => AuthBloc(
+    () => AuthBloc(
       loginUser: sl(),
       signUpUser: sl(),
       checkAuthStatus: sl(),
@@ -341,7 +347,7 @@ Future<void> init() async {
 
   // Dashboard BLoC
   sl.registerFactory(
-        () => DashboardBloc(
+    () => DashboardBloc(
       getUserProfile: sl(),
       firebaseAuth: sl(),
     ),
@@ -349,23 +355,26 @@ Future<void> init() async {
 
   // Golf Device BLoC
   sl.registerFactory(
-        () => GolfDeviceBloc(
-      scanDevicesUseCase: sl(),
-      connectDeviceUseCase: sl(),
-      discoverServicesUseCase: sl(),
-      subscribeNotificationsUseCase: sl(),
-      sendSyncPacketUseCase: sl(),
-      sendCommandUseCase: sl(),
-      disconnectDeviceUseCase: sl(),
+    () => GolfDeviceBloc(
       bleRepository: sl(),
       sharedPreferences: sl(),
+      datasource: sl(),
     ),
   );
 
+  // Shot History BLoc
+  sl.registerFactory(
+    () => ShotHistoryBloc(
+      bleRepository: sl(),
+      user: sl<FirebaseAuth>().currentUser,
+      golfDeviceBloc: sl(),
+      datasource: sl(),
+    ),
+  );
   // Practice Games BLoC
   sl.registerFactory(() => PracticeGamesBloc(
-    bleRepository: sl(),
-  ));
+        bleRepository: sl(),
+      ));
 
   print('✅ BLoCs Registered');
   print('🎉 All Dependencies Registered Successfully!');

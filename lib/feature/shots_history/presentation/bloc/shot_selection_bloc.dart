@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onegolf/feature/ble_management/domain/repositories/ble_management_repository.dart';
+import 'package:onegolf/feature/golf_device/data/datasources/shot_firestore_datasource.dart';
 import 'package:onegolf/feature/shots_history/presentation/bloc/shot_selection_event.dart';
 import 'package:onegolf/feature/shots_history/presentation/bloc/shot_selection_state.dart';
 import '../../../choose_club_screen/model/club_model.dart';
@@ -9,29 +11,17 @@ import '../../../golf_device/domain/usecases/send_command_usecase.dart';
 import '../../../golf_device/presentation/bloc/golf_device_bloc.dart';
 
 class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
-  final BleRepository bleRepository;
+  final BleManagementRepository bleRepository;
+  final ShotFirestoreDatasource datasource;
   final User? user;
-  final SendCommandUseCase sendCommandUseCase;
   final GolfDeviceBloc golfDeviceBloc;
   List<ShotAnalysisModel> shots = [];
   ShotHistoryBloc({
     required this.bleRepository,
+    required this.datasource,
     required this.user,
-    required this.sendCommandUseCase,
     required this.golfDeviceBloc,
   }) : super(ShotHistoryInitialState()) {
-
-    golfDeviceBloc.bleResponseStream.listen((data) {
-      print("📩 BLE response received: $data");
-
-      if (data.length >= 6) {
-        print("🔍 Checking bytes: ${data[2]}, ${data[3]}, ${data[4]}");
-      }
-      if (data.length >= 6 && data[2] == 0x05 && data[3] == 0x4F && data[4] == 0x4B) {
-        add(ClearRecordResponseReceivedEvent());
-      }
-    });
-
     on<LoadShotHistoryEvent>(_onLoadShotHistory);
     on<SelectShotEvent>(_onSelectShot);
     on<LoadInitialShotEvent>(_onLoadInitialShot);
@@ -52,7 +42,7 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
         return;
       }
 
-      shots = await bleRepository.fetchShotsForUser(userId);
+      shots = await datasource.fetchShotsForUser(userId);
 
       if (shots.isEmpty) {
         emit(ShotHistoryLoadedState(
@@ -103,7 +93,8 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
       ) async {
     try {
       emit(ClearingRecordState());
-      await sendCommandUseCase.call(0x05, 0x00, 0x00);
+      List<int> packet = [0x47, 0x46, 0x05, 0x00, 0x00];
+      await bleRepository.writeData(packet);
       print("📤 Sent Clear All Records command to device, waiting for response...");
       add(ClearRecordResponseReceivedEvent());
     } catch (e) {
@@ -122,14 +113,8 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
         return;
       }
 
-      await bleRepository.deleteAllShotsForUser(userId);
+      await datasource.deleteAllShotsForUser(userId);
       print("🗑️ All shots deleted from Firebase for $userId");
-
-      // emit(ShotHistoryLoadedState(
-      //   shots: [],
-      //   selectedIndex: -1,
-      //   selectedShot: null,
-      // ));
       emit(const ShotHistoryClearedState());
     } catch (e) {
       emit(ShotHistoryErrorState("Failed to clear records: $e"));
@@ -166,8 +151,6 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
     if (selectedClubs.isEmpty) {
       return allShots;
     }
-
-    // Convert club codes to integers for comparison
     final selectedClubCodes = selectedClubs
         .map((c) => int.tryParse(c.code) ?? -1)
         .where((code) => code != -1)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
+import 'package:onegolf/feature/ble_management/domain/repositories/ble_management_repository.dart';
 import 'package:onegolf/feature/setting/persentation/bloc/setting_bloc.dart';
 import 'package:onegolf/feature/setting/persentation/bloc/setting_event.dart';
 import 'package:onegolf/feature/setting/persentation/bloc/setting_state.dart';
@@ -15,12 +16,10 @@ import '../../../widget/custom_app_bar.dart';
 import '../../../widget/header_row.dart';
 
 class SettingScreen extends StatelessWidget {
-  final DeviceEntity connectedDevice;
   final bool selectedUnit;
 
   const SettingScreen({
     super.key,
-    required this.connectedDevice,
     required this.selectedUnit,
   });
 
@@ -28,11 +27,9 @@ class SettingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<SettingBloc>(
       create: (_) => SettingBloc(
-        sendCommandUseCase: sl<SendCommandUseCase>(),
+        bleManagementRepository: sl<BleManagementRepository>(),
         sharedPreferences: sl<SharedPreferences>(),
-        bleService: sl<BleService>(),
-      )..add(LoadSettingsEvent(
-          device: connectedDevice, initialUnit: selectedUnit)),
+      )..add(LoadSettingsEvent(initialUnit: selectedUnit)),
       child: Scaffold(
         backgroundColor: AppColors.primaryBackground,
         bottomNavigationBar: const BottomNavBar(),
@@ -65,11 +62,13 @@ class SettingScreen extends StatelessWidget {
                               children: [
                                 _buildCard(
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Text("Backlight",
                                           style: TextStyle(
-                                              color: Colors.white, fontSize: 16)),
+                                              color: Colors.white,
+                                              fontSize: 16)),
                                       Transform.scale(
                                         scale: 0.8,
                                         child: Switch(
@@ -77,12 +76,13 @@ class SettingScreen extends StatelessWidget {
                                           onChanged: state.isSending
                                               ? null
                                               : (v) => ctx
-                                              .read<SettingBloc>()
-                                              .add(ToggleBacklightEvent(v)),
+                                                  .read<SettingBloc>()
+                                                  .add(ToggleBacklightEvent(v)),
                                           activeTrackColor: Colors.white,
                                           inactiveTrackColor: Colors.grey,
-                                          thumbColor: MaterialStateProperty.resolveWith(
-                                                (states) => Colors.black,
+                                          thumbColor:
+                                              MaterialStateProperty.resolveWith(
+                                            (states) => Colors.black,
                                           ),
                                         ),
                                       ),
@@ -94,11 +94,12 @@ class SettingScreen extends StatelessWidget {
                                 // 💤 Sleep Time Card
                                 _buildCard(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Row(
                                             children: [
@@ -119,26 +120,32 @@ class SettingScreen extends StatelessWidget {
                                                 onTap: state.isSending
                                                     ? null
                                                     : () => ctx
-                                                    .read<SettingBloc>()
-                                                    .add(UpdateSleepTimeLocally(
-                                                    state.sleepTime + 1)),
+                                                        .read<SettingBloc>()
+                                                        .add(UpdateSleepTimeLocally(
+                                                            state.sleepTime +
+                                                                1)),
                                                 child: const Icon(Icons.add,
-                                                    color: Colors.white, size: 22),
+                                                    color: Colors.white,
+                                                    size: 22),
                                               ),
                                               const SizedBox(width: 10),
                                               GestureDetector(
                                                 onTap: state.isSending
                                                     ? null
                                                     : () {
-                                                  if (state.sleepTime > 1) {
-                                                    ctx
-                                                        .read<SettingBloc>()
-                                                        .add(UpdateSleepTimeLocally(
-                                                        state.sleepTime - 1));
-                                                  }
-                                                },
+                                                        if (state.sleepTime >
+                                                            1) {
+                                                          ctx
+                                                              .read<
+                                                                  SettingBloc>()
+                                                              .add(UpdateSleepTimeLocally(
+                                                                  state.sleepTime -
+                                                                      1));
+                                                        }
+                                                      },
                                                 child: const Icon(Icons.remove,
-                                                    color: Colors.white, size: 22),
+                                                    color: Colors.white,
+                                                    size: 22),
                                               ),
                                             ],
                                           ),
@@ -151,16 +158,20 @@ class SettingScreen extends StatelessWidget {
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.white,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                           ),
                                           onPressed: state.isSending
                                               ? null
-                                              : () => ctx.read<SettingBloc>().add(
-                                              SendSleepTimeCommandEvent(
-                                                  state.sleepTime)),
+                                              : () => ctx
+                                                  .read<SettingBloc>()
+                                                  .add(
+                                                      SendSleepTimeCommandEvent(
+                                                          state.sleepTime)),
                                           child: const Text("OK",
-                                              style: TextStyle(color: Colors.black)),
+                                              style: TextStyle(
+                                                  color: Colors.black)),
                                         ),
                                       )
                                     ],
@@ -171,36 +182,39 @@ class SettingScreen extends StatelessWidget {
                                 // 📏 Unit Selection Card
                                 _buildCard(
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Text("Units",
                                           style: TextStyle(
-                                              color: Colors.white, fontSize: 16)),
+                                              color: Colors.white,
+                                              fontSize: 16)),
                                       DropdownButton<String>(
                                         dropdownColor: Colors.grey[900],
-                                        value: state.meters ? "Meters" : "Yards",
+                                        value:
+                                            state.meters ? "Meters" : "Yards",
                                         underline: const SizedBox(),
                                         items: const [
                                           DropdownMenuItem(
                                               value: "Yards",
                                               child: Text("Yards",
-                                                  style:
-                                                  TextStyle(color: Colors.white))),
+                                                  style: TextStyle(
+                                                      color: Colors.white))),
                                           DropdownMenuItem(
                                               value: "Meters",
                                               child: Text("Meters",
-                                                  style:
-                                                  TextStyle(color: Colors.white))),
+                                                  style: TextStyle(
+                                                      color: Colors.white))),
                                         ],
                                         onChanged: state.isSending
                                             ? null
                                             : (value) {
-                                          if (value != null) {
-                                            ctx.read<SettingBloc>().add(
-                                                ChangeUnitEvent(
-                                                    value == "Meters"));
-                                          }
-                                        },
+                                                if (value != null) {
+                                                  ctx.read<SettingBloc>().add(
+                                                      ChangeUnitEvent(
+                                                          value == "Meters"));
+                                                }
+                                              },
                                       ),
                                     ],
                                   ),
@@ -210,7 +224,8 @@ class SettingScreen extends StatelessWidget {
                           );
                         } else if (state is SettingLoading) {
                           return const Center(
-                            child: CircularProgressIndicator(color: Colors.white),
+                            child:
+                                CircularProgressIndicator(color: Colors.white),
                           );
                         } else {
                           return const SizedBox();
@@ -238,7 +253,6 @@ class SettingScreen extends StatelessWidget {
             ],
           ),
         ),
-
       ),
     );
   }

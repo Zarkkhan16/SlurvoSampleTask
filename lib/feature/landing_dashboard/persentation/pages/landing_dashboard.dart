@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/feature/widget/session_view_button.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../core/services/ble_connection_helper.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../ble_management/presentation/presentation/device_connected_screen.dart';
 import '../../../golf_device/presentation/bloc/golf_device_bloc.dart';
 import '../../../golf_device/presentation/pages/golf_device_screen.dart';
 import '../../../widget/bottom_nav_bar.dart';
@@ -360,11 +362,13 @@ class _LandingDashboardState extends State<LandingDashboard> {
     super.initState();
     context.read<DashboardBloc>().add(LoadUserProfile());
   }
+
   Future<void> _navigateWithBleCheck({
     required BuildContext context,
     required Widget destination,
   }) async {
-    final isConnected = await BleConnectionHelper.ensureDeviceConnected(context);
+    final isConnected =
+        await BleConnectionHelper.ensureDeviceConnected(context);
 
     if (isConnected && mounted) {
       Navigator.push(
@@ -375,7 +379,10 @@ class _LandingDashboardState extends State<LandingDashboard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Device connection required', style: TextStyle(color: Colors.white),),
+            content: Text(
+              'Device connection required',
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.redAccent,
             duration: Duration(seconds: 2),
           ),
@@ -386,6 +393,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    bool isConnected = BleConnectionHelper.isConnected(context);
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is Unauthenticated) {
@@ -399,7 +407,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/SignInScreen',
-                (route) => false,
+            (route) => false,
           );
         }
       },
@@ -449,7 +457,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
             }
 
             final userName =
-            state is DashboardLoaded ? state.userProfile.name : 'User';
+                state is DashboardLoaded ? state.userProfile.name : 'User';
 
             return Column(
               children: [
@@ -650,7 +658,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                               children: [
                                 Row(
                                   mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     GameModeIcon(
                                       icon: AppImages.combineTestIcon,
@@ -665,7 +673,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                                 SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     GameModeIcon(
                                       icon: AppImages.longestDriveIcon,
@@ -685,6 +693,23 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     ),
                   ),
                 ),
+                SizedBox(height: 50),
+                if (isConnected)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: SessionViewButton(
+                      onSessionClick: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DeviceConnectedScreen(),
+                          ),
+                        );
+                      },
+                      iconSvg: AppImages.bluetoothIcon,
+                      buttonText: "Bluetooth Connected",
+                    ),
+                  ),
               ],
             );
           },

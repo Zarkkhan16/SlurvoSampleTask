@@ -262,7 +262,7 @@ class BleManagementBloc extends Bloc<BleManagementEvent, BleManagementState> {
 
     // Auto stop scan after 30 seconds
     _scanTimer?.cancel();
-    _scanTimer = Timer(Duration(seconds: 5), () {
+    _scanTimer = Timer(Duration(seconds: 3), () {
       print('⏱️ Scan timeout - stopping scan');
       add(StopScanEvent());
     });

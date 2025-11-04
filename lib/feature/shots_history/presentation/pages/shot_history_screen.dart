@@ -70,237 +70,224 @@ class ShotHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<GolfDeviceBloc, GolfDeviceState>(
-      listener: (context, state){
-        if (state is NavigateToSessionSummaryState) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => SessionSummaryScreen(
-                summaryData: state.summaryData,
-              ),
-            ),
-          );
-        }
-      },
-      builder: (context, state) {
-        if (state is DisconnectingState) {
-          return const Scaffold(
-            backgroundColor: Colors.black,
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: Colors.white),
-                  SizedBox(height: 16),
-                  Text(
-                    'Disconnecting device...',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        return PopScope(
-          canPop: false,
-          onPopInvoked: (didPop) {
-            if (!didPop) {
-              Navigator.pop(context, 'connected');
-            }
-          },
-          child: BlocProvider(
-            create: (context) =>
-                sl<ShotHistoryBloc>()..add(const LoadShotHistoryEvent()),
-            child: Scaffold(
-              backgroundColor: Colors.black,
-              bottomNavigationBar: const BottomNavBar(),
-              appBar: CustomAppBar(),
-              body: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: BlocListener<ShotHistoryBloc, ShotHistoryState>(
-                  listener: (context, state) {
-                    if (state is ClearingRecordState) {
-                      // ScaffoldMessenger.of(context).showSnackBar(
-                      //   const SnackBar(
-                      //     content: Text('Clearing all records...'),
-                      //     duration: Duration(seconds: 2),
-                      //   ),
-                      // );
-                    } else if (state is ShotHistoryClearedState) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('✅ All records cleared successfully'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                      context
-                          .read<ShotHistoryBloc>()
-                          .add(const LoadShotHistoryEvent());
-                    }
-                  },
-                  child: BlocBuilder<ShotHistoryBloc, ShotHistoryState>(
-                    builder: (context, state) {
-                      if (state is ShotHistoryLoadingState) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 3,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Loading shots...',
-                                style: TextStyle(
-                                  color: Colors.grey[400],
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      if (state is ShotHistoryErrorState) {
-                        return Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(32.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(24),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red.withOpacity(0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.error_outline_rounded,
-                                    color: Colors.redAccent,
-                                    size: 64,
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                Text(
-                                  'Oops! Something went wrong',
-                                  style: TextStyle(
-                                    color: Colors.grey[300],
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  state.message,
-                                  style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: 14,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 32),
-                                ElevatedButton.icon(
-                                  onPressed: () {
-                                    context
-                                        .read<ShotHistoryBloc>()
-                                        .add(const LoadShotHistoryEvent());
-                                  },
-                                  icon: const Icon(Icons.refresh_rounded),
-                                  label: const Text('Try Again'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.black,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 32, vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                    elevation: 0,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-
-                      if (state is ClearingRecordState) {
-                        return const Scaffold(
-                          backgroundColor: Colors.black,
-                          body: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                CircularProgressIndicator(color: Colors.white),
-                                SizedBox(height: 16),
-                                Text(
-                                  'Clearing all records...',
-                                  style: TextStyle(color: Colors.white, fontSize: 16),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                      if (state is ShotHistoryLoadedState) {
-                        if (state.shots.isEmpty) {
-                          return Column(
-                            children: [
-                              HeaderRow(
-                                headingName: "Session View",
-                                goScanScreen: false,
-                                onBackButton: () {
-                                  Navigator.pop(context, 'connected');
-                                },
-                              ),
-                              Expanded(
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(32),
-                                        decoration: BoxDecoration(
-                                          color: Colors.tealAccent.withOpacity(0.1),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.golf_course_rounded,
-                                          color: Colors.grey,
-                                          size: 80,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      Text(
-                                        'No Shots Yet',
-                                        style: TextStyle(
-                                          color: Colors.grey[300],
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }
-
-                        return _buildShotHistoryContent(context, state);
-                      }
-
-                      return const SizedBox();
-                    },
-                  ),
-                ),
-              ),
+        listener: (context, state) {
+      if (state is NavigateToSessionSummaryState) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SessionSummaryScreen(
+              summaryData: state.summaryData,
             ),
           ),
         );
       }
-    );
+    }, builder: (context, state) {
+      if (state is DisconnectingState) {
+        return const Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
+        );
+      }
+      return PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
+          if (!didPop) {
+            Navigator.pop(context, 'connected');
+          }
+        },
+        child: BlocProvider(
+          create: (context) =>
+              sl<ShotHistoryBloc>()..add(const LoadShotHistoryEvent()),
+          child: Scaffold(
+            backgroundColor: Colors.black,
+            bottomNavigationBar: const BottomNavBar(),
+            appBar: CustomAppBar(),
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: BlocListener<ShotHistoryBloc, ShotHistoryState>(
+                listener: (context, state) {
+                 if (state is ShotHistoryClearedState) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'All records cleared successfully',
+                          style: AppTextStyle.roboto(
+                              fontSize: 14, color: Colors.white),
+                        ),
+                        backgroundColor: Colors.black,
+                      ),
+                    );
+                    context
+                        .read<ShotHistoryBloc>()
+                        .add(const LoadShotHistoryEvent());
+                  }
+                },
+                child: BlocBuilder<ShotHistoryBloc, ShotHistoryState>(
+                  builder: (context, state) {
+                    if (state is ShotHistoryLoadingState) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Loading shots...',
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (state is ShotHistoryErrorState) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.error_outline_rounded,
+                                  color: Colors.redAccent,
+                                  size: 64,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                'Oops! Something went wrong',
+                                style: TextStyle(
+                                  color: Colors.grey[300],
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                state.message,
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 32),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  context
+                                      .read<ShotHistoryBloc>()
+                                      .add(const LoadShotHistoryEvent());
+                                },
+                                icon: const Icon(Icons.refresh_rounded),
+                                label: const Text('Try Again'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 32, vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    if (state is ClearingRecordState) {
+                      return const Scaffold(
+                        backgroundColor: Colors.black,
+                        body: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(color: Colors.white),
+                              SizedBox(height: 16),
+                              Text(
+                                'Clearing all records...',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    if (state is ShotHistoryLoadedState) {
+                      if (state.shots.isEmpty) {
+                        return Column(
+                          children: [
+                            HeaderRow(
+                              headingName: "Session View",
+                              goScanScreen: false,
+                              onBackButton: () {
+                                Navigator.pop(context, 'connected');
+                              },
+                            ),
+                            Expanded(
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(32),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            Colors.tealAccent.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.golf_course_rounded,
+                                        color: Colors.grey,
+                                        size: 80,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Text(
+                                      'No Shots Yet',
+                                      style: TextStyle(
+                                        color: Colors.grey[300],
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      return _buildShotHistoryContent(context, state);
+                    }
+
+                    return const SizedBox();
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildShotHistoryContent(
@@ -385,7 +372,7 @@ class ShotHistoryScreen extends StatelessWidget {
               child: ShotComparisonButton(
                 headingText: "Shot Comparison",
                 svgAssetPath: AppImages.analysisIcon,
-                onTap: (){
+                onTap: () {
                   final state = context.read<ShotHistoryBloc>().state;
                   if (state is ShotHistoryLoadedState) {
                     Navigator.push(
@@ -405,13 +392,15 @@ class ShotHistoryScreen extends StatelessWidget {
               child: ShotComparisonButton(
                 headingText: "Dispersion",
                 svgAssetPath: AppImages.groupIcon,
-                onTap: (){
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => BlocProvider.value(
                         value: context.read<GolfDeviceBloc>(),
-                        child: DispersionScreen(selectedShot: state.selectedShot,),
+                        child: DispersionScreen(
+                          selectedShot: state.selectedShot,
+                        ),
                       ),
                     ),
                   );
@@ -585,9 +574,7 @@ class ShotHistoryScreen extends StatelessWidget {
                 buttonBackgroundColor: Colors.red,
                 textColor: AppColors.primaryText,
                 onPressed: () {
-                  context
-                      .read<GolfDeviceBloc>()
-                      .add(DisconnectDeviceEvent());
+                  context.read<GolfDeviceBloc>().add(DisconnectDeviceEvent());
                 },
               ),
             ),
@@ -620,6 +607,7 @@ class ShotHistoryScreen extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildHeaderCell(String text, String subTitle, {required int flex}) {
     return Expanded(
       flex: flex,
@@ -647,6 +635,7 @@ class ShotHistoryScreen extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildDataCell(String text, bool isSelected, {required int flex}) {
     return Expanded(
       flex: flex,

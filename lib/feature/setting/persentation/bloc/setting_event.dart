@@ -1,11 +1,8 @@
-import '../../../golf_device/domain/entities/device_entity.dart';
-
 abstract class SettingEvent {}
 
 class LoadSettingsEvent extends SettingEvent {
-  final DeviceEntity device;
   final bool initialUnit;
-  LoadSettingsEvent({required this.device, required this.initialUnit});
+  LoadSettingsEvent({required this.initialUnit});
 }
 
 class ToggleBacklightEvent extends SettingEvent {

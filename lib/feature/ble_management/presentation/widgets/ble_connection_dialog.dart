@@ -40,13 +40,47 @@ class BleConnectionDialog extends StatelessWidget {
             child: Column(
               children: [
                 HeaderRow(
-                  headingName: 'Scan Device',
-                  onBackButton: (){
+                  headingName: 'Connect Your Device',
+                  onBackButton: () {
                     context.read<BleManagementBloc>().add(StopScanEvent());
                     Navigator.of(context).pop(false);
                     onCancelled?.call();
                   },
                 ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("•  ", style: TextStyle(fontSize: 18, height: 1.2)),
+                          Expanded(
+                            child: Text(
+                              "Turn on your compatible launch monitor or swing sensor",
+                              style: AppTextStyle.roboto(fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("•  ", style: TextStyle(fontSize: 18, height: 1.2)),
+                          Expanded(
+                            child: Text(
+                              "Keep Bluetooth enabled on your phone",
+                              style: AppTextStyle.roboto(fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 30),
                 if (state is BleScanningState) ...[
                   _buildScanningView(context, state),
                 ] else if (state is BleDevicesFoundState) ...[
@@ -84,14 +118,14 @@ class BleConnectionDialog extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (state.devices.isNotEmpty) ...[
-          Text(
-            "Found ${state.devices.length} device(s)",
-            style: AppTextStyle.roboto(
-              fontSize: 14,
-              color: Colors.white60,
-            ),
-          ),
-          const SizedBox(height: 12),
+          // Text(
+          //   "Found ${state.devices.length} device(s)",
+          //   style: AppTextStyle.roboto(
+          //     fontSize: 14,
+          //     color: Colors.white60,
+          //   ),
+          // ),
+          // const SizedBox(height: 12),
           SizedBox(
             height: 200,
             child: ListView.builder(
@@ -151,10 +185,10 @@ class BleConnectionDialog extends StatelessWidget {
     return Column(
       children: [
         Text(
-          "Found ${state.devices.length} device(s)",
+          "Nearby Devices",
           style: AppTextStyle.roboto(
-            fontSize: 16,
-            color: Colors.white70,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 16),

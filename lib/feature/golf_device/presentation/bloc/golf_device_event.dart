@@ -8,19 +8,6 @@ abstract class GolfDeviceEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class StartScanningEvent extends GolfDeviceEvent {}
-
-class StopScanningEvent extends GolfDeviceEvent {}
-
-class DeviceDiscoveredEvent extends GolfDeviceEvent {
-  final DeviceEntity device;
-
-  DeviceDiscoveredEvent(this.device);
-
-  @override
-  List<Object?> get props => [device];
-}
-
 class ConnectToDeviceEvent extends GolfDeviceEvent {
   final DeviceEntity device;
 
@@ -31,12 +18,12 @@ class ConnectToDeviceEvent extends GolfDeviceEvent {
 }
 
 class ConnectionStateChangedEvent extends GolfDeviceEvent {
-  final DeviceConnectionState state;
+  final bool isConnected;
 
-  ConnectionStateChangedEvent(this.state);
+  ConnectionStateChangedEvent(this.isConnected);
 
   @override
-  List<Object?> get props => [state];
+  List<Object?> get props => [isConnected];
 }
 
 class NotificationReceivedEvent extends GolfDeviceEvent {
@@ -58,8 +45,6 @@ class UpdateClubEvent extends GolfDeviceEvent {
   @override
   List<Object?> get props => [clubId];
 }
-
-class ToggleUnitsEvent extends GolfDeviceEvent {}
 
 class DisconnectDeviceEvent extends GolfDeviceEvent {}
 
