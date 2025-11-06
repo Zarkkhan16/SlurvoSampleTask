@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onegolf/feature/club_gapping/presentation/bloc/club_gapping_bloc.dart';
+import 'package:onegolf/feature/club_gapping/presentation/pages/club_selection_page.dart';
 import 'package:onegolf/feature/widget/header_row.dart';
 import 'package:onegolf/feature/practice_games/presentation/bloc/practice_games_bloc.dart';
 import 'package:onegolf/feature/practice_games/presentation/pages/longest_drive_main_page.dart';
 import 'package:onegolf/feature/practice_games/presentation/widgets/gaming_card.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_images.dart';
+import '../../../../core/di/injection_container.dart' as di;
+import '../../../club_gapping/presentation/bloc/club_gapping_event.dart';
 import '../../../widget/bottom_nav_bar.dart';
 import '../../../widget/custom_app_bar.dart';
 import '../widgets/top_button.dart';
@@ -65,7 +69,18 @@ class PracticeGamesScreen extends StatelessWidget {
                     svgPath: AppImages.clubGappingIcon,
                     title: "Club Gapping",
                     subtitle: "Hone distance control with different clubs",
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                            create: (_)=>di.sl<ClubGappingBloc>()
+                              ..add(LoadAvailableClubsEvent()),
+                            child: const ClubSelectionScreen(),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: 16),
                   GamingCard(

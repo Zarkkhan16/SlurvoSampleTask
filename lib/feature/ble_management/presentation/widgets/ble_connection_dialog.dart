@@ -118,14 +118,6 @@ class BleConnectionDialog extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (state.devices.isNotEmpty) ...[
-          // Text(
-          //   "Found ${state.devices.length} device(s)",
-          //   style: AppTextStyle.roboto(
-          //     fontSize: 14,
-          //     color: Colors.white60,
-          //   ),
-          // ),
-          // const SizedBox(height: 12),
           SizedBox(
             height: 200,
             child: ListView.builder(

@@ -163,6 +163,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:onegolf/feature/club_gapping/presentation/bloc/club_gapping_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../feature/ble_management/data/repositories/ble_management_repository_imple.dart';
 import '../../feature/ble_management/data/services/ble_management_service.dart';
@@ -372,9 +373,17 @@ Future<void> init() async {
     ),
   );
   // Practice Games BLoC
-  sl.registerFactory(() => PracticeGamesBloc(
-        bleRepository: sl(),
-      ));
+  sl.registerFactory(
+    () => PracticeGamesBloc(
+      bleRepository: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => ClubGappingBloc(
+      bleRepository: sl(),
+    ),
+  );
 
   print('✅ BLoCs Registered');
   print('🎉 All Dependencies Registered Successfully!');
