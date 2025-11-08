@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
+import 'package:onegolf/feature/widget/session_view_button.dart';
 
 import '../bloc/club_gapping_bloc.dart';
 import '../bloc/club_gapping_event.dart';
@@ -43,7 +44,6 @@ class ShotRecordingScreen extends StatelessWidget {
             padding: EdgeInsets.all(16),
             child: Column(
               children: [
-                // Club Name and Shot Counter
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -64,10 +64,7 @@ class ShotRecordingScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 SizedBox(height: 40),
-
-                // Large Carry Distance Display
                 Container(
                   padding: EdgeInsets.all(24),
                   child: Column(
@@ -139,38 +136,28 @@ class ShotRecordingScreen extends StatelessWidget {
 
                 SizedBox(height: 20),
 
-                // Re-Hit Shot Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: latestShot != null
-                        ? () {
-                            context.read<ClubGappingBloc>().add(
-                                  ReHitShotEvent(),
-                                );
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          latestShot != null ? Colors.white : Colors.grey[800],
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      disabledBackgroundColor: Colors.grey[800],
-                      disabledForegroundColor: Colors.grey[600],
-                    ),
-                    child: Text(
-                      'Re-Hit Shot',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                if (latestShot != null)
+                  SessionViewButton(
+                    onSessionClick: () {
+                      context.read<ClubGappingBloc>().add(
+                            ReHitShotEvent(),
+                          );
+                    },
+                    buttonText: "Re-Hit Shot",
                   ),
-                ),
-
+                if (state.currentShotNumber >= state.totalShots) ...[
+                  SizedBox(
+                    height: 10,
+                  ),
+                  SessionViewButton(
+                    onSessionClick: () {
+                      context.read<ClubGappingBloc>().add(
+                        CompleteCurrentClubEvent(),
+                      );
+                    },
+                    buttonText: "Club Summary",
+                  ),
+                ],
                 SizedBox(height: 20),
               ],
             ),

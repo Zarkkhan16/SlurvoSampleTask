@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/feature/club_gapping/presentation/pages/session_summary_page.dart';
+import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
 import 'package:intl/intl.dart';
-
-import '../../../golf_device/presentation/pages/session_summary_screen.dart';
+import 'package:onegolf/feature/widget/gradient_border_container.dart';
+import 'package:onegolf/feature/widget/header_row.dart';
+import 'package:onegolf/feature/widget/session_view_button.dart';
 import '../../domain/entities/shot_entity.dart';
 import '../bloc/club_gapping_bloc.dart';
 import '../bloc/club_gapping_event.dart';
@@ -17,16 +21,14 @@ class ClubSummaryScreen extends StatelessWidget {
     return BlocConsumer<ClubGappingBloc, ClubGappingState>(
       listener: (context, state) {
         if (state is RecordingShotsState) {
-          // Re-taking club OR moving to next club, pop back to recording
           Navigator.pop(context);
         } else if (state is SessionSummaryState) {
-          // Move to session summary (last club completed)
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (_) => BlocProvider.value(
                 value: context.read<ClubGappingBloc>(),
-                child: SessionSummaryScreen(summaryData: {},),
+                child: SessionSummaryPage(),
               ),
             ),
           );
@@ -49,134 +51,90 @@ class ClubSummaryScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: Colors.black,
           appBar: CustomAppBar(),
-          body: Column(
-            children: [
-              // Club Name
-              Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
+          bottomNavigationBar: BottomNavBar(),
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
+            child: Column(
+              children: [
+                HeaderRow(headingName: "Club Summary",),
+                SizedBox(height: 5),
+                Text(
                   clubSummary.club.name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyle.oswald(
+                    fontSize: 28,
+                  )
+                ),
+                SizedBox(height: 10),
+
+                // Shots List
+                SizedBox(
+                  height: 260,
+                  child: Expanded(
+                    child: ListView.builder(
+                      itemCount: shots.length,
+                      itemBuilder: (context, index) {
+                        final shot = shots[index];
+                        return _buildShotItem(shot, context);
+                      },
+                    ),
                   ),
                 ),
-              ),
 
-              // Shots List
-              Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: shots.length,
-                  itemBuilder: (context, index) {
-                    final shot = shots[index];
-                    return _buildShotItem(shot, context);
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20.0),
+                  child: GradientBorderContainer(
+                    child: Column(
+                      children: [
+                        Text(
+                          clubSummary.averageCarryDistance.toStringAsFixed(1),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 64,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -2,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Average Carry Distance (Yds)',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Spacer(),
+                SessionViewButton(
+                  onSessionClick: () {
+                    context.read<ClubGappingBloc>().add(
+                          RetakeCurrentClubEvent(),
+                        );
                   },
+                  buttonText: 'Re-Take ${clubSummary.club.name} Gapping',
                 ),
-              ),
-
-              // Average Carry Distance
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Column(
-                  children: [
-                    Text(
-                      clubSummary.averageCarryDistance.toStringAsFixed(1),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 64,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -2,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Average Carry Distance (Yds)',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+                SizedBox(height: 10),
+                SessionViewButton(
+                  onSessionClick: () {
+                    if (state.hasNextClub) {
+                      context.read<ClubGappingBloc>().add(
+                            MoveToNextClubEvent(),
+                          );
+                    } else {
+                      context.read<ClubGappingBloc>().add(
+                            CompleteSessionEvent(),
+                          );
+                    }
+                  },
+                  buttonText: state.hasNextClub
+                      ? 'Move to next club'
+                      : 'View Summary',
                 ),
-              ),
-
-              // Buttons
-              Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Re-Take Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          context.read<ClubGappingBloc>().add(
-                                RetakeCurrentClubEvent(),
-                              );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: Text(
-                          'Re-Take ${clubSummary.club.name} Gapping',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 12),
-
-                    // Move to Next Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (state.hasNextClub) {
-                            context.read<ClubGappingBloc>().add(
-                                  MoveToNextClubEvent(),
-                                );
-                            Navigator.pop(context);
-                          } else {
-                            context.read<ClubGappingBloc>().add(
-                                  CompleteSessionEvent(),
-                                );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: Text(
-                          state.hasNextClub
-                              ? 'Move to next club'
-                              : 'View Summary',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ],
+                SizedBox(height: 5),
+              ],
+            ),
           ),
         );
       },
@@ -187,16 +145,11 @@ class ClubSummaryScreen extends StatelessWidget {
     final timeFormat = DateFormat('h:mm a');
     final timeString = timeFormat.format(shot.timestamp).toLowerCase();
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Color(0xFF1C1C1E),
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return GradientBorderContainer(
+      borderRadius: 20,
+      margin: EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          // Golf Ball Icon
           Container(
             width: 48,
             height: 48,
@@ -210,81 +163,56 @@ class ClubSummaryScreen extends StatelessWidget {
               size: 24,
             ),
           ),
-
           SizedBox(width: 16),
-
-          // Shot Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Shot ${shot.shotNumber}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyle.oswald(
+                          fontSize: 16, fontWeight: FontWeight.w500),
                     ),
-                    Row(
-                      children: List.generate(
-                        5,
-                        (index) => Icon(
-                          index < shot.starRating
-                              ? Icons.star
-                              : Icons.star_border,
-                          color: Colors.amber,
-                          size: 16,
-                        ),
-                      ),
+                    Text(
+                      '${shot.ballSpeed.toStringAsFixed(1)} mph',
+                      style: AppTextStyle.oswald(
+                          fontSize: 16, fontWeight: FontWeight.w500),
                     ),
+                    Text(
+                      '${shot.carryDistance.toStringAsFixed(1)} yds',
+                      style: AppTextStyle.oswald(
+                          fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                    SizedBox(width: 5),
                   ],
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: 2),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       timeString,
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                      ),
+                      style: AppTextStyle.oswald(),
                     ),
-                    SizedBox(width: 16),
                     Text(
-                      '${shot.ballSpeed.toStringAsFixed(1)} mph',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                      ),
+                      'Ball Speed',
+                      style: AppTextStyle.oswald(),
                     ),
-                    SizedBox(width: 16),
                     Text(
-                      '${shot.carryDistance.toStringAsFixed(1)} yds',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                      ),
+                      'Carry Distance',
+                      style: AppTextStyle.oswald(),
                     ),
+                    SizedBox(width: 5),
                   ],
                 ),
               ],
             ),
           ),
-
-          // Trophy Icon (optional, for best shot)
-          if (shot.starRating >= 4)
-            Padding(
-              padding: EdgeInsets.only(left: 8),
-              child: Icon(
-                Icons.emoji_events,
-                color: Colors.amber,
-                size: 20,
-              ),
-            ),
         ],
       ),
     );

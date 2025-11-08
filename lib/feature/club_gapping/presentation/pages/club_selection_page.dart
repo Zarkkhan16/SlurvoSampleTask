@@ -114,8 +114,6 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
                       ),
                     ),
                     SizedBox(height: 12),
-
-                    // Shot Options Row
                     Row(
                       children: [
                         ShotOption(
@@ -157,8 +155,6 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
                         ),
                       ],
                     ),
-
-                    // Custom Input Field
                     if (state.isCustomSelected) ...[
                       const SizedBox(height: 12),
                       GradientBorderContainer(

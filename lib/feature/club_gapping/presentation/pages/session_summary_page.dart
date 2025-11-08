@@ -7,15 +7,14 @@ import '../bloc/club_gapping_bloc.dart';
 import '../bloc/club_gapping_event.dart';
 import '../bloc/club_gapping_state.dart';
 
-class SessionSummaryScreen extends StatelessWidget {
-  const SessionSummaryScreen({super.key});
+class SessionSummaryPage extends StatelessWidget {
+  const SessionSummaryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ClubGappingBloc, ClubGappingState>(
       listener: (context, state) {
         if (state is RecordingShotsState) {
-          // Re-taking session, navigate back
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(

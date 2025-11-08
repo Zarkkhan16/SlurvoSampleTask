@@ -1,7 +1,3 @@
-// ============================================================
-// CLUB GAPPING - BLOC IMPLEMENTATION (FIXED)
-// ============================================================
-
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,13 +12,10 @@ import 'club_gapping_state.dart';
 
 class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   final BleManagementRepository bleRepository;
-
   StreamSubscription? _bleSubscription;
   Timer? _syncTimer;
-  int _currentClubId = 0; // Current club's numeric ID
-
+  int _currentClubId = 0;
   ClubGappingBloc({required this.bleRepository}) : super(ClubGappingInitial()) {
-    // Register event handlers
     on<LoadAvailableClubsEvent>(_onLoadAvailableClubs);
     on<ToggleClubSelectionEvent>(_onToggleClubSelection);
     on<UpdateShotsPerClubEvent>(_onUpdateShotsPerClub);
@@ -102,7 +95,7 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
     _syncTimer?.cancel();
 
     // ✅ Send sync packet every 1 second with current club ID
-    _syncTimer = Timer.periodic(Duration(seconds: 1), (_) async {
+    _syncTimer = Timer.periodic(Duration(seconds: 5), (_) async {
       if (bleRepository.isConnected) {
         await _sendSyncPacket();
       }
@@ -112,14 +105,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   }
 
   Future<void> _sendSyncPacket() async {
-    // Calculate checksum: (0x01 + clubId) & 0xFF
     int checksum = (0x01 + _currentClubId) & 0xFF;
-
-    // Packet format: [0x47, 0x46, 0x01, clubId, 0x00, checksum]
     final packet = [0x47, 0x46, 0x01, _currentClubId, 0x00, checksum];
-
     await bleRepository.writeData(packet);
-    print('📤 Sync packet sent: $packet (Club ID: $_currentClubId)');
   }
 
   void _parseGolfData(Uint8List data) {
@@ -246,7 +234,7 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
 
     emit(currentState.copyWith(
       shotsPerClub: event.shotsPerClub,
-      isCustomSelected: !isPresetButton, // ✅ MUST HAVE THIS LINE
+      isCustomSelected: !isPresetButton,
     ));
   }
 
@@ -358,9 +346,12 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
     print('✅ Shot ${updatedShots.length} recorded for ${currentState.currentClub.name}');
 
     // Auto-complete club if all shots recorded
-    if (updatedShots.length >= currentState.totalShots) {
-      add(CompleteCurrentClubEvent());
-    }
+    // if (updatedShots.length >= currentState.totalShots) {
+    //   print('⏰ Last shot recorded! Waiting 1 second before showing summary...');
+    //   Future.delayed(Duration(seconds: 2), () {
+    //     add(CompleteCurrentClubEvent());
+    //   });
+    // }
   }
 
   // ============================================================
@@ -404,27 +395,43 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
 
     final currentState = state as RecordingShotsState;
 
-    if (currentState.currentClubShots.isNotEmpty) {
-      final updatedShots = List<ShotEntity>.from(currentState.currentClubShots)
-        ..removeLast();
-
-      final updatedSession = currentState.session.copyWith(
-        clubShots: {
-          ...currentState.session.clubShots,
-          currentState.currentClub.id: updatedShots,
-        },
-      );
-
-      emit(currentState.copyWith(
-        session: updatedSession,
-        currentClubShots: updatedShots,
-        currentShotNumber: updatedShots.length,
-        latestShot: null,
-        isWaitingForShot: true,
-      ));
-
-      print('🔄 Re-hit shot for ${currentState.currentClub.name}');
+    if (currentState.currentClubShots.isEmpty) {
+      print('⚠️ No shots to re-hit');
+      return;
     }
+
+    final updatedShots = List<ShotEntity>.from(currentState.currentClubShots)
+      ..removeLast();
+
+    // Update session with new shots list
+    final updatedSession = currentState.session.copyWith(
+      clubShots: {
+        ...currentState.session.clubShots,
+        currentState.currentClub.id: updatedShots,
+      },
+    );
+
+    // ✅ FIX: Show previous shot if available, otherwise null (zeros)
+    final ShotEntity? newLatestShot = updatedShots.isNotEmpty
+        ? updatedShots.last
+        : null;
+
+    print('🔄 Re-hit: Removed shot, ${updatedShots.length} shots remaining');
+    if (newLatestShot != null) {
+      print('   Showing previous shot data: ${newLatestShot.carryDistance.toStringAsFixed(1)} yds');
+    } else {
+      print('   No shots remaining - showing zeros');
+    }
+
+    emit(RecordingShotsState(
+      session: updatedSession,
+      currentClub: currentState.currentClub,
+      currentClubShots: updatedShots,
+      currentShotNumber: updatedShots.length,
+      totalShots: currentState.totalShots,
+      latestShot: newLatestShot,
+      isWaitingForShot: true,
+    ));
   }
 
   // ============================================================
@@ -636,6 +643,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
 
     // ✅ Stop sync timer
     _stopSyncTimer();
+    _bleSubscription?.cancel();
+    _bleSubscription = null;
+    print('🔌 BLE subscription cancelled');
 
     // Mark session as completed
     final completedSession = session.copyWith(
@@ -701,8 +711,7 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
       isWaitingForShot: true,
     ));
 
-    // ✅ Restart sync timer
-    _startSyncTimer();
+    _subscribeToBleShotData();
 
     print('🔄 Session restarted');
   }
