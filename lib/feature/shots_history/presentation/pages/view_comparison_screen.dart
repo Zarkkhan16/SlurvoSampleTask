@@ -25,15 +25,14 @@ class ViewComparisonScreen extends StatelessWidget {
       appBar: CustomAppBar(),
       bottomNavigationBar: BottomNavBar(),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15,),
+        padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 5),
         child: Column(
           children: [
             HeaderRow(headingName: "Shot Comparison"),
             _buildShotSection("Primary Shot", primaryShot),
-            const SizedBox(height: 15),
+            const SizedBox(height: 5),
             Divider(color: AppColors.dividerColor, thickness: 2),
             _buildShotSection("Comparison Shot", comparisonShot),
-            const SizedBox(height: 5),
           ],
         ),
       ),
@@ -69,7 +68,7 @@ class ViewComparisonScreen extends StatelessWidget {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 5),
           decoration: BoxDecoration(
             color: Colors.black,
             borderRadius: BorderRadius.circular(15),
