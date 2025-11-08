@@ -52,89 +52,104 @@ class ClubSummaryScreen extends StatelessWidget {
           backgroundColor: Colors.black,
           appBar: CustomAppBar(),
           bottomNavigationBar: BottomNavBar(),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
-            child: Column(
-              children: [
-                HeaderRow(headingName: "Club Summary",),
-                SizedBox(height: 5),
-                Text(
-                  clubSummary.club.name,
-                  style: AppTextStyle.oswald(
-                    fontSize: 28,
-                  )
-                ),
-                SizedBox(height: 10),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
+                child: HeaderRow(headingName: "Club Summary",),
+              ),
+              SizedBox(height: 5),
+              Text(
+                clubSummary.club.name,
+                style: AppTextStyle.oswald(
+                  fontSize: 28,
+                )
+              ),
+              SizedBox(height: 10),
 
-                // Shots List
-                SizedBox(
-                  height: 260,
-                  child: Expanded(
-                    child: ListView.builder(
-                      itemCount: shots.length,
-                      itemBuilder: (context, index) {
-                        final shot = shots[index];
-                        return _buildShotItem(shot, context);
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: shots.length,
+                  itemBuilder: (context, index) {
+                    final shot = shots[index];
+                    return _buildShotItem(shot, context);
+                  },
+                ),
+              ),
+
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  border: const Border(
+                    top: BorderSide(color: Colors.white, width: 0.7),
+                    left: BorderSide.none,
+                    right: BorderSide.none,
+                    bottom: BorderSide.none,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: GradientBorderContainer(
+                        child: Column(
+                          children: [
+                            Text(
+                              clubSummary.averageCarryDistance.toStringAsFixed(1),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 64,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -2,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Average Carry Distance (Yds)',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SessionViewButton(
+                      onSessionClick: () {
+                        context.read<ClubGappingBloc>().add(
+                              RetakeCurrentClubEvent(),
+                            );
                       },
+                      buttonText: 'Re-Take ${clubSummary.club.name} Gapping',
                     ),
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  child: GradientBorderContainer(
-                    child: Column(
-                      children: [
-                        Text(
-                          clubSummary.averageCarryDistance.toStringAsFixed(1),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 64,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -2,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Average Carry Distance (Yds)',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                    SizedBox(height: 10),
+                    SessionViewButton(
+                      onSessionClick: () {
+                        if (state.hasNextClub) {
+                          context.read<ClubGappingBloc>().add(
+                                MoveToNextClubEvent(),
+                              );
+                        } else {
+                          context.read<ClubGappingBloc>().add(
+                                CompleteSessionEvent(),
+                              );
+                        }
+                      },
+                      buttonText: state.hasNextClub
+                          ? 'Move to next club'
+                          : 'View Summary',
                     ),
-                  ),
+                    SizedBox(height: 5),
+                  ],
                 ),
-                Spacer(),
-                SessionViewButton(
-                  onSessionClick: () {
-                    context.read<ClubGappingBloc>().add(
-                          RetakeCurrentClubEvent(),
-                        );
-                  },
-                  buttonText: 'Re-Take ${clubSummary.club.name} Gapping',
-                ),
-                SizedBox(height: 10),
-                SessionViewButton(
-                  onSessionClick: () {
-                    if (state.hasNextClub) {
-                      context.read<ClubGappingBloc>().add(
-                            MoveToNextClubEvent(),
-                          );
-                    } else {
-                      context.read<ClubGappingBloc>().add(
-                            CompleteSessionEvent(),
-                          );
-                    }
-                  },
-                  buttonText: state.hasNextClub
-                      ? 'Move to next club'
-                      : 'View Summary',
-                ),
-                SizedBox(height: 5),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
