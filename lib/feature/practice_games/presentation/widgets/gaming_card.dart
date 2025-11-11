@@ -8,6 +8,8 @@ class GamingCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final EdgeInsetsGeometry? padding;
+  final double? svgHeight, svgWidth, iconBtwTextWidth;
 
   const GamingCard({
     super.key,
@@ -15,6 +17,10 @@ class GamingCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 35),
+    this.svgHeight = 50,
+    this.svgWidth = 45,
+    this.iconBtwTextWidth = 30
   });
 
   @override
@@ -23,19 +29,16 @@ class GamingCard extends StatelessWidget {
       onTap: onTap,
       child: GradientBorderContainer(
         borderRadius: 20,
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 35),
+        padding: padding,
         child: Row(
           children: [
-            if (title.contains('Drills'))
-              SizedBox(
-                width: 8,
-              ),
+            if (title.contains('Drills')) SizedBox(width: 8),
             SvgPicture.asset(
               svgPath,
-              height: 50,
-              width: 45,
+              height: svgHeight,
+              width: svgWidth,
             ),
-            SizedBox(width: title.contains('Drills') ? 30 : 16),
+            SizedBox(width: title.contains('Drills') ? iconBtwTextWidth : 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +53,7 @@ class GamingCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style:  AppTextStyle.roboto(
+                    style: AppTextStyle.roboto(
                       fontWeight: FontWeight.w400,
                       fontSize: 12,
                     ),

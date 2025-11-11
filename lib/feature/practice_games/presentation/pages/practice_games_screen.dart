@@ -10,6 +10,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_images.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../club_gapping/presentation/bloc/club_gapping_event.dart';
+import '../../../distance_control_drills/presentation/pages/distance_control_drills_screen.dart';
 import '../../../widget/bottom_nav_bar.dart';
 import '../../../widget/custom_app_bar.dart';
 import '../widgets/top_button.dart';
@@ -62,7 +63,14 @@ class PracticeGamesScreen extends StatelessWidget {
                     svgPath: AppImages.ladderDrillIcon,
                     title: "Distance Control Drills",
                     subtitle: "Focused accuracy with increasing difficulty",
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DistanceControlDrillsScreen(),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: 16),
                   GamingCard(

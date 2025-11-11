@@ -16,6 +16,7 @@ class AppImages {
   static const String clubGappingIcon = 'assets/svgs/club_gapping.svg';
   static const String bluetoothIcon = 'assets/svgs/bluetooth_icon.svg';
   static const String connectedIcon = 'assets/svgs/connected_icon.svg';
+  static const String distanceMasterIcon = 'assets/svgs/distance_master.svg';
 
   //png
   static const String slurvoLogo = 'assets/png/slurvo.png';
@@ -24,5 +25,6 @@ class AppImages {
   static const String deviceImage = 'assets/png/device.png';
   static const String dispersionGround = 'assets/png/dispersion_ground.png';
   static const String longestDriveImage = 'assets/png/longest_drive_image.png';
+  static const String distanceMasterImage = 'assets/png/distance_master_image.png';
   static const String trophyImage = 'assets/png/trophy.png';
 }

@@ -4,6 +4,8 @@ class GradientBorderContainer extends StatelessWidget {
   final Widget child;
   final double borderRadius;
   final double borderWidth;
+  final double? containerHeight;
+  final double? containerWidth;
   final List<Color> gradientColors;
   final Color backgroundColor;
   final EdgeInsetsGeometry? padding;
@@ -26,6 +28,8 @@ class GradientBorderContainer extends StatelessWidget {
     this.margin,
     this.gradientBegin = Alignment.topCenter,
     this.gradientEnd = Alignment.bottomCenter,
+    this.containerHeight,
+    this.containerWidth,
   }) : super(key: key);
 
   @override
@@ -41,6 +45,8 @@ class GradientBorderContainer extends StatelessWidget {
         ),
       ),
       child: Container(
+        height: containerHeight,
+        width: containerWidth,
         margin: EdgeInsets.all(borderWidth),
         padding: padding,
         decoration: BoxDecoration(
