@@ -165,6 +165,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:onegolf/feature/club_gapping/presentation/bloc/club_gapping_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_bloc.dart';
+import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../feature/ble_management/data/repositories/ble_management_repository_imple.dart';
 import '../../feature/ble_management/data/services/ble_management_service.dart';
@@ -388,6 +389,12 @@ Future<void> init() async {
 
   sl.registerFactory(
     () => DistanceMasterBloc(
+      bleRepository: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+        () => TargetZoneBloc(
       bleRepository: sl(),
     ),
   );

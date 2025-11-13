@@ -56,7 +56,15 @@ class PracticeGamesScreen extends StatelessWidget {
                     svgPath: AppImages.combineTestIcon,
                     title: "Combine Test",
                     subtitle: "Assess overall skill level",
-                    onTap: () {},
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Combine test game coming soon!'),
+                          backgroundColor: Colors.white,
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: 16),
                   GamingCard(

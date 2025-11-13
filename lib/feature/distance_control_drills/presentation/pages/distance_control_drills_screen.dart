@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/pages/distance_master_setup_screen.dart';
+import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
+import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/pages/target_zone_setup_screen.dart';
 import 'package:onegolf/feature/practice_games/presentation/widgets/gaming_card.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
-import 'package:onegolf/feature/widget/gradient_border_container.dart';
 import 'package:onegolf/feature/widget/header_row.dart';
-
 import '../../../../core/di/injection_container.dart' as di;
 
 class DistanceControlDrillsScreen extends StatelessWidget {
@@ -38,15 +37,18 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                     svgPath: AppImages.combineTestIcon,
                     svgHeight: 30,
                     svgWidth: 30,
-                    padding: EdgeInsets.symmetric(horizontal: 10,  vertical: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 16),
                     title: "Target Zone",
                     subtitle:
                         'Hone in one Carry distance, Pure repetition, Pure mastery.',
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Target Zone game coming soon!'),
-                          backgroundColor: Colors.white,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<TargetZoneBloc>(),
+                            child: TargetZoneSetupScreen(),
+                          ),
                         ),
                       );
                     },
@@ -88,6 +90,7 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                         SnackBar(
                           content: Text('Ladder Drill game coming soon!'),
                           backgroundColor: Colors.white,
+                          duration: Duration(seconds: 1),
                         ),
                       );
                     },

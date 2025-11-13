@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
 import 'package:onegolf/feature/landing_dashboard/persentation/pages/landing_dashboard.dart';
 import 'package:onegolf/feature/auth/presentation/pages/sign_in_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -55,6 +56,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => di.sl<BleManagementBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.sl<TargetZoneBloc>(),
         ),
       ],
       child: MaterialApp(
