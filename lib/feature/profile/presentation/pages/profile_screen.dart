@@ -53,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(
-              'Joined ${formatJoinDate(AppStrings.userProfileData.createdAt)} - Last Login Nov 13, 2025',
+              'Joined ${formatJoinDate(AppStrings.userProfileData.createdAt)} - Last Login ${formatLastLoginDate(DateTime.now())}',
               style: AppTextStyle.roboto(),
               textAlign: TextAlign.center,
             ),
@@ -149,5 +149,9 @@ class ProfileScreen extends StatelessWidget {
   String formatJoinDate(DateTime? date) {
     if (date == null) return 'N/A';
     return DateFormat('MMM yyyy').format(date);
+  }
+
+  String formatLastLoginDate(DateTime date) {
+    return DateFormat('MMM d, yyyy').format(date);
   }
 }
