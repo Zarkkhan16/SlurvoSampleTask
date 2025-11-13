@@ -186,7 +186,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
 
   void _startSyncTimer() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(Duration(seconds: 30), (_) {
+    _syncTimer = Timer.periodic(Duration(seconds: 02), (_) {
       if (bleRepository.isConnected) {
         add(SendSyncPacketEvent());
       }

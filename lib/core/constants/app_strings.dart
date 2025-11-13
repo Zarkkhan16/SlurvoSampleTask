@@ -42,6 +42,8 @@ class AppStrings {
   static const String serviceUuid = "0000ffe0-0000-1000-8000-00805f9b34fb";
   static const String writeCharacteristicUuid = "0000fee1-0000-1000-8000-00805f9b34fb";
   static const String notifyCharacteristicUuid = "0000fee2-0000-1000-8000-00805f9b34fb";
+  static const String privacyAndPolicyUrl = 'https://aonegolf.com/policies/privacy-policy';
+  static const String termsAndConditionUrl = 'https://aonegolf.com/policies/terms-of-service';
 
 
 

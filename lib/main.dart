@@ -14,6 +14,7 @@ import 'feature/auth/presentation/pages/sign_up_screen.dart';
 import 'feature/ble_management/presentation/bloc/ble_management_bloc.dart';
 import 'feature/golf_device/domain/repositories/ble_repository.dart';
 import 'feature/landing_dashboard/persentation/bloc/dashboard_bloc.dart';
+import 'feature/profile/presentation/pages/profile_screen.dart';
 import 'feature/splash/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
           '/SignInScreen': (context) => const SignInScreen(),
           '/SignUpScreen': (context) => const SignUpScreen(),
           '/landingDashboard': (context) => const LandingDashboard(),
+          '/ProfileScreen': (context) => const ProfileScreen(),
         },
       ),
     );

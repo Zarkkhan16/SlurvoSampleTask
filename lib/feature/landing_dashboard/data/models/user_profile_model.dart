@@ -1,4 +1,6 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../domain/entities/user_profile.dart';
 
 class UserProfileModel extends UserProfile {
@@ -7,6 +9,7 @@ class UserProfileModel extends UserProfile {
     required super.name,
     required super.email,
     super.photoUrl,
+    super.createdAt,
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
@@ -15,6 +18,9 @@ class UserProfileModel extends UserProfile {
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       photoUrl: json['photoUrl'],
+      createdAt: json['createdAt'] != null
+          ? (json['createdAt'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -24,6 +30,7 @@ class UserProfileModel extends UserProfile {
       'name': name,
       'email': email,
       'photoUrl': photoUrl,
+      'createdAt': createdAt,
     };
   }
 

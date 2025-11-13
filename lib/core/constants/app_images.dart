@@ -27,4 +27,5 @@ class AppImages {
   static const String longestDriveImage = 'assets/png/longest_drive_image.png';
   static const String distanceMasterImage = 'assets/png/distance_master_image.png';
   static const String trophyImage = 'assets/png/trophy.png';
+  static const String userDummyImage = 'assets/png/user_dummy.png';
 }

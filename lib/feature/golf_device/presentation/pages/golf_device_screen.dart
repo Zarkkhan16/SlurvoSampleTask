@@ -133,7 +133,6 @@ class GolfDeviceView extends StatelessWidget {
       },
     ];
 
-    // Filter metrics based on selection
     final filteredMetrics = allMetrics
         .where((metric) => state.selectedMetrics.contains(metric["metric"]))
         .toList();

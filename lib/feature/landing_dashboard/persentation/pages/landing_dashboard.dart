@@ -90,10 +90,8 @@ class _LandingDashboardState extends State<LandingDashboard> {
         backgroundColor: AppColors.primaryBackground,
         bottomNavigationBar: BottomNavBar(),
         appBar: CustomAppBar(
-          showSettingButton: false,
-          showBatteryLevel: false,
           onProfilePressed: () {
-            context.read<AuthBloc>().add(LogoutRequested());
+            Navigator.pushNamed(context, '/ProfileScreen');
           },
         ),
         body: BlocBuilder<DashboardBloc, DashboardState>(
@@ -427,7 +425,10 @@ class _LandingDashboardState extends State<LandingDashboard> {
       if (connected && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Device connected successfully!', style: AppTextStyle.roboto(),),
+            content: Text(
+              'Device connected successfully!',
+              style: AppTextStyle.roboto(),
+            ),
             backgroundColor: Colors.green,
           ),
         );
