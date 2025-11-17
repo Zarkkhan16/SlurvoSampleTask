@@ -57,8 +57,7 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
   ) async {
     if (state is TargetZoneSetupState) {
       final currentState = state as TargetZoneSetupState;
-      // Clamp between 60 and 150
-      final distance = event.distance.clamp(60, 150);
+      final distance = event.distance.clamp(20, 350);
       emit(currentState.copyWith(targetDistance: distance));
     }
   }

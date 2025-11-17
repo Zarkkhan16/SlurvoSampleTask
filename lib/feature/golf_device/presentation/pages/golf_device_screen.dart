@@ -159,7 +159,7 @@ class GolfDeviceView extends StatelessWidget {
         children: [
           Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
               child: Column(
                 children: [
                   HeaderRow(
@@ -181,7 +181,7 @@ class GolfDeviceView extends StatelessWidget {
                           .add(DisconnectDeviceEvent());
                     },
                   ),
-                  SizedBox(height: 14),
+                  SizedBox(height: 10),
                   CustomizeBar(
                     onPressed: () async {
                       final result = await Navigator.push<Set<String>>(
@@ -200,26 +200,14 @@ class GolfDeviceView extends StatelessWidget {
                       }
                     },
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text(
-                        state.currentDate,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        state.elapsedTime,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  SizedBox(height: 10),
+                  Text(
+                    state.currentDate,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   SizedBox(height: 10),
                   state.isLoading
@@ -256,12 +244,13 @@ class GolfDeviceView extends StatelessWidget {
                                   ),
                                 )
                               : GridView.builder(
-                                  padding: EdgeInsets.all(16),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 5),
                                   gridDelegate:
                                       SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
-                                    crossAxisSpacing: 30,
-                                    mainAxisSpacing: 20,
+                                    crossAxisSpacing: 10,
+                                    mainAxisSpacing: 10,
                                     childAspectRatio: 1.42,
                                   ),
                                   itemCount: filteredMetrics.length,
@@ -288,9 +277,7 @@ class GolfDeviceView extends StatelessWidget {
                           },
                         ),
                       ),
-                      SizedBox(
-                        width: 10,
-                      ),
+                      SizedBox(width: 10),
                       Expanded(
                         child: ActionButton(
                           svgAssetPath: AppImages.groupIcon,
@@ -314,7 +301,7 @@ class GolfDeviceView extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 17),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Expanded(
@@ -327,9 +314,7 @@ class GolfDeviceView extends StatelessWidget {
                           },
                         ),
                       ),
-                      SizedBox(
-                        width: 10,
-                      ),
+                      SizedBox(width: 10),
                       Expanded(
                         child: ActionButton(
                           text: 'Session End',
@@ -352,90 +337,4 @@ class GolfDeviceView extends StatelessWidget {
       ),
     );
   }
-
-// Widget _buildScanScreen(BuildContext context, GolfDeviceState state) {
-//   final isScanning = state is ScanningState;
-//   final isConnecting = state is ConnectingState;
-//   final devices = state is ScanningState
-//       ? state.devices
-//       : state is DevicesFoundState
-//           ? state.devices
-//           : state is ConnectingState
-//               ? state.devices
-//               : state is DisconnectedState
-//                   ? state.devices
-//                   : <DeviceEntity>[];
-//
-//   return Scaffold(
-//     backgroundColor: Colors.black,
-//     bottomNavigationBar: const BottomNavBar(),
-//     appBar: CustomAppBar(
-//       showSettingButton: true,
-//       rightTopIcon: Icons.refresh,
-//       onSettingsPressed: () {
-//         context.read<GolfDeviceBloc>().add(StartScanningEvent());
-//       },
-//     ),
-//     body: Padding(
-//       padding: const EdgeInsets.all(12.0),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           const HeaderRow(headingName: "Scan Devices"),
-//           const SizedBox(height: 12),
-//           Expanded(
-//             child: Builder(
-//               builder: (context) {
-//                 if (isScanning || isConnecting) {
-//                   return const Center(
-//                     child: CircularProgressIndicator(color: Colors.white),
-//                   );
-//                 }
-//
-//                 if (devices.isEmpty) {
-//                   return const Center(
-//                     child: Text(
-//                       "No devices found",
-//                       style: TextStyle(color: Colors.white),
-//                     ),
-//                   );
-//                 }
-//
-//                 return ListView.builder(
-//                   itemCount: devices.length,
-//                   itemBuilder: (context, index) {
-//                     final device = devices[index];
-//                     return Card(
-//                       color: Colors.grey[900],
-//                       margin: const EdgeInsets.symmetric(vertical: 6),
-//                       child: ListTile(
-//                         leading:
-//                             const Icon(Icons.bluetooth, color: Colors.green),
-//                         title: Text(
-//                           device.name.isNotEmpty
-//                               ? device.name
-//                               : "Unknown Device",
-//                           style: const TextStyle(color: Colors.white),
-//                         ),
-//                         subtitle: Text(
-//                           "Signal: ${device.rssi} dBm",
-//                           style: const TextStyle(color: Colors.white70),
-//                         ),
-//                         onTap: () {
-//                           context
-//                               .read<GolfDeviceBloc>()
-//                               .add(ConnectToDeviceEvent(device));
-//                         },
-//                       ),
-//                     );
-//                   },
-//                 );
-//               },
-//             ),
-//           ),
-//         ],
-//       ),
-//     ),
-//   );
-// }
 }

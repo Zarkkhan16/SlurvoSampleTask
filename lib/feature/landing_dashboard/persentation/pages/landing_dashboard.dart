@@ -120,7 +120,9 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        context.read<DashboardBloc>().add(RefreshDashboard());
+                        context.read<DashboardBloc>().add(
+                              RefreshDashboard(),
+                            );
                       },
                       child: const Text('Retry'),
                     ),

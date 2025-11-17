@@ -23,14 +23,11 @@ class TargetZoneSetupScreen extends StatefulWidget {
 }
 
 class _TargetZoneSetupScreenState extends State<TargetZoneSetupScreen> {
-  bool _navigatedToLevelUp = false;
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<TargetZoneBloc, TargetZoneState>(
       listener: (context, state) {
         if (state is TargetZoneGameState) {
-          // _navigatedToLevelUp = true;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -40,9 +37,6 @@ class _TargetZoneSetupScreenState extends State<TargetZoneSetupScreen> {
               ),
             ),
           );
-          //     .then((_) {
-          //   _navigatedToLevelUp = false;
-          // });
         } else if (state is TargetZoneErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
@@ -64,7 +58,9 @@ class _TargetZoneSetupScreenState extends State<TargetZoneSetupScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
             child: Column(
               children: [
-                HeaderRow(headingName: "Target Zone",),
+                HeaderRow(
+                  headingName: "Target Zone",
+                ),
                 Text(
                   "Hone in on carry distance. Pure repetition.\nPure mastery",
                   style: AppTextStyle.roboto(),
@@ -73,8 +69,11 @@ class _TargetZoneSetupScreenState extends State<TargetZoneSetupScreen> {
                 const SizedBox(height: 10),
                 _buildSectionTitle('Target Carry Distance'),
                 const SizedBox(height: 10),
-                _buildDistanceDisplay(state.targetDistance),
-                _buildDistanceSlider(context, state),
+                GestureDetector(
+                  onTap: () => _showDistancePicker(context, state),
+                  child: _buildDistanceDisplay(state.targetDistance),
+                ),
+                // _buildDistanceSlider(context, state),
                 const SizedBox(height: 25),
                 _buildSectionTitle('Difficulty Level'),
                 const SizedBox(height: 10),
@@ -134,33 +133,89 @@ class _TargetZoneSetupScreenState extends State<TargetZoneSetupScreen> {
     );
   }
 
-  Widget _buildDistanceSlider(
+  void _showDistancePicker(
     BuildContext context,
     TargetZoneSetupState state,
   ) {
-    const minDistance = 60;
-    const maxDistance = 150;
-    return SfSliderTheme(
-      data: SfSliderThemeData(
-        activeLabelStyle:
-            AppTextStyle.roboto(fontWeight: FontWeight.w500, fontSize: 16),
-        inactiveLabelStyle: AppTextStyle.roboto(),
-      ),
-      child: SfSlider(
-        activeColor: AppColors.primaryText,
-        inactiveColor: AppColors.dividerColor,
-        min: minDistance.toDouble(),
-        max: maxDistance.toDouble(),
-        value: state.targetDistance.toDouble(),
-        interval: 15,
-        showLabels: true,
-        showDividers: true,
-        onChanged: (dynamic value) {
-          context.read<TargetZoneBloc>().add(
-                TargetDistanceChanged(value.toInt()),
-              );
-        },
-      ),
+    final currentValue = state.targetDistance;
+    final controller = FixedExtentScrollController(
+      initialItem: currentValue - 20,
+    );
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black,
+      builder: (context) {
+        return GradientBorderContainer(
+          containerHeight: 280,
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  "Select Target Distance",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListWheelScrollView.useDelegate(
+                  controller: controller,
+                  itemExtent: 50,
+                  perspective: 0.005,
+                  diameterRatio: 1.2,
+                  physics: FixedExtentScrollPhysics(),
+                  onSelectedItemChanged: (index) {
+                    final value = 20 + index;
+                    context.read<TargetZoneBloc>().add(
+                          TargetDistanceChanged(value),
+                        );
+                  },
+                  childDelegate: ListWheelChildBuilderDelegate(
+                    childCount: 331,
+                    builder: (context, index) {
+                      final value = 20 + index;
+                      return Center(
+                        child: Text(
+                          '$value yds',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: Text(
+                    'Done',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -107,7 +107,7 @@ class TargetZoneSessionSummaryScreen extends StatelessWidget {
                       label: 'Target Carry',
                       value: '${state.session.config.targetDistance} yds',
                       toleranceValue:
-                      "${state.session.config.targetDistance - (state.session.config.difficulty ~/ 2)} - ${state.session.config.targetDistance + (state.session.config.difficulty ~/ 2)} yds",
+                      "${state.session.config.targetDistance - (state.session.config.difficulty)} - ${state.session.config.targetDistance + (state.session.config.difficulty)} yds",
                       showTargetTolerance: true,
                     ),
                     Spacer(),
