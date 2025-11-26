@@ -26,186 +26,178 @@ class DispersionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<GolfDeviceBloc, GolfDeviceState>(
         listener: (context, state) {
-          if (state is NavigateToSessionSummaryState) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => SessionSummaryScreen(
-                  summaryData: state.summaryData,
+      if (state is NavigateToSessionSummaryState) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SessionSummaryScreen(
+              summaryData: state.summaryData,
+            ),
+          ),
+        );
+      }
+    }, builder: (context, state) {
+      if (state is DisconnectingState) {
+        return const Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: Colors.white),
+                SizedBox(height: 16),
+                Text(
+                  'Disconnecting device...',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is DisconnectingState) {
-            return const Scaffold(
-              backgroundColor: Colors.black,
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: Colors.white),
-                    SizedBox(height: 16),
-                    Text(
-                      'Disconnecting device...',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
+              ],
+            ),
+          ),
+        );
+      }
+      return Scaffold(
+          backgroundColor: Colors.black,
+          appBar: CustomAppBar(),
+          bottomNavigationBar: const BottomNavBar(),
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
+            child: Column(
+              children: [
+                HeaderRow(
+                  headingName: AppStrings.dispersionText,
                 ),
-              ),
-            );
-          }
-          return Scaffold(
-              backgroundColor: Colors.black,
-              appBar: CustomAppBar(),
-              bottomNavigationBar: const BottomNavBar(),
-              body: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
-                child: Column(
-                  children: [
-                    HeaderRow(
-                      headingName: AppStrings.dispersionText,
+                SizedBox(height: 5),
+                Expanded(
+                  flex: 2,
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 15,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 1.7,
                     ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Expanded(
-                      child: GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 30,
-                          mainAxisSpacing: 15,
-                          childAspectRatio: 1.7,
-                        ),
-                        itemCount: 4,
-                        itemBuilder: (context, index) {
-                          final shot = selectedShot;
-                          final metrics = [
-                            {
-                              "metric": "Club Speed",
-                              "value":
-                                  shot?.clubSpeed.toStringAsFixed(1) ?? '0.0',
-                              "unit": "MPH"
-                            },
-                            {
-                              "metric": "Ball Speed",
-                              "value":
-                                  shot?.ballSpeed.toStringAsFixed(1) ?? '0.0',
-                              "unit": "MPH"
-                            },
-                            {
-                              "metric": "Carry Distance",
-                              "value": shot?.carryDistance.toStringAsFixed(1) ??
-                                  '0.0',
-                              "unit": "YDS"
-                            },
-                            {
-                              "metric": "Smash Factor",
-                              "value":
-                                  shot?.smashFactor.toStringAsFixed(1) ?? '0.0',
-                              "unit": ""
-                            },
-                          ];
-                          return GlassmorphismCard(
-                            value: metrics[index]["value"]!,
-                            name: metrics[index]["metric"]!,
-                            unit: metrics[index]["unit"]!,
-                          );
+                    itemCount: 4,
+                    itemBuilder: (context, index) {
+                      final shot = selectedShot;
+                      final metrics = [
+                        {
+                          "metric": "Club Speed",
+                          "value": shot?.clubSpeed.toStringAsFixed(1) ?? '0.0',
+                          "unit": "MPH"
                         },
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Expanded(
-                      flex: 2,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final carry = selectedShot?.carryDistance ?? 0.0;
-                            // final carry = 299.0;
-                            const maxDistance = 400.0;
-                            final isOverLimit = carry > maxDistance;
-                            final displayDistance =
-                                carry.clamp(0.0, maxDistance);
-                            final totalHeight = constraints.maxHeight;
-                            final step = totalHeight / 9;
-                            final stepsFromBottom = displayDistance / 50.0;
-                            final bottomLineOffset = 19.0;
-                            final bottomY =
-                                totalHeight - step + bottomLineOffset;
-                            final yPos = bottomY - (step * stepsFromBottom);
+                        {
+                          "metric": "Ball Speed",
+                          "value": shot?.ballSpeed.toStringAsFixed(1) ?? '0.0',
+                          "unit": "MPH"
+                        },
+                        {
+                          "metric": "Carry Distance",
+                          "value":
+                              shot?.carryDistance.toStringAsFixed(1) ?? '0.0',
+                          "unit": "YDS"
+                        },
+                        {
+                          "metric": "Smash Factor",
+                          "value":
+                              shot?.smashFactor.toStringAsFixed(2) ?? '0.0',
+                          "unit": ""
+                        },
+                      ];
+                      return GlassmorphismCard(
+                        value: metrics[index]["value"]!,
+                        name: metrics[index]["metric"]!,
+                        unit: metrics[index]["unit"]!,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Expanded(
+                  flex: 3,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final carry = selectedShot?.carryDistance ?? 0.0;
+                        // final carry = 299.0;
+                        const maxDistance = 400.0;
+                        final isOverLimit = carry > maxDistance;
+                        final displayDistance = carry.clamp(0.0, maxDistance);
+                        final totalHeight = constraints.maxHeight;
+                        final step = totalHeight / 9;
+                        final stepsFromBottom = displayDistance / 50.0;
+                        final bottomLineOffset = 19.0;
+                        final bottomY = totalHeight - step + bottomLineOffset;
+                        final yPos = bottomY - (step * stepsFromBottom);
 
-                            return Stack(
-                              children: [
-                                Positioned.fill(
-                                  child: Image.asset(
-                                    AppImages.dispersionGround,
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                                Positioned.fill(
-                                  child: CustomPaint(
-                                    painter: FairwayLinesPainter(),
-                                  ),
-                                ),
-                                // Ball position
-                                isOverLimit
-                                    ? Positioned(
-                                        left: constraints.maxWidth / 2 - 6,
-                                        top: yPos - 19,
-                                        child: Container(
-                                          width: 12,
-                                          height: 12,
-                                          decoration: BoxDecoration(
-                                            color: Colors.red,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: 1,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : Positioned(
-                                        left: constraints.maxWidth / 2 - 6,
-                                        top: yPos - 6,
-                                        child: Container(
-                                          width: 12,
-                                          height: 12,
-                                          decoration: BoxDecoration(
-                                            color: Colors.green,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: 1,
-                                            ),
-                                          ),
+                        return Stack(
+                          children: [
+                            Positioned.fill(
+                              child: Image.asset(
+                                AppImages.dispersionGround,
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                            Positioned.fill(
+                              child: CustomPaint(
+                                painter: FairwayLinesPainter(),
+                              ),
+                            ),
+                            // Ball position
+                            isOverLimit
+                                ? Positioned(
+                                    left: constraints.maxWidth / 2 - 6,
+                                    top: yPos - 19,
+                                    child: Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 1,
                                         ),
                                       ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    SessionViewButton(
-                      backgroundColor: AppColors.red,
-                      textColor: AppColors.primaryText,
-                      onSessionClick: () {
-                        context.read<GolfDeviceBloc>().add(
-                            DisconnectDeviceEvent());
+                                    ),
+                                  )
+                                : Positioned(
+                                    left: constraints.maxWidth / 2 - 6,
+                                    top: yPos - 6,
+                                    child: Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                          ],
+                        );
                       },
-                      buttonText: AppStrings.sessionEndText,
                     ),
-                    SizedBox(height: 5),
-                  ],
+                  ),
                 ),
-              ));
-        });
+                SizedBox(height: 10),
+                SessionViewButton(
+                  backgroundColor: AppColors.red,
+                  textColor: AppColors.primaryText,
+                  onSessionClick: () {
+                    context.read<GolfDeviceBloc>().add(DisconnectDeviceEvent());
+                  },
+                  buttonText: AppStrings.sessionEndText,
+                ),
+                SizedBox(height: 5),
+              ],
+            ),
+          ));
+    });
   }
 }
 

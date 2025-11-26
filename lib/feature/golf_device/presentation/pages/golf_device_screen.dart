@@ -27,8 +27,6 @@ class GolfDeviceView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<GolfDeviceBloc, GolfDeviceState>(
       listener: (context, state) async {
-        print("On Listener State Change");
-        print(state);
         if (state is ClubUpdatedState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -128,7 +126,7 @@ class GolfDeviceView extends StatelessWidget {
       },
       {
         "metric": "Smash Factor",
-        "value": state.golfData.smashFactor.toStringAsFixed(1),
+        "value": state.golfData.smashFactor.toStringAsFixed(2),
         "unit": ""
       },
     ];

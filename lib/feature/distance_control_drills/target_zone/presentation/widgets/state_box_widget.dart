@@ -9,6 +9,7 @@ class StatBoxWidget extends StatelessWidget {
   final bool isGreen, showColor;
   final bool showTargetTolerance;
   final String toleranceValue;
+  final bool showYdsDown;
 
   const StatBoxWidget({
     super.key,
@@ -18,6 +19,7 @@ class StatBoxWidget extends StatelessWidget {
     this.showColor = false,
     this.showTargetTolerance = true,
     this.toleranceValue = '',
+    this.showYdsDown = false,
   });
 
   @override
@@ -25,7 +27,11 @@ class StatBoxWidget extends StatelessWidget {
     return GradientBorderContainer(
       borderRadius: 20,
       containerWidth: double.infinity,
-      backgroundColor: showColor ? isGreen ? AppColors.green : AppColors.red : const Color(0xFF2A2A2A),
+      backgroundColor: showColor
+          ? isGreen
+              ? AppColors.green
+              : AppColors.red
+          : const Color(0xFF2A2A2A),
       child: Column(
         children: [
           Text(
@@ -38,6 +44,11 @@ class StatBoxWidget extends StatelessWidget {
             value,
             style: AppTextStyle.oswald(fontSize: 35),
           ),
+          if (showYdsDown)
+            Text(
+              'yds',
+              style: AppTextStyle.roboto(),
+            ),
           if (showTargetTolerance)
             Text(
               toleranceValue,

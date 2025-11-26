@@ -82,7 +82,7 @@ class GlassmorphismCard extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 6),
+                  // const SizedBox(height: 6),
 
                   FittedBox(
                     fit: BoxFit.scaleDown,

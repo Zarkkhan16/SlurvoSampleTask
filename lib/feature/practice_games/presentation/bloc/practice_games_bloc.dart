@@ -169,7 +169,6 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
       (data) {
         print('📡 BLE Data received: $data');
         add(BleDataReceivedEvent(data));
-        _bleDataController.add(data);
       },
       onError: (error) {
         print('❌ BLE error: $error');
@@ -231,7 +230,7 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
 
   void _startSyncTimer() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(Duration(seconds: 10), (_) async {
+    _syncTimer = Timer.periodic(Duration(seconds: 2), (_) async {
       if (bleRepository.isConnected) {
         int checksum = (0x01 + 0x00) & 0xFF;
         await bleRepository.writeData([0x47, 0x46, 0x01, 0x00, 0x00, checksum]);
@@ -245,6 +244,7 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
   ) {
     print('🎮 Practice Games: Processing BLE data...');
     try {
+      _bleDataController.add(event.data);
       _parseGolfData(Uint8List.fromList(event.data));
       _golfDataListItem.add(_golfData);
       emit(state.copyWith(

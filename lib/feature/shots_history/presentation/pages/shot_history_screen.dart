@@ -317,11 +317,11 @@ class ShotHistoryScreen extends StatelessWidget {
         ),
         Expanded(
           child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 30,
-              mainAxisSpacing: 15,
-              childAspectRatio: 1.7,
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 10,
+              childAspectRatio: MediaQuery.of(context).size.width / 210,
             ),
             itemCount: 4,
             itemBuilder: (context, index) {
@@ -344,7 +344,7 @@ class ShotHistoryScreen extends StatelessWidget {
                 },
                 {
                   "metric": "Smash Factor",
-                  "value": shot?.smashFactor.toStringAsFixed(1) ?? '0.0',
+                  "value": shot?.smashFactor.toStringAsFixed(2) ?? '0.0',
                   "unit": ""
                 },
               ];
@@ -537,7 +537,7 @@ class ShotHistoryScreen extends StatelessWidget {
                                   shot.ballSpeed.toStringAsFixed(1), isSelected,
                                   flex: 1),
                               _buildDataCell(
-                                  shot.smashFactor.toStringAsFixed(1),
+                                  shot.smashFactor.toStringAsFixed(2),
                                   isSelected,
                                   flex: 1),
                               _buildDataCell(
@@ -600,7 +600,7 @@ class ShotHistoryScreen extends StatelessWidget {
           _buildHeaderCell('Shot', '#', flex: 1),
           _buildHeaderCell('Club\nSpeed', 'mph', flex: 1),
           _buildHeaderCell('Ball\nSpeed', 'mph', flex: 1),
-          _buildHeaderCell('Smash\nFactor', 'rmp', flex: 1),
+          _buildHeaderCell('Smash\nFactor', '', flex: 1),
           _buildHeaderCell('Carry\nDistance', 'yds', flex: 1),
           _buildHeaderCell('Total\nDistance', 'yds', flex: 1),
         ],

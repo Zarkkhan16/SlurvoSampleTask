@@ -1,14 +1,11 @@
-import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
-// Events
-abstract class DistanceMasterEvent extends Equatable {
+abstract class LadderDrillEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
 
-class InitializeGameEvent extends DistanceMasterEvent {
+class InitializeGameEvent extends LadderDrillEvent {
   final int shortestDistance;
   final int longestDistance;
   final int difficulty;
@@ -29,33 +26,9 @@ class InitializeGameEvent extends DistanceMasterEvent {
   List<Object?> get props => [shortestDistance, longestDistance, difficulty, increment, customIncrement, players];
 }
 
-class StartGameEvent extends DistanceMasterEvent {}
+class StartGameEvent extends LadderDrillEvent {}
 
-class ShotReceivedEvent extends DistanceMasterEvent {
-  final double carryDistance;
-
-  ShotReceivedEvent(this.carryDistance);
-
-  @override
-  List<Object> get props => [carryDistance];
-}
-
-class BleDataReceivedEvent extends DistanceMasterEvent {
-  final List<int> data;
-
-  BleDataReceivedEvent(this.data);
-
-  @override
-  List<Object> get props => [data];
-}
-
-class RetryCurrentLevelEvent extends DistanceMasterEvent {}
-
-class EndSessionEvent extends DistanceMasterEvent {}
-
-class RestartGameEvent extends DistanceMasterEvent {}
-
-class UpdateShortestDistanceEvent extends DistanceMasterEvent {
+class UpdateShortestDistanceEvent extends LadderDrillEvent {
   final int distance;
 
   UpdateShortestDistanceEvent(this.distance);
@@ -64,7 +37,7 @@ class UpdateShortestDistanceEvent extends DistanceMasterEvent {
   List<Object> get props => [distance];
 }
 
-class UpdateLongestDistanceEvent extends DistanceMasterEvent {
+class UpdateLongestDistanceEvent extends LadderDrillEvent {
   final int distance;
 
   UpdateLongestDistanceEvent(this.distance);
@@ -73,7 +46,7 @@ class UpdateLongestDistanceEvent extends DistanceMasterEvent {
   List<Object> get props => [distance];
 }
 
-class UpdateDifficultyEvent extends DistanceMasterEvent {
+class UpdateDifficultyEvent extends LadderDrillEvent {
   final int difficulty;
 
   UpdateDifficultyEvent(this.difficulty);
@@ -82,7 +55,7 @@ class UpdateDifficultyEvent extends DistanceMasterEvent {
   List<Object> get props => [difficulty];
 }
 
-class UpdateIncrementEvent extends DistanceMasterEvent {
+class UpdateIncrementEvent extends LadderDrillEvent {
   final int increment;
 
   UpdateIncrementEvent(this.increment);
@@ -91,7 +64,7 @@ class UpdateIncrementEvent extends DistanceMasterEvent {
   List<Object> get props => [increment];
 }
 
-class UpdateCustomIncrementEvent extends DistanceMasterEvent {
+class UpdateCustomIncrementEvent extends LadderDrillEvent {
   final int? customIncrement;
 
   UpdateCustomIncrementEvent(this.customIncrement);
@@ -100,7 +73,7 @@ class UpdateCustomIncrementEvent extends DistanceMasterEvent {
   List<Object?> get props => [customIncrement];
 }
 
-class AddPlayerEvent extends DistanceMasterEvent {
+class AddPlayerEvent extends LadderDrillEvent {
   final String playerName;
 
   AddPlayerEvent(this.playerName);
@@ -109,7 +82,7 @@ class AddPlayerEvent extends DistanceMasterEvent {
   List<Object> get props => [playerName];
 }
 
-class RemovePlayerEvent extends DistanceMasterEvent {
+class RemovePlayerEvent extends LadderDrillEvent {
   final int playerIndex;
 
   RemovePlayerEvent(this.playerIndex);
@@ -118,7 +91,7 @@ class RemovePlayerEvent extends DistanceMasterEvent {
   List<Object> get props => [playerIndex];
 }
 
-class EditPlayerEvent extends DistanceMasterEvent {
+class EditPlayerEvent extends LadderDrillEvent {
   final int playerIndex;
   final String newName;
 
@@ -127,3 +100,29 @@ class EditPlayerEvent extends DistanceMasterEvent {
   @override
   List<Object> get props => [playerIndex, newName];
 }
+
+// Game Progress Events
+class ShotReceivedEvent extends LadderDrillEvent {
+  final double carryDistance;
+
+  ShotReceivedEvent(this.carryDistance);
+
+  @override
+  List<Object> get props => [carryDistance];
+}
+
+class BleDataReceivedEvent extends LadderDrillEvent {
+  final List<int> data;
+
+  BleDataReceivedEvent(this.data);
+
+  @override
+  List<Object> get props => [data];
+}
+
+class RetryCurrentLevelEvent extends LadderDrillEvent {}
+
+class EndSessionEvent extends LadderDrillEvent {}
+
+class RestartGameEvent extends LadderDrillEvent {}
+class NextLevelEvent extends LadderDrillEvent {}

@@ -38,6 +38,9 @@ class _HeaderRowState extends State<HeaderRow> {
 
   @override
   Widget build(BuildContext context) {
+    final currentClubCode = widget.selectedClub != null
+        ? int.parse(widget.selectedClub!.code)
+        : 0;
     final screenWidth = MediaQuery.of(context).size.width;
 
     final iconSize = screenWidth * 0.07;
@@ -98,14 +101,11 @@ class _HeaderRowState extends State<HeaderRow> {
               );
 
               if (result != null && result is Club) {
-                setState(() {
-                  _club = int.parse(result.code);
-                });
                 widget.onClubSelected?.call(result);
               }
             },
             child: Text(
-              "(${AppStrings.getLoft(_club)}) ${AppStrings.getClub(_club)}",
+              "(${AppStrings.getLoft(currentClubCode)}) ${AppStrings.getClub(currentClubCode)}",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

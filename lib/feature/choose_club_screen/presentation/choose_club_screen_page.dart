@@ -49,12 +49,12 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
       Club(code: "16", name: "8 Iron"),
       Club(code: "17", name: "9 Iron"),
       Club(code: "18", name: "Pitching Wedge"),
-      Club(code: "19", name: "50 Wedge"),
-      Club(code: "20", name: "52 Wedge"),
-      Club(code: "21", name: "54 Wedge"),
-      Club(code: "22", name: "56 Wedge"),
-      Club(code: "23", name: "58 Wedge"),
-      Club(code: "24", name: "60 Wedge"),
+      Club(code: "19", name: "50° Wedge"),
+      Club(code: "20", name: "52° Wedge"),
+      Club(code: "21", name: "54° Wedge"),
+      Club(code: "22", name: "56° Wedge"),
+      Club(code: "23", name: "58° Wedge"),
+      Club(code: "24", name: "60° Wedge"),
     ];
 
     setState(() {

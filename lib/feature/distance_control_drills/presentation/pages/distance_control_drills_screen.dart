@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/pages/distance_master_setup_screen.dart';
+import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_bloc.dart';
+import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/pages/ladder_drill_setup_screen.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/pages/target_zone_setup_screen.dart';
 import 'package:onegolf/feature/practice_games/presentation/widgets/gaming_card.dart';
@@ -85,12 +87,13 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                     subtitle:
                         'Hone in one Carry distance, Pure repetition, Pure mastery.',
                     onTap: () {
-                      // TODO: Navigate to Ladder Drill game
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Ladder Drill game coming soon!'),
-                          backgroundColor: Colors.white,
-                          duration: Duration(seconds: 1),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider(
+                            create: (_) => di.sl<LadderDrillBloc>(),
+                            child: LadderDrillSetupScreen(),
+                          ),
                         ),
                       );
                     },

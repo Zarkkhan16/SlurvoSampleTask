@@ -371,9 +371,10 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       print("✅ All shots saved successfully!");
       print("📦 Total Session Shots: ${_sessionData.length}");
 
-      _shotRecords
-        ..clear()
-        ..[latestKey] = latestShot!;
+      // _shotRecords
+      //   ..clear();
+      //   ..[latestKey] = latestShot!;
+      _shotRecords.clear();
     } catch (e) {
       print("❌ Error saving shots: $e");
     }
