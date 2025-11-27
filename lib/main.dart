@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onegolf/feature/club_gapping/presentation/bloc/club_gapping_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
 import 'package:onegolf/feature/landing_dashboard/persentation/pages/landing_dashboard.dart';
@@ -15,6 +16,7 @@ import 'feature/auth/presentation/pages/sign_up_screen.dart';
 import 'feature/ble_management/presentation/bloc/ble_management_bloc.dart';
 import 'feature/golf_device/domain/repositories/ble_repository.dart';
 import 'feature/landing_dashboard/persentation/bloc/dashboard_bloc.dart';
+import 'feature/practice_games/presentation/bloc/practice_games_bloc.dart';
 import 'feature/profile/presentation/pages/profile_screen.dart';
 import 'feature/splash/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -64,6 +66,12 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => di.sl<DistanceMasterBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.sl<ClubGappingBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.sl<PracticeGamesBloc>(),
         ),
       ],
       child: MaterialApp(

@@ -232,11 +232,6 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
     final isWithinTarget =
         event.actualCarry >= minRange && event.actualCarry <= maxRange;
 
-    print('🎯 Shot Check:');
-    print('   Actual: ${event.actualCarry}');
-    print('   Target: $targetDistance ± $tolerance ($minRange - $maxRange)');
-    print('   Result: ${isWithinTarget ? "✅ GOOD" : "❌ MISS"}');
-
     final shotResult = ShotResult(
       actualCarry: event.actualCarry,
       timestamp: DateTime.now(),
@@ -250,22 +245,19 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
           updatedShots.length < session.config.totalShots,
     );
 
+    emit(TargetZoneGameState(
+      session: updatedSession,
+      isWaitingForShot: true,
+    ));
+
+    await Future.delayed(Duration(milliseconds: 100));
+
     final isGameComplete = session.config.totalShots != -1 &&
         updatedShots.length >= session.config.totalShots;
 
-    print('📊 Game Stats:');
-    print('   Total Attempts: ${updatedSession.totalAttempts}');
-    print('   Within Target: ${updatedSession.attemptsWithinTarget}');
-    print('   Success Rate: ${updatedSession.successRate.toStringAsFixed(1)}%');
-    print('   Complete: $isGameComplete');
-
     if (isGameComplete) {
+      await Future.delayed(Duration(seconds: 1));
       emit(TargetZoneSessionCompleteState(updatedSession));
-    } else {
-      emit(TargetZoneGameState(
-        session: updatedSession,
-        isWaitingForShot: true,
-      ));
     }
   }
 

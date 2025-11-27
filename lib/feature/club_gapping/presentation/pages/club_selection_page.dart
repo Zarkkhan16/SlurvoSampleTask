@@ -25,6 +25,12 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
   final TextEditingController customController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    context.read<ClubGappingBloc>().add(LoadAvailableClubsEvent());
+  }
+
+  @override
   void dispose() {
     customController.dispose();
     super.dispose();
@@ -54,187 +60,200 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
           backgroundColor: Colors.black,
           appBar: CustomAppBar(),
           bottomNavigationBar: BottomNavBar(),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                HeaderRow(headingName: "Club Gapping"),
-                Text(
-                  'Discover and dial in your carry distance for\neach club',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyle.roboto(),
-                ),
-                Expanded(
-                  child: ListView(
-                    children: [
-                      _buildCategorySection(
-                        'WOODS',
-                        state.availableClubs
-                            .where((c) => c.category == ClubCategory.woods)
-                            .toList(),
-                        context,
-                      ),
-                      SizedBox(height: 10),
-                      _buildCategorySection(
-                        'HYBRIDS',
-                        state.availableClubs
-                            .where((c) => c.category == ClubCategory.hybrids)
-                            .toList(),
-                        context,
-                      ),
-                      SizedBox(height: 10),
-                      _buildCategorySection(
-                        'IRONS',
-                        state.availableClubs
-                            .where((c) => c.category == ClubCategory.irons)
-                            .toList(),
-                        context,
-                      ),
-                      SizedBox(height: 10),
-                      _buildCategorySection(
-                        'WEDGES',
-                        state.availableClubs
-                            .where((c) => c.category == ClubCategory.wedges)
-                            .toList(),
-                        context,
-                      ),
-                      SizedBox(height: 5),
-                    ],
+          body: GestureDetector(
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  HeaderRow(headingName: "Club Gapping"),
+                  Text(
+                    'Discover and dial in your carry distance for\neach club',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyle.roboto(),
                   ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Shots Per Club:',
-                      style: AppTextStyle.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    Row(
+                  Expanded(
+                    child: ListView(
                       children: [
-                        ShotOption(
-                          text: ' 3 ',
-                          isSelected: state.shotsPerClub == 3 &&
-                              !state.isCustomSelected,
-                          onTap: () => context.read<ClubGappingBloc>().add(
-                                UpdateShotsPerClubEvent(3),
-                              ),
+                        _buildCategorySection(
+                          'WOODS',
+                          state.availableClubs
+                              .where((c) => c.category == ClubCategory.woods)
+                              .toList(),
+                          context,
                         ),
-                        const SizedBox(width: 8),
-                        ShotOption(
-                          text: ' 5 ',
-                          isSelected: state.shotsPerClub == 5 &&
-                              !state.isCustomSelected,
-                          onTap: () => context.read<ClubGappingBloc>().add(
-                                UpdateShotsPerClubEvent(5),
-                              ),
+                        SizedBox(height: 10),
+                        _buildCategorySection(
+                          'HYBRIDS',
+                          state.availableClubs
+                              .where((c) => c.category == ClubCategory.hybrids)
+                              .toList(),
+                          context,
                         ),
-                        const SizedBox(width: 8),
-                        ShotOption(
-                          text: ' 7 ',
-                          isSelected: state.shotsPerClub == 7 &&
-                              !state.isCustomSelected,
-                          onTap: () => context.read<ClubGappingBloc>().add(
-                                UpdateShotsPerClubEvent(7),
-                              ),
+                        SizedBox(height: 10),
+                        _buildCategorySection(
+                          'IRONS',
+                          state.availableClubs
+                              .where((c) => c.category == ClubCategory.irons)
+                              .toList(),
+                          context,
                         ),
-                        const SizedBox(width: 8),
-                        ShotOption(
-                          text: 'Custom',
-                          isSelected: state.isCustomSelected,
-                          onTap: () {
-                            context
-                                .read<ClubGappingBloc>()
-                                .add(SelectCustomShotsEvent());
-                            customController.clear();
-                          },
+                        SizedBox(height: 10),
+                        _buildCategorySection(
+                          'WEDGES',
+                          state.availableClubs
+                              .where((c) => c.category == ClubCategory.wedges)
+                              .toList(),
+                          context,
                         ),
+                        SizedBox(height: 5),
                       ],
                     ),
-                    if (state.isCustomSelected) ...[
-                      const SizedBox(height: 12),
-                      GradientBorderContainer(
-                        borderRadius: 12,
-                        backgroundColor: AppColors.cardBackground,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 4),
-                        child: SizedBox(
-                          height: 36,
-                          child: TextField(
-                            controller: customController,
-                            keyboardType: TextInputType.number,
-                            style: AppTextStyle.roboto(
-                                color: AppColors.primaryText),
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 10),
-                              border: InputBorder.none,
-                              hintText: "Enter number (max 10)",
-                              hintStyle: AppTextStyle.roboto(
-                                color: AppColors.secondaryText,
-                                fontSize: 14,
-                              ),
-                            ),
-                            onChanged: (value) {
-                              final int? entered = int.tryParse(value);
-                              if (entered != null) {
-                                if (entered > 10) {
-                                  customController.text = '10';
-                                  customController.selection =
-                                      TextSelection.fromPosition(
-                                    TextPosition(
-                                        offset: customController.text.length),
-                                  );
-                                  context
-                                      .read<ClubGappingBloc>()
-                                      .add(UpdateShotsPerClubEvent(10));
-                                } else {
-                                  context
-                                      .read<ClubGappingBloc>()
-                                      .add(UpdateShotsPerClubEvent(entered));
-                                }
-                              }
-                            },
-                          ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Shots Per Club:',
+                        style: AppTextStyle.roboto(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ],
-                  ],
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "We'll record carry distances and highlight\ngaps that are too narrow or too wide. Ideal\nspacing is 15-18 yards.",
-                  textAlign: TextAlign.center,
-                  style: AppTextStyle.roboto(),
-                ),
-                SizedBox(height: 10),
-                if (state.canStartSession)
-                  SessionViewButton(
-                    onSessionClick: () {
-                      context.read<ClubGappingBloc>().add(
-                            StartGappingSessionEvent(
-                              selectedClubs: state.selectedClubs,
-                              shotsPerClub: state.shotsPerClub,
+                      SizedBox(height: 12),
+                      Row(
+                        children: [
+                          ShotOption(
+                            text: ' 3 ',
+                            isSelected: state.shotsPerClub == 3 &&
+                                !state.isCustomSelected,
+                            onTap: () => context.read<ClubGappingBloc>().add(
+                                  UpdateShotsPerClubEvent(3),
+                                ),
+                          ),
+                          const SizedBox(width: 8),
+                          ShotOption(
+                            text: ' 5 ',
+                            isSelected: state.shotsPerClub == 5 &&
+                                !state.isCustomSelected,
+                            onTap: () => context.read<ClubGappingBloc>().add(
+                                  UpdateShotsPerClubEvent(5),
+                                ),
+                          ),
+                          const SizedBox(width: 8),
+                          ShotOption(
+                            text: ' 7 ',
+                            isSelected: state.shotsPerClub == 7 &&
+                                !state.isCustomSelected,
+                            onTap: () => context.read<ClubGappingBloc>().add(
+                                  UpdateShotsPerClubEvent(7),
+                                ),
+                          ),
+                          const SizedBox(width: 8),
+                          ShotOption(
+                            text: 'Custom',
+                            isSelected: state.isCustomSelected,
+                            onTap: () {
+                              context
+                                  .read<ClubGappingBloc>()
+                                  .add(SelectCustomShotsEvent());
+                              customController.clear();
+                            },
+                          ),
+                        ],
+                      ),
+                      if (state.isCustomSelected) ...[
+                        const SizedBox(height: 12),
+                        GradientBorderContainer(
+                          borderRadius: 12,
+                          backgroundColor: AppColors.cardBackground,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 4),
+                          child: SizedBox(
+                            height: 36,
+                            child: TextField(
+                              controller: customController,
+                              keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.done,
+                              style: AppTextStyle.roboto(
+                                  color: AppColors.primaryText),
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 10),
+                                border: InputBorder.none,
+                                hintText: "Enter number of shots per club",
+                                hintStyle: AppTextStyle.roboto(
+                                  color: AppColors.secondaryText,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              onChanged: (value) {
+                                final int? entered = int.tryParse(value);
+                                if (entered != null) {
+                                  // if (entered > 10) {
+                                  //   customController.text = '10';
+                                  //   customController.selection =
+                                  //       TextSelection.fromPosition(
+                                  //     TextPosition(
+                                  //         offset: customController.text.length),
+                                  //   );
+                                  //   context
+                                  //       .read<ClubGappingBloc>()
+                                  //       .add(UpdateShotsPerClubEvent(10));
+                                  // } else {
+                                    context
+                                        .read<ClubGappingBloc>()
+                                        .add(UpdateShotsPerClubEvent(entered));
+                                  // }
+                                }
+                              },
                             ),
-                          );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BlocProvider.value(
-                            value: context.read<ClubGappingBloc>(),
-                            child: ShotRecordingScreen(),
                           ),
                         ),
-                      );
-                    },
-                    buttonText: "Start Gapping Session",
+                      ],
+                    ],
                   ),
-                const SizedBox(height: 10),
-              ],
+                  SizedBox(height: 10),
+                  Text(
+                    "We'll record carry distances and highlight\ngaps that are too narrow or too wide. Ideal\nspacing is 15-18 yards.",
+                    textAlign: TextAlign.center,
+                    style: AppTextStyle.roboto(),
+                  ),
+                  SizedBox(height: 10),
+                  if (state.canStartSession)
+                    SessionViewButton(
+                      onSessionClick: () {
+                        context.read<ClubGappingBloc>().add(
+                              StartGappingSessionEvent(
+                                selectedClubs: state.selectedClubs,
+                                shotsPerClub: state.shotsPerClub,
+                              ),
+                            );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (_) => BlocProvider.value(
+                        //       value: context.read<ClubGappingBloc>(),
+                        //       child: ShotRecordingScreen(),
+                        //     ),
+                        //   ),
+                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            settings: const RouteSettings(name: "ShotRecordingScreen"),
+                            builder: (_) => BlocProvider.value(
+                              value: context.read<ClubGappingBloc>(),
+                              child: ShotRecordingScreen(),
+                            ),
+                          ),
+                        );                      },
+                      buttonText: "Start Gapping Session",
+                    ),
+                  const SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
         );

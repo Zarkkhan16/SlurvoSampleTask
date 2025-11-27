@@ -41,6 +41,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
   Future<void> _navigateWithBleCheck({
     required BuildContext context,
     required Widget destination,
+    required String screenName,
   }) async {
     final isConnected =
         await BleConnectionHelper.ensureDeviceConnected(context);
@@ -48,7 +49,10 @@ class _LandingDashboardState extends State<LandingDashboard> {
     if (isConnected && mounted) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => destination),
+        MaterialPageRoute(
+          settings: RouteSettings(name: screenName),
+          builder: (context) => destination,
+        ),
       );
     } else {
       if (mounted) {
@@ -180,6 +184,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     onTap: () {
                       _navigateWithBleCheck(
                         context: context,
+                        screenName: "GolfDeviceView",
                         destination: BlocProvider(
                           create: (context) => di.sl<GolfDeviceBloc>(),
                           child: GolfDeviceView(),
@@ -264,8 +269,9 @@ class _LandingDashboardState extends State<LandingDashboard> {
                       // NEW: Check BLE connection before navigating
                       _navigateWithBleCheck(
                         context: context,
-                        destination: BlocProvider(
-                          create: (context) => di.sl<PracticeGamesBloc>(),
+                        screenName: "PracticeGamesScreen",
+                        destination: BlocProvider.value(
+                          value: context.read<PracticeGamesBloc>(),
                           child: PracticeGamesScreen(),
                         ),
                       );

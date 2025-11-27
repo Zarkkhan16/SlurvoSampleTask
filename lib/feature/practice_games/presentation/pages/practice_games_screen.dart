@@ -94,12 +94,21 @@ class PracticeGamesScreen extends StatelessWidget {
                     title: "Club Gapping",
                     subtitle: "Hone distance control with different clubs",
                     onTap: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (_) => BlocProvider.value(
+                      //       value: context.read<ClubGappingBloc>(),
+                      //       child: const ClubSelectionScreen(),
+                      //     ),
+                      //   ),
+                      // );
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => BlocProvider(
-                            create: (_)=>di.sl<ClubGappingBloc>()
-                              ..add(LoadAvailableClubsEvent()),
+                          settings: const RouteSettings(name: "ClubSelectionScreen"),
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<ClubGappingBloc>(),
                             child: const ClubSelectionScreen(),
                           ),
                         ),

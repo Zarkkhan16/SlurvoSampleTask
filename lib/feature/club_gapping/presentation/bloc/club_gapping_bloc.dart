@@ -95,7 +95,7 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
     _syncTimer?.cancel();
 
     // ✅ Send sync packet every 1 second with current club ID
-    _syncTimer = Timer.periodic(Duration(seconds: 5), (_) async {
+    _syncTimer = Timer.periodic(Duration(seconds: 2), (_) async {
       if (bleRepository.isConnected) {
         await _sendSyncPacket();
       }
@@ -304,10 +304,10 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // SHOT DATA RECEIVED (from BLE)
   // ============================================================
 
-  void _onShotDataReceived(
+  Future<void> _onShotDataReceived(
       ShotDataReceivedEvent event,
       Emitter<ClubGappingState> emit,
-      ) {
+      ) async {
     if (state is! RecordingShotsState) return;
 
     final currentState = state as RecordingShotsState;
@@ -346,12 +346,11 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
     print('✅ Shot ${updatedShots.length} recorded for ${currentState.currentClub.name}');
 
     // Auto-complete club if all shots recorded
-    // if (updatedShots.length >= currentState.totalShots) {
-    //   print('⏰ Last shot recorded! Waiting 1 second before showing summary...');
-    //   Future.delayed(Duration(seconds: 2), () {
-    //     add(CompleteCurrentClubEvent());
-    //   });
-    // }
+    if (updatedShots.length >= currentState.totalShots) {
+      print('⏰ Last shot recorded! Waiting 1 second before showing summary...');
+      await Future.delayed(Duration(seconds: 1),);
+      add(CompleteCurrentClubEvent());
+    }
   }
 
   // ============================================================
