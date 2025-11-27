@@ -25,157 +25,226 @@ class SessionCompleteScreen extends StatelessWidget {
       body: BlocBuilder<DistanceMasterBloc, DistanceMasterState>(
         builder: (context, state) {
           if (state is SessionCompleteState) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  HeaderRow(headingName: "Session Complete"),
-                  SizedBox(height: 5),
-                  Center(
-                    child: Text(
-                      "Great Work! Here's how you did ",
-                      style: AppTextStyle.roboto(),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  _customRow(
-                    "Highest Level Reached",
-                    "Level ${state.highestLevelReached}",
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  _customRow(
-                    "Final Target Distance",
-                    "${state.highestLevelReached} yds",
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  _customRow(
-                    "Total Successful Hits",
-                    "${state.totalSuccessfulHits}",
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  _customRow(
-                    "Longest Streak",
-                    state.longestStreak,
-                  ),
-                  SizedBox(height: 5),
-                  Spacer(),
-                  GradientBorderContainer(
-                    borderRadius: 16,
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                    containerWidth: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Level Breakdown',
-                          style: AppTextStyle.roboto(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Table(
-                          columnWidths: {
-                            0: FixedColumnWidth(60),
-                            1: FixedColumnWidth(75),
-                            2: FixedColumnWidth(75),
-                            3: FixedColumnWidth(75),
-                            4: FixedColumnWidth(75),
-                          },
-                          children: [
-                            TableRow(
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(
-                                    color: AppColors.dividerColor,
-                                    width: 1.5,
-                                  ),
-                                ),
-                              ),
-                              children: [
-                                _tableHeading('Level', textAlign: TextAlign.center),
-                                _tableHeading('Target', textAlign: TextAlign.center),
-                                _tableHeading('Window', textAlign: TextAlign.center),
-                                _tableHeading('Attempts', textAlign: TextAlign.center),
-                                _tableHeading('Success', textAlign: TextAlign.center),
-                              ],
+            return PopScope(
+                canPop: false,
+                onPopInvoked: (didPop) {
+                  if (!didPop) {
+                    context.read<DistanceMasterBloc>().add(RestartGameEvent());
+
+                    Navigator.popUntil(context, (route) {
+                      return route.settings.name ==
+                          "DistanceControlDrillsScreen";
+                    });
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        settings:
+                            RouteSettings(name: "DistanceMasterSetupScreen"),
+                        builder: (_) => DistanceMasterSetupScreen(),
+                      ),
+                    );
+                  }
+                },
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      HeaderRow(
+                        headingName: "Session Complete",
+                        onBackButton: () {
+                          context
+                              .read<DistanceMasterBloc>()
+                              .add(RestartGameEvent());
+
+                          Navigator.popUntil(context, (route) {
+                            return route.settings.name ==
+                                "DistanceControlDrillsScreen";
+                          });
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              settings: RouteSettings(
+                                  name: "DistanceMasterSetupScreen"),
+                              builder: (_) => DistanceMasterSetupScreen(),
                             ),
-                            ...state.allLevels.map(
-                              (level) => TableRow(
-                                children: [
-                                  _tableValue('${level.level}', textAlign: TextAlign.center),
-                                  _tableValue('${level.targetDistance} yds', textAlign: TextAlign.center),
-                                  _tableValue('${level.minDistance}-${level.maxDistance} yd', textAlign: TextAlign.center),
-                                  _tableValue('${level.shots.length}', textAlign: TextAlign.center),
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 12),
-                                    child: Center(
-                                      child: Icon(
-                                        level.completed
-                                            ? Icons.check
-                                            : Icons.cancel,
-                                        color: level.completed
-                                            ? Colors.green
-                                            : Colors.red,
-                                        size: 20,
+                          );
+                        },
+                      ),
+                      SizedBox(height: 5),
+                      Center(
+                        child: Text(
+                          "Great Work! Here's how you did ",
+                          style: AppTextStyle.roboto(),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      _customRow(
+                        "Highest Level Reached",
+                        "Level ${state.highestLevelReached}",
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      _customRow(
+                        "Final Target Distance",
+                        "${state.highestLevelReached} yds",
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      _customRow(
+                        "Total Successful Hits",
+                        "${state.totalSuccessfulHits}",
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      _customRow(
+                        "Longest Streak",
+                        state.longestStreak,
+                      ),
+                      SizedBox(height: 5),
+                      Spacer(),
+                      GradientBorderContainer(
+                        borderRadius: 16,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                        containerWidth: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Level Breakdown',
+                              style: AppTextStyle.roboto(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Table(
+                              columnWidths: {
+                                0: FixedColumnWidth(60),
+                                1: FixedColumnWidth(75),
+                                2: FixedColumnWidth(75),
+                                3: FixedColumnWidth(75),
+                                4: FixedColumnWidth(75),
+                              },
+                              children: [
+                                TableRow(
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: AppColors.dividerColor,
+                                        width: 1.5,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                  children: [
+                                    _tableHeading('Level',
+                                        textAlign: TextAlign.center),
+                                    _tableHeading('Target',
+                                        textAlign: TextAlign.center),
+                                    _tableHeading('Window',
+                                        textAlign: TextAlign.center),
+                                    _tableHeading('Attempts',
+                                        textAlign: TextAlign.center),
+                                    _tableHeading('Success',
+                                        textAlign: TextAlign.center),
+                                  ],
+                                ),
+                                ...state.allLevels.map(
+                                  (level) => TableRow(
+                                    children: [
+                                      _tableValue('${level.level}',
+                                          textAlign: TextAlign.center),
+                                      _tableValue('${level.targetDistance} yds',
+                                          textAlign: TextAlign.center),
+                                      _tableValue(
+                                          '${level.minDistance}-${level.maxDistance} yd',
+                                          textAlign: TextAlign.center),
+                                      _tableValue('${level.shots.length}',
+                                          textAlign: TextAlign.center),
+                                      Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 12),
+                                        child: Center(
+                                          child: Icon(
+                                            level.completed
+                                                ? Icons.check
+                                                : Icons.cancel,
+                                            color: level.completed
+                                                ? Colors.green
+                                                : Colors.red,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                  Spacer(),
-                  GradientBorderContainer(
-                    borderRadius: 16,
-                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 22),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Coaching Tip',
-                          style: AppTextStyle.roboto(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                          ),
+                      ),
+                      Spacer(),
+                      GradientBorderContainer(
+                        borderRadius: 16,
+                        padding:
+                            EdgeInsets.symmetric(vertical: 16, horizontal: 22),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Coaching Tip',
+                              style: AppTextStyle.roboto(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              _getCoachingTip(state),
+                              style: AppTextStyle.oswald(),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          _getCoachingTip(state),
-                          style: AppTextStyle.oswald(),
-                        ),
-                      ],
-                    ),
+                      ),
+                      Spacer(),
+                      SessionViewButton(
+                        onSessionClick: () {
+                          context
+                              .read<DistanceMasterBloc>()
+                              .add(RestartGameEvent());
+                          // Navigator.pushReplacement(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => DistanceMasterSetupScreen(),
+                          //   ),
+                          // );
+                          Navigator.popUntil(context, (route) {
+                            return route.settings.name ==
+                                "DistanceControlDrillsScreen";
+                          });
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              settings: RouteSettings(
+                                  name: "DistanceMasterSetupScreen"),
+                              builder: (_) => DistanceMasterSetupScreen(),
+                            ),
+                          );
+                        },
+                        buttonText: "Restart",
+                      ),
+                      SizedBox(height: 10),
+                    ],
                   ),
-                  Spacer(),
-                  SessionViewButton(
-                    onSessionClick: () {
-                      context
-                          .read<DistanceMasterBloc>()
-                          .add(RestartGameEvent());
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DistanceControlDrillsScreen(),
-                        ),
-                      );
-                    },
-                    buttonText: "Restart",
-                  ),
-                  SizedBox(height: 10),
-                ],
-              ),
-            );
+                ));
           }
           return Center(
             child: CircularProgressIndicator(color: Colors.white),

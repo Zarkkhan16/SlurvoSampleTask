@@ -7,6 +7,7 @@ import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentatio
 import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/pages/ladder_drill_setup_screen.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/pages/target_zone_setup_screen.dart';
+import 'package:onegolf/feature/practice_games/presentation/pages/practice_games_screen.dart';
 import 'package:onegolf/feature/practice_games/presentation/widgets/gaming_card.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
@@ -65,11 +66,22 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                     subtitle:
                         'Hit 3 perfect shots in a row to level up. Window Shrinks. Challenge grows.',
                     onTap: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (_) => BlocProvider.value(
+                      //       value: context.read<DistanceMasterBloc>(),
+                      //       child: DistanceMasterSetupScreen(),
+                      //     ),
+                      //   ),
+                      // );
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => BlocProvider(
-                            create: (_) => di.sl<DistanceMasterBloc>(),
+                          settings:
+                              RouteSettings(name: "DistanceMasterSetupScreen"),
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<DistanceMasterBloc>(),
                             child: DistanceMasterSetupScreen(),
                           ),
                         ),

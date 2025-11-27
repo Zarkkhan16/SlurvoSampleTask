@@ -96,19 +96,20 @@ class DistanceMasterBloc
       return;
     }
 
-    if (numberOfLevels > 20) {
-      emit(GameSetupState(
-        shortestDistance: event.shortestDistance,
-        longestDistance: event.longestDistance,
-        difficulty: event.difficulty,
-        increment: event.increment,
-        customIncrement: event.customIncrement,
-        players: event.players,
-        errorMessage:
-            'Too many levels (${numberOfLevels}). Maximum 20 levels allowed.',
-      ));
-      return;
-    }
+    // if (numberOfLevels > 20) {
+    //   emit(GameSetupState(
+    //     shortestDistance: event.shortestDistance,
+    //     longestDistance: event.longestDistance,
+    //     difficulty: event.difficulty,
+    //     increment: event.increment,
+    //     customIncrement: event.customIncrement,
+    //     players: event.players,
+    //     errorMessage:
+    //         'Too many levels (${numberOfLevels}). '
+    //             'Maximum 20 levels allowed.',
+    //   ));
+    //   return;
+    // }
 
     // Store setup values for later use
     _setupShortestDistance = event.shortestDistance;
@@ -171,13 +172,16 @@ class DistanceMasterBloc
     }
   }
 
-  void _onShotReceived(
-      ShotReceivedEvent event, Emitter<DistanceMasterState> emit) {
+  Future<void> _onShotReceived(
+      ShotReceivedEvent event, Emitter<DistanceMasterState> emit) async {
     if (state is GameInProgressState) {
       final currentState = state as GameInProgressState;
+
+      final int carry = event.carryDistance.round();
+
       // Check if shot is within tolerance
-      bool isSuccess = event.carryDistance >= currentState.minDistance &&
-          event.carryDistance <= currentState.maxDistance;
+      bool isSuccess = carry >= currentState.minDistance &&
+          carry <= currentState.maxDistance;
 
       // Add shot
       final newShot = ShotData(
@@ -186,29 +190,29 @@ class DistanceMasterBloc
         timestamp: DateTime.now(),
       );
 
-      // final updatedShots = [...currentState.currentShots, newShot];
-
       List<ShotData> updatedShots = List.from(currentState.currentShots);
-      if (updatedShots.isNotEmpty &&
-          !updatedShots.last.isSuccess &&
-          updatedShots.length <= 3) {
-        print('🔁 Replacing last failed shot with new BLE value...');
-        updatedShots[updatedShots.length - 1] = newShot;
-      } else if (updatedShots.length < 3) {
+      List<ShotData> updatedSummary = List.from(currentState.summaryShots);
+
+      // 🔥 Always save shot in summary list (fail + success)
+      updatedSummary.add(newShot);
+
+      if (updatedShots.length < 3) {
         updatedShots.add(newShot);
-      } else {
-        return;
+      }
+      else {
+        // summaryShots.add(updatedShots.first);
+        updatedShots[0] = updatedShots[1];
+        updatedShots[1] = updatedShots[2];
+        updatedShots[2] = newShot;
       }
 
-      emit(currentState.copyWith(currentShots: updatedShots));
+      emit(currentState.copyWith(currentShots: updatedShots,  summaryShots: updatedSummary,));
 
-      // Check if level complete (3 successful shots)
-      if (updatedShots.length == 3 &&
+      if (updatedShots.length >= 3 &&
           updatedShots.every((shot) => shot.isSuccess)) {
-        // Level completed successfully
-        // Future.delayed(const Duration(seconds: 1), () {
-        _moveToNextLevel(currentState, emit);
-        // });
+        await Future.delayed(const Duration(milliseconds: 500));
+        final latestState = state as GameInProgressState;
+        _moveToNextLevel(latestState, emit);
       }
     }
   }
@@ -231,7 +235,7 @@ class DistanceMasterBloc
       targetDistance: currentState.targetDistance,
       minDistance: currentState.minDistance,
       maxDistance: currentState.maxDistance,
-      shots: currentState.currentShots,
+      shots: currentState.summaryShots,
       attempts: 1,
       // Track attempts if needed
       completed: true,
@@ -262,6 +266,7 @@ class DistanceMasterBloc
       minDistance: minDistance,
       maxDistance: maxDistance,
       currentShots: [],
+      summaryShots: [],
       completedLevels: updatedCompletedLevels,
       currentPlayer: currentState.currentPlayer,
       players: currentState.players,

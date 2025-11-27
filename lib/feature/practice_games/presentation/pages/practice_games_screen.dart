@@ -72,12 +72,20 @@ class PracticeGamesScreen extends StatelessWidget {
                     title: "Distance Control Drills",
                     subtitle: "Focused accuracy with increasing difficulty",
                     onTap: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => DistanceControlDrillsScreen(),
+                      //   ),
+                      // );
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DistanceControlDrillsScreen(),
+                          settings: RouteSettings(name: "DistanceControlDrillsScreen"),
+                          builder: (_) => DistanceControlDrillsScreen(),
                         ),
                       );
+
                     },
                   ),
                   SizedBox(height: 16),

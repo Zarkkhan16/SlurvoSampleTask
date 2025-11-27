@@ -66,6 +66,7 @@ class GameInProgressState extends DistanceMasterState {
   final int minDistance;
   final int maxDistance;
   final List<ShotData> currentShots;
+  final List<ShotData> summaryShots;
   final List<LevelData> completedLevels;
   final String currentPlayer;
   final List<String> players;
@@ -80,6 +81,7 @@ class GameInProgressState extends DistanceMasterState {
     required this.minDistance,
     required this.maxDistance,
     required this.currentShots,
+    this.summaryShots = const [],
     required this.completedLevels,
     required this.currentPlayer,
     required this.players,
@@ -95,6 +97,7 @@ class GameInProgressState extends DistanceMasterState {
     int? minDistance,
     int? maxDistance,
     List<ShotData>? currentShots,
+    List<ShotData>? summaryShots,
     List<LevelData>? completedLevels,
     String? currentPlayer,
     List<String>? players,
@@ -109,6 +112,7 @@ class GameInProgressState extends DistanceMasterState {
       minDistance: minDistance ?? this.minDistance,
       maxDistance: maxDistance ?? this.maxDistance,
       currentShots: currentShots ?? this.currentShots,
+      summaryShots: summaryShots ?? this.summaryShots,
       completedLevels: completedLevels ?? this.completedLevels,
       currentPlayer: currentPlayer ?? this.currentPlayer,
       players: players ?? this.players,

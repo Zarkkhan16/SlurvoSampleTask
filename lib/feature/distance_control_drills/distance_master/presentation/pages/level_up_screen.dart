@@ -24,9 +24,19 @@ class LevelUpScreen extends StatelessWidget {
       body: BlocConsumer<DistanceMasterBloc, DistanceMasterState>(
         listener: (context, state) {
           if (state is SessionCompleteState) {
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (_) => BlocProvider.value(
+            //       value: context.read<DistanceMasterBloc>(),
+            //       child: SessionCompleteScreen(),
+            //     ),
+            //   ),
+            // );
             Navigator.push(
               context,
               MaterialPageRoute(
+                settings: RouteSettings(name: "SessionCompleteScreen"),
                 builder: (_) => BlocProvider.value(
                   value: context.read<DistanceMasterBloc>(),
                   child: SessionCompleteScreen(),
@@ -37,144 +47,163 @@ class LevelUpScreen extends StatelessWidget {
         },
         builder: (context, state) {
           if (state is GameInProgressState) {
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-              child: Column(
-                children: [
-                  HeaderRow(headingName: "Level Up"),
-                  Center(
-                    child: Text(
-                      'Hit three consecutive shots within the carry\ndistance window to level up',
-                      style: AppTextStyle.roboto(),
-                      textAlign: TextAlign.center,
+            return PopScope(
+              canPop: false,
+              onPopInvoked: (didPop) {
+                if (!didPop) {
+                  context
+                      .read<DistanceMasterBloc>()
+                      .add(EndSessionEvent());
+                }
+              },
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                child: Column(
+                  children: [
+                    HeaderRow(
+                      headingName: "Level Up",
+                      onBackButton: () {
+                        context
+                            .read<DistanceMasterBloc>()
+                            .add(EndSessionEvent());
+                      },
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${state.targetDistance}',
-                        style: AppTextStyle.oswald(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 60,
-                        ),
+                    Center(
+                      child: Text(
+                        'Hit three consecutive shots within the carry\ndistance window to level up',
+                        style: AppTextStyle.roboto(),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(width: 4),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          'yds',
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${state.targetDistance}',
                           style: AppTextStyle.oswald(
                             fontWeight: FontWeight.w700,
-                            fontSize: 30,
+                            fontSize: 60,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Transform.translate(
-                    offset: const Offset(0, -10),
-                    child: Text(
-                      '${state.minDistance}-${state.maxDistance} yds',
-                      style: AppTextStyle.oswald(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 24,
-                      ),
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      for (int i = 0; i < 3; i++) ...[
-                        _buildShotIndicator(
-                          i < state.currentShots.length
-                              ? (state.currentShots[i].isSuccess
-                                  ? 'success'
-                                  : 'fail')
-                              : 'pending',
+                        const SizedBox(width: 4),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            'yds',
+                            style: AppTextStyle.oswald(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 30,
+                            ),
+                          ),
                         ),
-                        if (i < 2) SizedBox(width: 10),
                       ],
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Level',
-                    style: AppTextStyle.roboto(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                  Text(
-                    '${state.currentLevel}',
-                    style: AppTextStyle.oswald(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 24,
+                    Transform.translate(
+                      offset: const Offset(0, -10),
+                      child: Text(
+                        '${state.minDistance}-${state.maxDistance} yds',
+                        style: AppTextStyle.oswald(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 24,
+                        ),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  if (state.currentLevel < state.totalLevels)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (int i = 0; i < 3; i++) ...[
+                          _buildShotIndicator(
+                            i < state.currentShots.length
+                                ? (state.currentShots[i].isSuccess
+                                    ? 'success'
+                                    : 'fail')
+                                : 'pending',
+                          ),
+                          if (i < 2) SizedBox(width: 10),
+                        ],
+                      ],
+                    ),
+                    SizedBox(height: 10),
                     Text(
-                      'Next Level',
+                      'Level',
                       style: AppTextStyle.roboto(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                  if (state.currentLevel < state.totalLevels)
                     Text(
-                      '${state.targetDistance + state.incrementLevel} yds',
+                      '${state.currentLevel}',
                       style: AppTextStyle.oswald(
                         fontWeight: FontWeight.w700,
                         fontSize: 24,
                       ),
                     ),
-                  Spacer(),
-                  GradientBorderContainer(
-                    borderRadius: 16,
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    containerWidth: double.infinity,
-                    child: Column(
-                      children: [
-                        Text(
-                          'Actual Carry',
-                          style: AppTextStyle.roboto(
-                            color: AppColors.secondaryText,
-                            fontSize: 16,
-                          ),
+                    SizedBox(height: 10),
+                    if (state.currentLevel < state.totalLevels)
+                      Text(
+                        'Next Level',
+                        style: AppTextStyle.roboto(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          state.currentShots.isEmpty
-                              ? "0"
-                              : state.currentShots.last.carryDistance
-                                  .toStringAsFixed(0),
-                          style: AppTextStyle.oswald(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 40,
-                          ),
+                      ),
+                    if (state.currentLevel < state.totalLevels)
+                      Text(
+                        '${state.targetDistance + state.incrementLevel} yds',
+                        style: AppTextStyle.oswald(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 24,
                         ),
-                        Text(
-                          'yds',
-                          style: AppTextStyle.roboto(
-                            fontSize: 16,
+                      ),
+                    Spacer(),
+                    GradientBorderContainer(
+                      borderRadius: 16,
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      containerWidth: double.infinity,
+                      child: Column(
+                        children: [
+                          Text(
+                            'Actual Carry',
+                            style: AppTextStyle.roboto(
+                              color: AppColors.secondaryText,
+                              fontSize: 16,
+                            ),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 8),
+                          Text(
+                            state.currentShots.isEmpty
+                                ? "0"
+                                : state.currentShots.last.carryDistance
+                                    .toStringAsFixed(0),
+                            style: AppTextStyle.oswald(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 40,
+                            ),
+                          ),
+                          Text(
+                            'yds',
+                            style: AppTextStyle.roboto(
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Spacer(),
-                  SessionViewButton(
-                    onSessionClick: () {
-                      context.read<DistanceMasterBloc>().add(EndSessionEvent());
-                    },
-                    buttonText: "End Session",
-                  ),
-                  SizedBox(height: 10),
-                ],
+                    Spacer(),
+                    SessionViewButton(
+                      onSessionClick: () {
+                        context
+                            .read<DistanceMasterBloc>()
+                            .add(EndSessionEvent());
+                      },
+                      buttonText: "End Session",
+                    ),
+                    SizedBox(height: 10),
+                  ],
+                ),
               ),
             );
           }

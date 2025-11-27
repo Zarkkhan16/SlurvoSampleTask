@@ -7,6 +7,7 @@ import 'package:onegolf/feature/distance_control_drills/distance_master/presenta
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_event.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_state.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/pages/level_up_screen.dart';
+import 'package:onegolf/feature/distance_control_drills/presentation/pages/distance_control_drills_screen.dart';
 import 'package:onegolf/feature/practice_games/presentation/widgets/add_player_chip.dart';
 import 'package:onegolf/feature/practice_games/presentation/widgets/player_chip.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
@@ -34,6 +35,7 @@ class _DistanceMasterSetupScreenState extends State<DistanceMasterSetupScreen> {
   List<String> selectedPlayers = [];
   final int maxPlayers = 4;
   bool _navigatedToLevelUp = false;
+
   @override
   void initState() {
     super.initState();
@@ -57,9 +59,18 @@ class _DistanceMasterSetupScreenState extends State<DistanceMasterSetupScreen> {
             );
           } else if (state is GameInProgressState && !_navigatedToLevelUp) {
             _navigatedToLevelUp = true;
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (_) => BlocProvider.value(
+            //       value: context.read<DistanceMasterBloc>(),
+            //       child: LevelUpScreen(),
+            //     ),
+            //   ),
             Navigator.push(
               context,
               MaterialPageRoute(
+                settings: RouteSettings(name: "LevelUpScreen"),
                 builder: (_) => BlocProvider.value(
                   value: context.read<DistanceMasterBloc>(),
                   child: LevelUpScreen(),
@@ -75,218 +86,224 @@ class _DistanceMasterSetupScreenState extends State<DistanceMasterSetupScreen> {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
             child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  HeaderRow(
-                    headingName: "Distance Master",
-                  ),
-                  Center(
-                    child: Text(
-                      'Hit 3 Consecutive shots inside the target\nwindow to level up. Missing a shot resets the\nstreak.',
-                      style: AppTextStyle.roboto(),
-                      textAlign: TextAlign.center,
+              child: GestureDetector(
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    HeaderRow(
+                      headingName: "Distance Master",
                     ),
-                  ),
-                  Text(
-                    'Target Distance:',
-                    style: AppTextStyle.roboto(
-                        fontWeight: FontWeight.w500, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          children: [
-                            GradientBorderContainer(
-                              borderRadius: 20,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 50, vertical: 20),
-                              child: GestureDetector(
-                                onTap: () => _showDistancePicker(true),
-                                child: Container(
-                                  width: 70,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff716B6B66),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      shortestDistance.toString(),
-                                      style: AppTextStyle.oswald(
-                                        fontSize: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              'Shortest Target Distance',
-                              style: AppTextStyle.roboto(
-                                color: AppColors.secondaryText,
-                              ),
-                            ),
-                          ],
-                        ),
+                    Center(
+                      child: Text(
+                        'Hit 3 Consecutive shots inside the target\nwindow to level up. Missing a shot resets the\nstreak.',
+                        style: AppTextStyle.roboto(),
+                        textAlign: TextAlign.center,
                       ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 5),
-                        child: Text(
-                          'TO',
-                          style: AppTextStyle.roboto(),
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            GradientBorderContainer(
-                              borderRadius: 20,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 50, vertical: 20),
-                              child: GestureDetector(
-                                onTap: () => _showDistancePicker(false),
-                                child: Container(
-                                  width: 70,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff716B6B66),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      longestDistance.toString(),
-                                      style: AppTextStyle.oswald(
-                                        fontSize: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              'Longest Target Distance',
-                              style: AppTextStyle.roboto(
-                                color: AppColors.secondaryText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Center(
-                    child: Text(
-                      'You must carry the ball within the selected\nradius from the target',
-                      style: AppTextStyle.roboto(),
-                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Difficulty:',
-                    style: AppTextStyle.roboto(
-                        fontWeight: FontWeight.w500, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _buildDifficultyButton(7, 'Easy', '7 yds'),
-                      SizedBox(width: 12),
-                      _buildDifficultyButton(5, 'Medium', '5 yds'),
-                      SizedBox(width: 12),
-                      _buildDifficultyButton(3, 'Hard', '3 yds'),
-                    ],
-                  ),
-                  SizedBox(height: 15),
-                  Center(
-                    child: Text(
-                      'Increment For Every Level',
+                    Text(
+                      'Target Distance:',
                       style: AppTextStyle.roboto(
-                        fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            children: [
+                              GradientBorderContainer(
+                                borderRadius: 20,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 50, vertical: 20),
+                                child: GestureDetector(
+                                  onTap: () => _showDistancePicker(true),
+                                  child: Container(
+                                    width: 70,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      color: Color(0xff716B6B66),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        shortestDistance.toString(),
+                                        style: AppTextStyle.oswald(
+                                          fontSize: 30,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                'Shortest Target Distance',
+                                style: AppTextStyle.roboto(
+                                  color: AppColors.secondaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 5),
+                          child: Text(
+                            'TO',
+                            style: AppTextStyle.roboto(),
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              GradientBorderContainer(
+                                borderRadius: 20,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 50, vertical: 20),
+                                child: GestureDetector(
+                                  onTap: () => _showDistancePicker(false),
+                                  child: Container(
+                                    width: 70,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      color: Color(0xff716B6B66),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        longestDistance.toString(),
+                                        style: AppTextStyle.oswald(
+                                          fontSize: 30,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                'Longest Target Distance',
+                                style: AppTextStyle.roboto(
+                                  color: AppColors.secondaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Center(
+                      child: Text(
+                        'You must carry the ball within the selected\nradius from the target',
+                        style: AppTextStyle.roboto(),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _buildIncrementButton(5, '5yds', roundLeft: true),
-                      _buildIncrementButton(10, '10yds'),
-                      _buildIncrementButton(0, 'Custom', roundRight: true),
-                    ],
-                  ),
-                  if (selectedIncrement == 0) ...[
                     SizedBox(height: 10),
-                    GradientBorderContainer(
-                      borderRadius: 12,
-                      backgroundColor: AppColors.cardBackground,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 4),
-                      child: SizedBox(
-                        height: 36,
-                        child: TextField(
-                          keyboardType: TextInputType.number,
-                          style:
-                              AppTextStyle.roboto(color: AppColors.primaryText),
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 10),
-                            border: InputBorder.none,
-                            hintText: "Enter multiples of 5 (5, 10, 15...)",
-                            hintStyle: AppTextStyle.roboto(
-                              color: AppColors.secondaryText,
-                              fontSize: 14,
-                            ),
-                          ),
-                          onChanged: (value) {
-                            setState(() {
-                              customIncrement = int.tryParse(value);
-                            });
-                          },
+                    Text(
+                      'Difficulty:',
+                      style: AppTextStyle.roboto(
+                          fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _buildDifficultyButton(7, 'Easy', '7 yds'),
+                        SizedBox(width: 12),
+                        _buildDifficultyButton(5, 'Medium', '5 yds'),
+                        SizedBox(width: 12),
+                        _buildDifficultyButton(3, 'Hard', '3 yds'),
+                      ],
+                    ),
+                    SizedBox(height: 15),
+                    Center(
+                      child: Text(
+                        'Increment For Every Level',
+                        style: AppTextStyle.roboto(
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _buildIncrementButton(5, '5yds', roundLeft: true),
+                        _buildIncrementButton(10, '10yds'),
+                        _buildIncrementButton(0, 'Custom', roundRight: true),
+                      ],
+                    ),
+                    if (selectedIncrement == 0) ...[
+                      SizedBox(height: 10),
+                      GradientBorderContainer(
+                        borderRadius: 12,
+                        backgroundColor: AppColors.cardBackground,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 4),
+                        child: SizedBox(
+                          height: 36,
+                          child: TextField(
+                            textInputAction: TextInputAction.done,
+                            keyboardType: TextInputType.number,
+                            style: AppTextStyle.roboto(
+                                color: AppColors.primaryText),
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 10),
+                              border: InputBorder.none,
+                              hintText: "Enter multiples of 5 (5, 10, 15...)",
+                              hintStyle: AppTextStyle.roboto(
+                                color: AppColors.secondaryText,
+                                fontSize: 14,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                customIncrement = int.tryParse(value);
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                    SizedBox(height: 15),
+                    Text(
+                      'Players:',
+                      style: AppTextStyle.roboto(
+                          fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    Wrap(
+                      spacing: 5,
+                      runSpacing: 5,
+                      children: [
+                        ...selectedPlayers.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          String player = entry.value;
+                          return PlayerChip(
+                            name: player,
+                            onTap: () =>
+                                _showPlayerOptions(context, index, player),
+                            onLongPress: () =>
+                                _showEditPlayerDialog(context, index, player),
+                          );
+                        }),
+                        for (int i = selectedPlayers.length;
+                            i < maxPlayers;
+                            i++)
+                          AddPlayerChip(
+                            label: "+Player ${i + 1}",
+                            onTap: () => _showAddPlayerDialog(context),
+                          ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    SessionViewButton(
+                      buttonText: "START GAME",
+                      onSessionClick: _startGame,
                     ),
                   ],
-                  SizedBox(height: 15),
-                  Text(
-                    'Players:',
-                    style: AppTextStyle.roboto(
-                        fontWeight: FontWeight.w500, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  Wrap(
-                    spacing: 5,
-                    runSpacing: 5,
-                    children: [
-                      ...selectedPlayers.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        String player = entry.value;
-                        return PlayerChip(
-                          name: player,
-                          onTap: () =>
-                              _showPlayerOptions(context, index, player),
-                          onLongPress: () =>
-                              _showEditPlayerDialog(context, index, player),
-                        );
-                      }),
-                      for (int i = selectedPlayers.length; i < maxPlayers; i++)
-                        AddPlayerChip(
-                          label: "+Player ${i + 1}",
-                          onTap: () => _showAddPlayerDialog(context),
-                        ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  SessionViewButton(
-                    buttonText: "START GAME",
-                    onSessionClick: _startGame,
-                  ),
-                ],
+                ),
               ),
             ),
           );
