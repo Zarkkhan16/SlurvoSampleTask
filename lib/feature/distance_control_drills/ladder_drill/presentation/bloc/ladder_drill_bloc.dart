@@ -61,6 +61,7 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
     //   }
     // });
   }
+
   // ========== Setup Screen Handlers ==========
 
   Future<void> _onUpdateShortestDistance(
@@ -236,9 +237,9 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
   // }
 
   Future<void> _onStartGame(
-      StartGameEvent event,
-      Emitter<LadderDrillState> emit,
-      ) async {
+    StartGameEvent event,
+    Emitter<LadderDrillState> emit,
+  ) async {
     if (state is GameSetupState) {
       final setupState = state as GameSetupState;
 
@@ -247,7 +248,8 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
           ? (setupState.customIncrement ?? 5)
           : setupState.increment;
 
-      final totalDistance = setupState.longestDistance - setupState.shortestDistance;
+      final totalDistance =
+          setupState.longestDistance - setupState.shortestDistance;
       final totalLevels = (totalDistance ~/ incrementValue) + 1;
 
       emit(GameInProgressState(
@@ -294,8 +296,8 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
 
     await _bleSubscription?.cancel();
     _bleSubscription = bleRepository.subscribeToNotifications().listen(
-          (data) {
-        print('📡 BLE Data received in Distance Master: $data');
+      (data) {
+        // print('📡 BLE Data received in Distance Master: $data');
         add(BleDataReceivedEvent(data));
         _bleDataController.add(data);
       },
@@ -314,15 +316,15 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
   }
 
   void _onBleDataReceived(
-      BleDataReceivedEvent event,
-      Emitter<LadderDrillState> emit,
-      ) {
-    print('🎮 Practice Games: Processing BLE data...');
+    BleDataReceivedEvent event,
+    Emitter<LadderDrillState> emit,
+  ) {
+    // print('🎮 Practice Games: Processing BLE data...');
     try {
       _parseGolfData(Uint8List.fromList(event.data));
       add(ShotReceivedEvent(_golfData.carryDistance));
     } catch (e) {
-      print('❌ Failed to parse BLE data: $e');
+      // print('❌ Failed to parse BLE data: $e');
     }
   }
 
@@ -362,41 +364,56 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
 
   void _startSyncTimer() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(Duration(seconds: 20), (_) async {
+    _syncTimer = Timer.periodic(Duration(seconds: 2), (_) async {
       if (bleRepository.isConnected) {
         int checksum = (0x01 + 0x00) & 0xFF;
         await bleRepository.writeData([0x47, 0x46, 0x01, 0x00, 0x00, checksum]);
       }
     });
   }
+
   Future<void> _onShotReceived(
-      ShotReceivedEvent event,
-      Emitter<LadderDrillState> emit,
-      ) async {
+    ShotReceivedEvent event,
+    Emitter<LadderDrillState> emit,
+  ) async {
     if (state is GameInProgressState) {
       final gameState = state as GameInProgressState;
 
-      final isSuccess = event.carryDistance >= gameState.minDistance &&
-          event.carryDistance <= gameState.maxDistance;
+      final int carry = event.carryDistance.round();
 
-      final shotData = ShotData(
+      final isSuccess = carry >= gameState.minDistance &&
+          carry <= gameState.maxDistance;
+
+      final newShot = ShotData(
         timestamp: DateTime.now(),
         isSuccess: isSuccess,
         carryDistance: event.carryDistance,
       );
 
-      final updatedShots = List<ShotData>.from(gameState.currentShots)
-        ..add(shotData);
+      List<ShotData> updatedShots = List.from(gameState.currentShots);
+      List<ShotData> updatedSummary = List.from(gameState.summaryShots);
+
+      updatedSummary.add(newShot);
 
       int newStreak = gameState.streak;
       int newMaxStreak = gameState.maxStreak;
 
-      if (isSuccess) {
+      updatedShots.add(newShot);
 
+      if (isSuccess) {
         newStreak++;
         if (newStreak > newMaxStreak) {
           newMaxStreak = newStreak;
         }
+
+        emit(gameState.copyWith(
+          currentShots: updatedShots,
+          streak: newStreak,
+          maxStreak: newMaxStreak,
+        ));
+
+        // WAIT 2 seconds to let user see the successful shot
+        await Future.delayed(Duration(seconds: 2));
 
         // Create level data
         final levelData = LevelData(
@@ -418,8 +435,9 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
           _emitSessionComplete(emit, gameState, updatedLevels, newMaxStreak);
         } else {
           // Show success state, then move to next level
-          final nextTargetDistance = gameState.targetDistance + gameState.incrementLevel;
-
+          final nextTargetDistance =
+              gameState.targetDistance + gameState.incrementLevel;
+          // await Future.delayed(Duration(seconds: 10));
           emit(LevelCompleteState(
             completedLevel: gameState.currentLevel,
             nextLevel: gameState.currentLevel + 1,
@@ -427,77 +445,101 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
             completedLevels: updatedLevels,
             streak: newStreak,
             maxStreak: newMaxStreak,
+            // Pass these for NextLevelEvent
+            totalLevels: gameState.totalLevels,
+            toleranceWindow: gameState.toleranceWindow,
+            currentPlayer: gameState.currentPlayer,
+            players: gameState.players,
+            incrementLevel: gameState.incrementLevel,
           ));
         }
       } else {
-        // Shot failed - reset streak, allow retry
+
         newStreak = 0;
 
-        // Check if max attempts reached (3 shots)
-        if (updatedShots.length >= 3) {
-          // Max attempts reached, still move to next level
-          final levelData = LevelData(
-            level: gameState.currentLevel,
-            targetDistance: gameState.targetDistance,
-            shots: updatedShots,
-            completed: false,
-            attempts: updatedShots.length,
-            maxDistance: gameState.maxDistance,
-            minDistance: gameState.minDistance,
-          );
+        emit(gameState.copyWith(
+          currentShots: updatedShots,
+          streak: newStreak,
+        ));
 
-          final updatedLevels = List<LevelData>.from(gameState.completedLevels)
-            ..add(levelData);
-
-          if (gameState.currentLevel >= gameState.totalLevels) {
-            _emitSessionComplete(emit, gameState, updatedLevels, newMaxStreak);
-          } else {
-            final nextTargetDistance = gameState.targetDistance + gameState.incrementLevel;
-
-            emit(LevelCompleteState(
-              completedLevel: gameState.currentLevel,
-              nextLevel: gameState.currentLevel + 1,
-              nextTargetDistance: nextTargetDistance,
-              completedLevels: updatedLevels,
-              streak: newStreak,
-              maxStreak: newMaxStreak,
-            ));
-          }
-        } else {
-          // Continue at same level
-          emit(gameState.copyWith(
-            currentShots: updatedShots,
-            streak: newStreak,
-          ));
-        }
+        //
+        // // Max attempts reached, still move to next level
+        // final levelData = LevelData(
+        //   level: gameState.currentLevel,
+        //   targetDistance: gameState.targetDistance,
+        //   shots: updatedShots,
+        //   completed: false,
+        //   attempts: updatedShots.length,
+        //   maxDistance: gameState.maxDistance,
+        //   minDistance: gameState.minDistance,
+        // );
+        //
+        // final updatedLevels = List<LevelData>.from(gameState.completedLevels)
+        //   ..add(levelData);
+        //
+        // if (gameState.currentLevel >= gameState.totalLevels) {
+        //   _emitSessionComplete(emit, gameState, updatedLevels, newMaxStreak);
+        // } else {
+        //   final nextTargetDistance =
+        //       gameState.targetDistance + gameState.incrementLevel;
+        //
+        //   emit(LevelCompleteState(
+        //     completedLevel: gameState.currentLevel,
+        //     nextLevel: gameState.currentLevel + 1,
+        //     nextTargetDistance: nextTargetDistance,
+        //     completedLevels: updatedLevels,
+        //     streak: newStreak,
+        //     maxStreak: newMaxStreak,
+        //   ));
+        // }
       }
     }
   }
 
   Future<void> _onNextLevel(
-      NextLevelEvent event,
-      Emitter<LadderDrillState> emit,
-      ) async {
+    NextLevelEvent event,
+    Emitter<LadderDrillState> emit,
+  ) async {
     if (state is LevelCompleteState) {
       final levelState = state as LevelCompleteState;
 
+      // emit(GameInProgressState(
+      //   currentLevel: levelState.nextLevel,
+      //   totalLevels:
+      //       levelState.nextLevel + ((80 - levelState.nextTargetDistance) ~/ 5),
+      //   // Adjust based on your logic
+      //   targetDistance: levelState.nextTargetDistance,
+      //   toleranceWindow: 7,
+      //   // Get from previous state
+      //   minDistance: levelState.nextTargetDistance - 7,
+      //   maxDistance: levelState.nextTargetDistance + 7,
+      //   currentShots: [],
+      //   completedLevels: levelState.completedLevels,
+      //   currentPlayer: "Player",
+      //   players: ["Player"],
+      //   currentPlayerIndex: 0,
+      //   incrementLevel: 5,
+      //   streak: levelState.streak,
+      //   maxStreak: levelState.maxStreak,
+      // ));
+
       emit(GameInProgressState(
         currentLevel: levelState.nextLevel,
-        totalLevels: levelState.nextLevel +
-            ((80 - levelState.nextTargetDistance) ~/ 5), // Adjust based on your logic
+        totalLevels: levelState.totalLevels, // Use existing value
         targetDistance: levelState.nextTargetDistance,
-        toleranceWindow: 7, // Get from previous state
-        minDistance: levelState.nextTargetDistance - 7,
-        maxDistance: levelState.nextTargetDistance + 7,
+        toleranceWindow: levelState.toleranceWindow,
+        minDistance: levelState.nextTargetDistance - levelState.toleranceWindow,
+        maxDistance: levelState.nextTargetDistance + levelState.toleranceWindow,
         currentShots: [],
         completedLevels: levelState.completedLevels,
-        currentPlayer: "Player",
-        players: ["Player"],
+        currentPlayer: levelState.currentPlayer,
+        players: levelState.players,
         currentPlayerIndex: 0,
-        incrementLevel: 5,
+        incrementLevel: levelState.incrementLevel,
         streak: levelState.streak,
         maxStreak: levelState.maxStreak,
       ));
+
     }
   }
 
@@ -507,7 +549,8 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
   ) async {
     if (state is GameInProgressState) {
       final gameState = state as GameInProgressState;
-      // _emitSessionComplete(emit, gameState, gameState.completedLevels);
+      _emitSessionComplete(
+          emit, gameState, gameState.completedLevels, gameState.maxStreak);
     }
   }
 
@@ -521,15 +564,15 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
   // ========== Helper Methods ==========
 
   void _emitSessionComplete(
-      Emitter<LadderDrillState> emit,
-      GameInProgressState gameState,
-      List<LevelData> allLevels,
-      int maxStreak,
-      ) {
+    Emitter<LadderDrillState> emit,
+    GameInProgressState gameState,
+    List<LevelData> allLevels,
+    int maxStreak,
+  ) {
     // Calculate statistics
     final totalAttempts = allLevels.fold<int>(
       0,
-          (sum, level) => sum + level.attempts,
+      (sum, level) => sum + level.attempts,
     );
 
     final totalSuccessful = allLevels.where((level) => level.completed).length;
@@ -537,12 +580,12 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
     final averageDistance = allLevels.isEmpty
         ? 0.0
         : allLevels.fold<double>(
-      0,
-          (sum, level) =>
-      sum +
-          level.shots.fold(0.0, (s, shot) => s + shot.carryDistance),
-    ) /
-        allLevels.fold<int>(0, (sum, level) => sum + level.shots.length);
+              0,
+              (sum, level) =>
+                  sum +
+                  level.shots.fold(0.0, (s, shot) => s + shot.carryDistance),
+            ) /
+            allLevels.fold<int>(0, (sum, level) => sum + level.shots.length);
 
     emit(SessionCompleteState(
       allLevels: allLevels,
@@ -551,7 +594,8 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
       totalSuccessfulHits: totalSuccessful,
       totalAttempts: totalAttempts,
       longestStreak: maxStreak > 1 ? '$maxStreak in a row' : 'None',
-      playerStats: {}, // Calculate if needed
+      playerStats: {},
+      // Calculate if needed
       finalTargetDistance: gameState.targetDistance,
     ));
   }

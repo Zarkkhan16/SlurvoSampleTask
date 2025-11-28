@@ -26,10 +26,11 @@ class LadderDrillSetupScreen extends StatefulWidget {
 class _LadderDrillSetupScreenState extends State<LadderDrillSetupScreen> {
   late TextEditingController _playerNameController;
   late TextEditingController _customIncrementController;
-  bool _navigatedToLevelUp = false;
+  late bool _navigatedToLevelUp;
   @override
   void initState() {
     super.initState();
+    _navigatedToLevelUp = true;
     _playerNameController = TextEditingController();
     _customIncrementController = TextEditingController();
   }
@@ -54,7 +55,9 @@ class _LadderDrillSetupScreenState extends State<LadderDrillSetupScreen> {
               SnackBar(content: Text(state.errorMessage!)),
             );
           }
-          if (state is GameInProgressState && !_navigatedToLevelUp) {
+          if (state is GameInProgressState && _navigatedToLevelUp) {
+            _navigatedToLevelUp = false;
+            print("stup seceeeee");
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -77,251 +80,255 @@ class _LadderDrillSetupScreenState extends State<LadderDrillSetupScreen> {
             return SingleChildScrollView(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  HeaderRow(headingName: "Ladder Drill"),
-                  Center(
-                    child: Text(
-                      'Hit the ball within the target zone to progress\nto the next level. Complete the ladder drill in\nas few shots as possible.',
-                      style: AppTextStyle.roboto(),
-                      textAlign: TextAlign.center,
+              child: GestureDetector(
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    HeaderRow(headingName: "Ladder Drill"),
+                    Center(
+                      child: Text(
+                        'Hit the ball within the target zone to progress\nto the next level. Complete the ladder drill in\nas few shots as possible.',
+                        style: AppTextStyle.roboto(),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Target Distance:',
-                    style: AppTextStyle.roboto(
-                        fontWeight: FontWeight.w500, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          children: [
-                            GradientBorderContainer(
-                              borderRadius: 20,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 50, vertical: 20),
-                              child: GestureDetector(
-                                onTap: () => _showDistancePicker(
-                                    true, state.shortestDistance),
-                                child: Container(
-                                  width: 70,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff716B6B66),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      state.shortestDistance.toString(),
-                                      style: AppTextStyle.oswald(
-                                        fontSize: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              'Shortest Target Distance',
-                              style: AppTextStyle.roboto(
-                                color: AppColors.secondaryText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 5),
-                        child: Text(
-                          'TO',
-                          style: AppTextStyle.roboto(),
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            GradientBorderContainer(
-                              borderRadius: 20,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 50, vertical: 20),
-                              child: GestureDetector(
-                                onTap: () => _showDistancePicker(
-                                    false, state.longestDistance),
-                                child: Container(
-                                  width: 70,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xff716B6B66),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      state.longestDistance.toString(),
-                                      style: AppTextStyle.oswald(
-                                        fontSize: 30,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              'Longest Target Distance',
-                              style: AppTextStyle.roboto(
-                                color: AppColors.secondaryText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Center(
-                    child: Text(
-                      'You must carry the ball within the selected\nradius from the target',
-                      style: AppTextStyle.roboto(),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Difficulty:',
-                    style: AppTextStyle.roboto(
-                        fontWeight: FontWeight.w500, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _buildDifficultyButton(
-                          7, 'Easy', '7 yds', state.difficulty == 7),
-                      SizedBox(width: 12),
-                      _buildDifficultyButton(
-                          5, 'Medium', '5 yds', state.difficulty == 5),
-                      SizedBox(width: 12),
-                      _buildDifficultyButton(
-                          3, 'Hard', '3 yds', state.difficulty == 3),
-                    ],
-                  ),
-                  SizedBox(height: 15),
-                  Center(
-                    child: Text(
-                      'Increment For Every Level',
+                    Text(
+                      'Target Distance:',
                       style: AppTextStyle.roboto(
-                        fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            children: [
+                              GradientBorderContainer(
+                                borderRadius: 20,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 50, vertical: 20),
+                                child: GestureDetector(
+                                  onTap: () => _showDistancePicker(
+                                      true, state.shortestDistance),
+                                  child: Container(
+                                    width: 70,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      color: Color(0xff716B6B66),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        state.shortestDistance.toString(),
+                                        style: AppTextStyle.oswald(
+                                          fontSize: 30,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                'Shortest Target Distance',
+                                style: AppTextStyle.roboto(
+                                  color: AppColors.secondaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 5),
+                          child: Text(
+                            'TO',
+                            style: AppTextStyle.roboto(),
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              GradientBorderContainer(
+                                borderRadius: 20,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 50, vertical: 20),
+                                child: GestureDetector(
+                                  onTap: () => _showDistancePicker(
+                                      false, state.longestDistance),
+                                  child: Container(
+                                    width: 70,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      color: Color(0xff716B6B66),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        state.longestDistance.toString(),
+                                        style: AppTextStyle.oswald(
+                                          fontSize: 30,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                'Longest Target Distance',
+                                style: AppTextStyle.roboto(
+                                  color: AppColors.secondaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Center(
+                      child: Text(
+                        'You must carry the ball within the selected\nradius from the target',
+                        style: AppTextStyle.roboto(),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _buildIncrementButton(
-                        5,
-                        '5yds',
-                        roundLeft: true,
-                        isSelected: state.increment == 5,
-                      ),
-                      _buildIncrementButton(
-                        10,
-                        '10yds',
-                        isSelected: state.increment == 10,
-                      ),
-                      _buildIncrementButton(
-                        0,
-                        'Custom',
-                        roundRight: true,
-                        isSelected: state.increment == 0,
-                      ),
-                    ],
-                  ),
-                  if (state.increment == 0) ...[
                     SizedBox(height: 10),
-                    GradientBorderContainer(
-                      borderRadius: 12,
-                      backgroundColor: AppColors.cardBackground,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 4),
-                      child: SizedBox(
-                        height: 36,
-                        child: TextField(
-                          keyboardType: TextInputType.number,
-                          style:
-                              AppTextStyle.roboto(color: AppColors.primaryText),
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 10),
-                            border: InputBorder.none,
-                            hintText: "Enter multiples of 5 (5, 10, 15...)",
-                            hintStyle: AppTextStyle.roboto(
-                              color: AppColors.secondaryText,
-                              fontSize: 14,
-                            ),
-                          ),
-                          onChanged: (value) {
-                            context.read<LadderDrillBloc>().add(
-                                  UpdateCustomIncrementEvent(
-                                      int.tryParse(value)),
-                                );
-                          },
+                    Text(
+                      'Difficulty:',
+                      style: AppTextStyle.roboto(
+                          fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _buildDifficultyButton(
+                            7, 'Easy', '7 yds', state.difficulty == 7),
+                        SizedBox(width: 12),
+                        _buildDifficultyButton(
+                            5, 'Medium', '5 yds', state.difficulty == 5),
+                        SizedBox(width: 12),
+                        _buildDifficultyButton(
+                            3, 'Hard', '3 yds', state.difficulty == 3),
+                      ],
+                    ),
+                    SizedBox(height: 15),
+                    Center(
+                      child: Text(
+                        'Increment For Every Level',
+                        style: AppTextStyle.roboto(
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _buildIncrementButton(
+                          5,
+                          '5yds',
+                          roundLeft: true,
+                          isSelected: state.increment == 5,
+                        ),
+                        _buildIncrementButton(
+                          10,
+                          '10yds',
+                          isSelected: state.increment == 10,
+                        ),
+                        _buildIncrementButton(
+                          0,
+                          'Custom',
+                          roundRight: true,
+                          isSelected: state.increment == 0,
+                        ),
+                      ],
+                    ),
+                    if (state.increment == 0) ...[
+                      SizedBox(height: 10),
+                      GradientBorderContainer(
+                        borderRadius: 12,
+                        backgroundColor: AppColors.cardBackground,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 4),
+                        child: SizedBox(
+                          height: 36,
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.done,
+                            style:
+                            AppTextStyle.roboto(color: AppColors.primaryText),
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 10),
+                              border: InputBorder.none,
+                              hintText: "Enter multiples of 5 (5, 10, 15...)",
+                              hintStyle: AppTextStyle.roboto(
+                                color: AppColors.secondaryText,
+                                fontSize: 14,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              context.read<LadderDrillBloc>().add(
+                                UpdateCustomIncrementEvent(
+                                    int.tryParse(value)),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                    SizedBox(height: 15),
+                    Text(
+                      'Players:',
+                      style: AppTextStyle.roboto(
+                          fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    Wrap(
+                      spacing: 5,
+                      runSpacing: 5,
+                      children: [
+                        ...state.players.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          String playerName = entry.value;
+                          return PlayerChip(
+                            name: playerName,
+                            onTap: () =>
+                                _showPlayerOptions(context, index, playerName),
+                            onLongPress: () {},
+                          );
+                        }),
+                        for (int i = state.players.length;
+                        i < state.maxPlayers;
+                        i++)
+                          AddPlayerChip(
+                            label: "+Player ${i + 1}",
+                            onTap: () => _showAddPlayerDialog(context),
+                          ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    SessionViewButton(
+                      onSessionClick: () {
+                        if (state.increment == 0) {
+                          if (state.customIncrement == null || state.customIncrement! <= 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Please enter a valid increment value'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                        }
+
+                        context.read<LadderDrillBloc>().add(StartGameEvent());
+                      },
+                      buttonText: "Start Game",
                     ),
                   ],
-                  SizedBox(height: 15),
-                  Text(
-                    'Players:',
-                    style: AppTextStyle.roboto(
-                        fontWeight: FontWeight.w500, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  Wrap(
-                    spacing: 5,
-                    runSpacing: 5,
-                    children: [
-                      ...state.players.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        String playerName = entry.value;
-                        return PlayerChip(
-                          name: playerName,
-                          onTap: () =>
-                              _showPlayerOptions(context, index, playerName),
-                          onLongPress: () {},
-                        );
-                      }),
-                      for (int i = state.players.length;
-                          i < state.maxPlayers;
-                          i++)
-                        AddPlayerChip(
-                          label: "+Player ${i + 1}",
-                          onTap: () => _showAddPlayerDialog(context),
-                        ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  SessionViewButton(
-                    onSessionClick: () {
-                      if (state.increment == 0) {
-                        if (state.customIncrement == null || state.customIncrement! <= 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Please enter a valid increment value'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-                      }
-
-                      context.read<LadderDrillBloc>().add(StartGameEvent());
-                    },
-                    buttonText: "Start Game",
-                  ),
-                ],
+                ),
               ),
             );
           },

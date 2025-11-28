@@ -102,8 +102,8 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => BlocProvider(
-                            create: (_) => di.sl<LadderDrillBloc>(),
+                          builder: (_) => BlocProvider.value(
+                            value: di.sl<LadderDrillBloc>(),
                             child: LadderDrillSetupScreen(),
                           ),
                         ),

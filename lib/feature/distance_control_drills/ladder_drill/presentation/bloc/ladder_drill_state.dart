@@ -66,6 +66,7 @@ class GameInProgressState extends LadderDrillState {
   final int minDistance;
   final int maxDistance;
   final List<ShotData> currentShots;
+  final List<ShotData> summaryShots;
   final List<LevelData> completedLevels;
   final String currentPlayer;
   final List<String> players;
@@ -93,6 +94,7 @@ class GameInProgressState extends LadderDrillState {
     required this.minDistance,
     required this.maxDistance,
     required this.currentShots,
+    this.summaryShots = const [],
     required this.completedLevels,
     required this.currentPlayer,
     required this.players,
@@ -110,6 +112,7 @@ class GameInProgressState extends LadderDrillState {
     int? minDistance,
     int? maxDistance,
     List<ShotData>? currentShots,
+    List<ShotData>? summaryShots,
     List<LevelData>? completedLevels,
     String? currentPlayer,
     List<String>? players,
@@ -126,6 +129,7 @@ class GameInProgressState extends LadderDrillState {
       minDistance: minDistance ?? this.minDistance,
       maxDistance: maxDistance ?? this.maxDistance,
       currentShots: currentShots ?? this.currentShots,
+      summaryShots: summaryShots ?? this.summaryShots,
       completedLevels: completedLevels ?? this.completedLevels,
       currentPlayer: currentPlayer ?? this.currentPlayer,
       players: players ?? this.players,
@@ -179,6 +183,11 @@ class LevelCompleteState extends LadderDrillState {
   final List<LevelData> completedLevels;
   final int streak;
   final int maxStreak;
+  final int totalLevels;
+  final int toleranceWindow;
+  final String currentPlayer;
+  final List<String> players;
+  final int incrementLevel;
 
   LevelCompleteState({
     required this.completedLevel,
@@ -187,6 +196,11 @@ class LevelCompleteState extends LadderDrillState {
     required this.completedLevels,
     required this.streak,
     required this.maxStreak,
+    required this.totalLevels,
+    required this.toleranceWindow,
+    required this.currentPlayer,
+    required this.players,
+    required this.incrementLevel,
   });
 
   @override
@@ -197,5 +211,10 @@ class LevelCompleteState extends LadderDrillState {
     completedLevels,
     streak,
     maxStreak,
+    totalLevels,
+    toleranceWindow,
+    currentPlayer,
+    players,
+    incrementLevel,
   ];
 }

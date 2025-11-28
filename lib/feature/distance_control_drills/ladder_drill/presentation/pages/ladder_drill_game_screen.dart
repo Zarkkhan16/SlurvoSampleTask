@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
+import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
 import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_state.dart';
 import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_event.dart';
+import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/pages/ladder_drill_session_summary.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/widgets/state_box_widget.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
@@ -21,19 +23,20 @@ class LadderDrillGameScreen extends StatelessWidget {
       appBar: CustomAppBar(),
       bottomNavigationBar: BottomNavBar(),
       body: BlocConsumer<LadderDrillBloc, LadderDrillState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is LevelCompleteState) {
-            // 5 second delay then show congratulations
-            Future.delayed(Duration(seconds: 5), () {
-              _showCongratulationsDialog(context, state.nextTargetDistance);
-            });
+            await Future.delayed(Duration(seconds: 2));
+            context.read<LadderDrillBloc>().add(NextLevelEvent());
           } else if (state is SessionCompleteState) {
-            // Navigator.pushReplacement(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => LadderDrillSessionCompleteScreen(),
-            //   ),
-            // );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider.value(
+                  value: context.read<LadderDrillBloc>(),
+                  child: LadderDrillSessionSummary(),
+                ),
+              ),
+            );
           }
         },
         builder: (context, state) {
@@ -159,125 +162,56 @@ class LadderDrillGameScreen extends StatelessWidget {
   }
 
   Widget _buildLevelSuccess(BuildContext context, LevelCompleteState state) {
-    // This shows for 5 seconds after successful shot
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.check_circle,
-            color: Colors.green,
-            size: 100,
+          HeaderRow(
+            headingName: "Ladder Drill",
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 60),
+          Image.asset(AppImages.trophyImage),
+          const SizedBox(height: 10),
           Text(
-            'Success!',
+            "Congratulations",
             style: AppTextStyle.oswald(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
+              fontSize: 48,
+              fontWeight: FontWeight.w600,
             ),
           ),
+          const SizedBox(height: 10),
           Text(
-            'Shot within target zone',
+            "You've reached the next level!",
             style: AppTextStyle.roboto(
               fontSize: 16,
-              color: AppColors.secondaryText,
             ),
           ),
-          SizedBox(height: 10),
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-          ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
+          // if(state.nextTargetDistance)
           Text(
-            'Loading next level...',
+            "Next Level",
             style: AppTextStyle.roboto(
-              fontSize: 14,
-              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w500,
+              fontSize: 18,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  void _showCongratulationsDialog(BuildContext context, int nextDistance) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => Dialog(
-        backgroundColor: AppColors.cardBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.emoji_events,
-                color: Colors.amber,
-                size: 80,
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Congratulations',
-                style: AppTextStyle.oswald(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                "You've reached the next level",
-                style: AppTextStyle.roboto(
-                  fontSize: 16,
-                  color: AppColors.secondaryText,
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Next Level',
-                style: AppTextStyle.roboto(
-                  fontSize: 14,
-                  color: AppColors.secondaryText,
-                ),
-              ),
-              Text(
-                '$nextDistance yd',
-                style: AppTextStyle.oswald(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                  context.read<LadderDrillBloc>().add(NextLevelEvent());
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  minimumSize: Size(double.infinity, 48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                child: Text(
-                  'Continue',
-                  style: AppTextStyle.roboto(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            "${state.nextTargetDistance} yds",
+            style: AppTextStyle.oswald(
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+              height: 0.8,
+            ),
           ),
-        ),
+          Spacer(),
+          SessionViewButton(
+            onSessionClick: () {
+              context.read<LadderDrillBloc>().add(EndSessionEvent());
+            },
+            buttonText: "End Session",
+          ),
+          const SizedBox(height: 10),
+        ],
       ),
     );
   }
