@@ -12,6 +12,7 @@ class PracticeGamesState {
   final List<GolfDataEntity> latestBleData;
   final GolfDataEntity bestShot;
   final String? bleError;
+  final bool sessionCompleted;
   PracticeGamesState({
     this.selectedShots = 3,
     this.isCustomSelected = false,
@@ -31,6 +32,7 @@ class PracticeGamesState {
       totalDistance: 0.00,
       battery: 0,
     ),
+    this.sessionCompleted = false,
   }): players = players ?? [AppStrings.userProfileData.name];
 
   PracticeGamesState copyWith({
@@ -43,6 +45,7 @@ class PracticeGamesState {
     List<GolfDataEntity>? latestBleData,
     String? bleError,
     GolfDataEntity? bestShot,
+    bool? sessionCompleted,
   }) {
     return PracticeGamesState(
       selectedShots: selectedShots ?? this.selectedShots,
@@ -55,6 +58,7 @@ class PracticeGamesState {
       latestBleData: latestBleData ?? this.latestBleData,
       bleError: bleError,
       bestShot: bestShot ?? this.bestShot,
+      sessionCompleted: sessionCompleted ?? this.sessionCompleted,
     );
   }
 

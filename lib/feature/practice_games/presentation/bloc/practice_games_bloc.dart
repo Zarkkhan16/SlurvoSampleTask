@@ -119,7 +119,7 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
           (a, b) => a.totalDistance > b.totalDistance ? a : b,
     );
 
-    emit(state.copyWith(bestShot: bestShot));
+    emit(state.copyWith(bestShot: bestShot, sessionCompleted: true,));
   }
 
   void _onResetSession(
@@ -132,6 +132,7 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
       players: [AppStrings.userProfileData.name],
       latestBleData: [],
       bestShot: null,
+      sessionCompleted: false,
     ));
   }
 
@@ -238,10 +239,10 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     });
   }
 
-  void _onBleDataReceived(
+  Future<void> _onBleDataReceived(
     BleDataReceivedEvent event,
     Emitter<PracticeGamesState> emit,
-  ) {
+  ) async {
     print('🎮 Practice Games: Processing BLE data...');
     try {
       _bleDataController.add(event.data);
@@ -251,6 +252,16 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
         latestBleData: _golfDataListItem,
         bleError: null,
       ));
+      await Future.delayed(Duration(seconds: 2),);
+      print("@@@@@");
+      print("Selected Shots: ${state.selectedShots}");
+      print("Current Attempt: ${state.currentAttempt}");
+      if (state.currentAttempt < state.selectedShots) {
+        emit(state.copyWith(currentAttempt: state.currentAttempt + 1));
+      } else {
+        print("🔥 All attempts completed!");
+        add(SessionEndAttemptEvent());
+      }
     } catch (e) {
       print('❌ Failed to parse BLE data: $e');
       emit(state.copyWith(bleError: 'Data parsing error: $e'));

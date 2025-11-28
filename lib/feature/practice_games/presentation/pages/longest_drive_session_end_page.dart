@@ -34,55 +34,75 @@ class LongestDriveSessionEndPage extends StatelessWidget {
           },
         ];
 
-        return Scaffold(
-          backgroundColor: AppColors.primaryBackground,
-          appBar: CustomAppBar(),
-          bottomNavigationBar: BottomNavBar(),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-            child: Column(
-              children: [
-                HeaderRow(
-                  headingName: "Longest Drive",
-                ),
-                const SizedBox(height: 10),
-                Image.asset(AppImages.trophyImage),
-                MetricDisplay(
-                  value: bestShot.totalDistance.toStringAsFixed(1),
-                  label: "Total Distance",
-                  unit: "YDS",
-                ),
-                GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 30,
-                    mainAxisSpacing: 40,
-                    childAspectRatio: 1.42,
+        return PopScope(
+          canPop: false,
+          onPopInvoked: (didPop) {
+            if(!didPop){
+              context
+                  .read<PracticeGamesBloc>()
+                  .add(ResetSessionEvent());
+              Navigator.pop(context);
+            }
+          },
+          child: Scaffold(
+            backgroundColor: AppColors.primaryBackground,
+            appBar: CustomAppBar(),
+            bottomNavigationBar: BottomNavBar(),
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+              child: Column(
+                children: [
+                  HeaderRow(
+                    headingName: "Longest Drive",
+                    onBackButton: (){
+                      context
+                          .read<PracticeGamesBloc>()
+                          .add(ResetSessionEvent());
+                      Navigator.pop(context);
+                    },
                   ),
-                  itemCount: allMetrics.length,
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    return GlassmorphismCard(
-                      value: allMetrics[index]["value"]!,
-                      name: allMetrics[index]["metric"]!,
-                      unit: allMetrics[index]["unit"]!,
-                    );
-                  },
-                ),
-                const Spacer(),
-                SessionViewButton(
-                  onSessionClick: () {
-                    context
-                        .read<PracticeGamesBloc>()
-                        .add(StopListeningToBleDataEvent());
-                    Navigator.pop(context);
-                  },
-                  buttonText: "Start New",
-                ),
-                const SizedBox(height: 15),
-              ],
+                  const SizedBox(height: 10),
+                  Image.asset(AppImages.trophyImage),
+                  MetricDisplay(
+                    value: bestShot.totalDistance.toStringAsFixed(1),
+                    label: "Total Distance",
+                    unit: "YDS",
+                  ),
+                  GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 30,
+                      mainAxisSpacing: 40,
+                      childAspectRatio: 1.42,
+                    ),
+                    itemCount: allMetrics.length,
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      return GlassmorphismCard(
+                        value: allMetrics[index]["value"]!,
+                        name: allMetrics[index]["metric"]!,
+                        unit: allMetrics[index]["unit"]!,
+                      );
+                    },
+                  ),
+                  const Spacer(),
+                  SessionViewButton(
+                    onSessionClick: () {
+                      context
+                          .read<PracticeGamesBloc>()
+                          .add(ResetSessionEvent());
+                      context
+                          .read<PracticeGamesBloc>()
+                          .add(StopListeningToBleDataEvent());
+                      Navigator.pop(context);
+                    },
+                    buttonText: "Start New",
+                  ),
+                  const SizedBox(height: 15),
+                ],
+              ),
             ),
           ),
         );

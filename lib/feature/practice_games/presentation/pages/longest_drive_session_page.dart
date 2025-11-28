@@ -19,8 +19,23 @@ class LongestDriveSessionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PracticeGamesBloc, PracticeGamesState>(
+    return BlocConsumer<PracticeGamesBloc, PracticeGamesState>(
+      listener: (context, state) {
+        if (state.sessionCompleted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BlocProvider.value(
+                value: context.read<PracticeGamesBloc>(),
+                child: LongestDriveSessionEndPage(),
+              ),
+            ),
+          );
+        }
+      },
       builder: (context, state) {
+        print("sssss");
+        print(state.sessionCompleted);
         String getSafeValue(double Function() valueGetter) {
           final index = state.currentAttempt - 1;
           if (state.latestBleData.isEmpty || index < 0 || index >= state.latestBleData.length) {
@@ -65,12 +80,8 @@ class LongestDriveSessionPage extends StatelessWidget {
                 MetricDisplay(
                     value: totalDistance, label: "Total Distance", unit: "YDS"),
                 const Spacer(),
-                if(state.currentAttempt <= state.latestBleData.length)
                 SessionViewButton(
                   onSessionClick: () {
-                    if (state.currentAttempt < totalShots) {
-                      context.read<PracticeGamesBloc>().add(NextAttemptEvent());
-                    } else {
                       context.read<PracticeGamesBloc>().add(SessionEndAttemptEvent());
                       Navigator.pushReplacement(
                         context,
@@ -81,11 +92,8 @@ class LongestDriveSessionPage extends StatelessWidget {
                           ),
                         ),
                       );
-                    }
                   },
-                  buttonText: state.currentAttempt == totalShots
-                      ? "End Session"
-                      : "Next",
+                  buttonText: "End Session",
                 ),
                 const SizedBox(height: 20),
               ],

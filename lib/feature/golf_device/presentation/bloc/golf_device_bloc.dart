@@ -286,7 +286,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
 
       emit(currentState.copyWith(
         golfData: _golfData,
-        isLoading: true,
+        isLoading: false,
       ));
 
       try {
