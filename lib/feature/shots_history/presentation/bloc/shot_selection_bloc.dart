@@ -42,7 +42,14 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
         return;
       }
 
-      shots = await datasource.fetchShotsForUser(userId);
+      final now = DateTime.now();
+      final date =
+          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+      // final sessionNumber = await datasource.getTodayNextSessionNumber(userId, date);
+      // print(sessionNumber-1);
+      // shots = await datasource.fetchShotsForUser(userId, date, sessionNumber-1);
+      final allShots = await datasource.fetchShotsForUser(userId, date);
+      shots = allShots.where((s) => s.sessionNumber == event.sessionNumber).toList();
 
       if (shots.isEmpty) {
         emit(ShotHistoryLoadedState(
@@ -96,7 +103,7 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
       List<int> packet = [0x47, 0x46, 0x05, 0x00, 0x00];
       await bleRepository.writeData(packet);
       print("📤 Sent Clear All Records command to device, waiting for response...");
-      add(ClearRecordResponseReceivedEvent());
+      add(ClearRecordResponseReceivedEvent(sessionNumber: event.sessionNumber));
     } catch (e) {
       emit(ShotHistoryErrorState("Failed to send command: $e"));
     }
@@ -113,7 +120,12 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
         return;
       }
 
-      await datasource.deleteAllShotsForUser(userId);
+      final now = DateTime.now();
+      final date =
+          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+      // final sessionNumber = await datasource.getTodayNextSessionNumber(userId, date);
+      // await datasource.deleteAllSessionsForDate(userId, date);
+      await datasource.deleteSession(userId, date, event.sessionNumber);
       print("🗑️ All shots deleted from Firebase for $userId");
       emit(const ShotHistoryClearedState());
     } catch (e) {

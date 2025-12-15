@@ -13,6 +13,8 @@ class ShotAnalysisEntity {
   final String sessionTime; // formatted elapsed
   final int timestamp; // epoch millis for sorting
   final bool isMeter;
+  final int sessionNumber;
+  final bool? isFavorite;
 
   ShotAnalysisEntity({
     required this.id,
@@ -29,5 +31,7 @@ class ShotAnalysisEntity {
     required this.sessionTime,
     required this.timestamp,
     required this.isMeter,
+    required this.sessionNumber,
+    this.isFavorite,
   });
 }

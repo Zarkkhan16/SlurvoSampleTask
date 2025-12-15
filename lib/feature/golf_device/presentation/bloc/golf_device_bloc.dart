@@ -44,10 +44,14 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   bool _units = false;
   Timer? _elapsedTimer;
   int _elapsedSeconds = 0;
+  int _currentSessionNumber = 0;
+  String _currentSessionDate = "";
+  bool _isSessionInitialized = false;
+  bool _isSessionStart = true;
   final user = FirebaseAuth.instance.currentUser;
   final _bleResponseController = StreamController<List<int>>.broadcast();
-
   Stream<List<int>> get bleResponseStream => _bleResponseController.stream;
+  int get currentSessionNumber => _currentSessionNumber;
 
   GolfDeviceBloc({
     required this.bleRepository,
@@ -337,6 +341,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   Future<void> _saveAllShotsToFirebase() async {
     if (_shotRecords.isEmpty) {
       print("⚠️ No shots to save");
+      print(_sessionData.length);
       return;
     }
 
@@ -370,10 +375,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
 
       print("✅ All shots saved successfully!");
       print("📦 Total Session Shots: ${_sessionData.length}");
-
-      // _shotRecords
-      //   ..clear();
-      //   ..[latestKey] = latestShot!;
       _shotRecords.clear();
     } catch (e) {
       print("❌ Error saving shots: $e");
@@ -534,7 +535,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     print("   Unit Mode: ${isMeters ? 'METERS' : 'YARDS'}");
   }
 
-  void _storeShotData(GolfDataEntity data) {
+  void _storeShotData(GolfDataEntity data) async{
     final now = DateTime.now();
     final date =
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
@@ -555,6 +556,15 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       return;
     }
 
+    if (!_isSessionInitialized || _currentSessionDate != date) {
+      _currentSessionNumber = await datasource.getTodayNextSessionNumber(userUid, date);
+      _currentSessionDate = date;
+      _isSessionInitialized = true;
+      print("✅ New session started for $date, Session Number: $_currentSessionNumber");
+    }
+
+
+
     final shotModel = ShotAnalysisModel(
       id: '',
       userUid: userUid,
@@ -570,6 +580,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       sessionTime: sessionTime,
       timestamp: DateTime.now().millisecondsSinceEpoch,
       isMeter: _units,
+      sessionNumber: _currentSessionNumber,
     );
 
     _shotRecords[data.recordNumber] = shotModel;
@@ -578,6 +589,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     print("📊 Stored Shots: $_shotRecords");
     print("📦 Session Data Count: ${_sessionData.length}");
   }
+
 
   Future<void> _onDeleteLatestShot(
     DeleteLatestShotEvent event,

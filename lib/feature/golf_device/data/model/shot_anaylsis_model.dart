@@ -17,6 +17,8 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
     required String sessionTime,
     required int timestamp,
     required bool isMeter,
+    required int sessionNumber,
+    bool? isFavorite,
   }) : super(
     id: id,
     userUid: userUid,
@@ -32,6 +34,8 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
     sessionTime: sessionTime,
     timestamp: timestamp,
     isMeter: isMeter,
+    sessionNumber: sessionNumber,
+    isFavorite: isFavorite,
   );
 
   ShotAnalysisModel copyWith({
@@ -49,6 +53,8 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
     String? sessionTime,
     int? timestamp,
     bool? isMeter,
+    int? sessionNumber,
+    bool? isFavorite,
   }) {
     return ShotAnalysisModel(
       id: id ?? this.id,
@@ -65,6 +71,8 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
       sessionTime: sessionTime ?? this.sessionTime,
       timestamp: timestamp ?? this.timestamp,
       isMeter: isMeter ?? this.isMeter,
+      sessionNumber: sessionNumber ?? this.sessionNumber,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
@@ -84,6 +92,8 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
       sessionTime: map['sessionTime'] as String? ?? '',
       timestamp: (map['timestamp'] as num?)?.toInt() ?? 0,
       isMeter: map['isMeter'] as bool? ?? false,
+      sessionNumber: (map['sessionNumber'] as num?)?.toInt() ?? 0,
+      isFavorite: map['isFavorite'] as bool? ?? false,
     );
   }
 
@@ -102,6 +112,8 @@ class ShotAnalysisModel extends ShotAnalysisEntity {
       'sessionTime': sessionTime,
       'timestamp': timestamp,
       'isMeter': isMeter,
+      'sessionNumber': sessionNumber,
+      'isFavorite': isFavorite,
     };
   }
 }

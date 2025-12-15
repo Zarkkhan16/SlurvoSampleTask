@@ -208,6 +208,7 @@ import '../../feature/golf_device/domain/usecases/send_sync_packet_usecase.dart'
 import '../../feature/golf_device/domain/usecases/subscribe_notifications_usecase.dart';
 import '../../feature/golf_device/presentation/bloc/golf_device_bloc.dart';
 import '../../feature/practice_games/presentation/bloc/practice_games_bloc.dart';
+import '../../feature/shot_library/presentation/bloc/shot_library_bloc.dart';
 import '../../feature/shots_history/presentation/bloc/shot_selection_bloc.dart';
 
 final sl = GetIt.instance;
@@ -383,6 +384,12 @@ Future<void> init() async {
   );
 
   sl.registerFactory(
+    () => ShotLibraryBloc(
+      datasource: sl(),
+    ),
+  );
+
+  sl.registerFactory(
     () => ClubGappingBloc(
       bleRepository: sl(),
     ),
@@ -395,13 +402,13 @@ Future<void> init() async {
   );
 
   sl.registerFactory(
-        () => TargetZoneBloc(
+    () => TargetZoneBloc(
       bleRepository: sl(),
     ),
   );
 
   sl.registerFactory(
-        () => LadderDrillBloc(
+    () => LadderDrillBloc(
       bleRepository: sl(),
     ),
   );

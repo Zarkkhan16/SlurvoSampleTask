@@ -19,6 +19,7 @@ import 'feature/golf_device/domain/repositories/ble_repository.dart';
 import 'feature/landing_dashboard/persentation/bloc/dashboard_bloc.dart';
 import 'feature/practice_games/presentation/bloc/practice_games_bloc.dart';
 import 'feature/profile/presentation/pages/profile_screen.dart';
+import 'feature/shot_library/presentation/bloc/shot_library_bloc.dart';
 import 'feature/splash/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -76,6 +77,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => di.sl<LadderDrillBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.sl<ShotLibraryBloc>(),
         ),
       ],
       child: MaterialApp(

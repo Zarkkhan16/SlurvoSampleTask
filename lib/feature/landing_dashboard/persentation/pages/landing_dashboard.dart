@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/feature/shot_library/presentation/pages/shot_library_home_page.dart';
 import 'package:onegolf/feature/widget/session_view_button.dart';
 import '../../../../core/di/injection_container.dart' as di;
 import '../../../../core/services/ble_connection_helper.dart';
@@ -14,6 +16,7 @@ import '../../../ble_management/presentation/bloc/ble_management_state.dart';
 import '../../../ble_management/presentation/presentation/device_connected_screen.dart';
 import '../../../golf_device/presentation/bloc/golf_device_bloc.dart';
 import '../../../golf_device/presentation/pages/golf_device_screen.dart';
+import '../../../shot_library/presentation/bloc/shot_library_bloc.dart';
 import '../../../widget/bottom_nav_bar.dart';
 import '../../../widget/custom_app_bar.dart';
 import '../../../practice_games/presentation/bloc/practice_games_bloc.dart';
@@ -23,7 +26,6 @@ import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
 import '../widget/game_mode_icon.dart';
-
 class LandingDashboard extends StatefulWidget {
   const LandingDashboard({super.key});
 
@@ -37,6 +39,12 @@ class _LandingDashboardState extends State<LandingDashboard> {
     super.initState();
     context.read<DashboardBloc>().add(LoadUserProfile());
   }
+
+  double w(BuildContext context, double size) =>
+      MediaQuery.of(context).size.width * (size / 375);
+
+  double h(BuildContext context, double size) =>
+      MediaQuery.of(context).size.height * (size / 812);
 
   Future<void> _navigateWithBleCheck({
     required BuildContext context,
@@ -143,7 +151,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                 Container(
                   margin: const EdgeInsets.all(12),
                   width: double.infinity,
-                  height: 150,
+                  height: 120,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -194,8 +202,9 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     child: GradientBorderContainer(
                       borderRadius: 32,
                       borderWidth: 1,
+                      containerHeight: 130,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                          horizontal: 20, vertical: 6),
                       child: Row(
                         children: [
                           Expanded(
@@ -224,23 +233,24 @@ class _LandingDashboardState extends State<LandingDashboard> {
                                         color: Colors.black),
                                   ),
                                 ),
-                                const SizedBox(height: 5),
+                                const SizedBox(height: 3),
                                 Text(
                                   "Shot Analysis",
                                   style: AppTextStyle.roboto(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
+                                    height: 1.3,
                                   ),
                                 ),
-                                const SizedBox(height: 5),
+                                // const SizedBox(height: 5),
                                 Text(
                                   "Track your shots in real-time with accurate ball and club metrics.",
                                   style: AppTextStyle.roboto(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.white,
-                                  ),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.white,
+                                      height: 1.0),
                                 ),
                               ],
                             ),
@@ -260,7 +270,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     ),
                   ),
                 ),
-                SizedBox(height: 12),
+                SizedBox(height: 10),
                 // Practice Games Card
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -279,8 +289,9 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     child: GradientBorderContainer(
                       borderRadius: 32,
                       borderWidth: 1,
+                      containerHeight: 130,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                          horizontal: 20, vertical: 6),
                       child: Row(
                         children: [
                           Expanded(
@@ -318,15 +329,16 @@ class _LandingDashboardState extends State<LandingDashboard> {
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
+                                    height: 1.3,
                                   ),
                                 ),
-                                const SizedBox(height: 5),
                                 Text(
                                   "Improve your skills with engaging and competitive practice modes.",
                                   style: AppTextStyle.roboto(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400,
                                     color: Colors.white,
+                                    height: 1.0,
                                   ),
                                 ),
                               ],
@@ -374,6 +386,92 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     ),
                   ),
                 ),
+                SizedBox(height: 10),
+                // Shot Library
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BlocProvider.value(
+                            value: context.read<ShotLibraryBloc>(),
+                            child: const ShotLibraryHomePage(),
+                          ),
+                        ),
+                      );
+                    },
+                    child: GradientBorderContainer(
+                      borderRadius: 32,
+                      borderWidth: 1,
+                      containerHeight: 130,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 6),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xffFCD56A),
+                                        Color(0xffFCD56A),
+                                        Color(0xffB6782A),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    "Premium",
+                                    style: AppTextStyle.roboto(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  "Shot Library",
+                                  style: AppTextStyle.roboto(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    height: 1.3,
+                                  ),
+                                ),
+                                Text(
+                                  "Improve your skills with engaging and competitive practice modes.",
+                                  style: AppTextStyle.roboto(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.white,
+                                      height: 1.0),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 18),
+                          SvgPicture.asset(
+                            width: 75,
+                            height: 60,
+                            AppImages.libraryIcon,
+                            fit: BoxFit.cover,
+                          ),
+                          const SizedBox(width: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12),
                 Spacer(),
                 BlocBuilder<BleManagementBloc, BleManagementState>(
                   builder: (context, bleState) {
@@ -444,3 +542,4 @@ class _LandingDashboardState extends State<LandingDashboard> {
     }
   }
 }
+

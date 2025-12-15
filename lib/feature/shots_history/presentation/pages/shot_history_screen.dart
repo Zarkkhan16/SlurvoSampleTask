@@ -26,7 +26,8 @@ import 'comparison_screen.dart';
 import 'filter_screen.dart';
 
 class ShotHistoryScreen extends StatelessWidget {
-  const ShotHistoryScreen({super.key});
+  final int sessionNumber;
+  const ShotHistoryScreen({super.key, required this.sessionNumber});
 
   String _formatDate(String? date, String? time) {
     if (date == null || date.isEmpty) return '';
@@ -99,7 +100,7 @@ class ShotHistoryScreen extends StatelessWidget {
         },
         child: BlocProvider(
           create: (context) =>
-              sl<ShotHistoryBloc>()..add(const LoadShotHistoryEvent()),
+              sl<ShotHistoryBloc>()..add(LoadShotHistoryEvent(sessionNumber: sessionNumber)),
           child: Scaffold(
             backgroundColor: Colors.black,
             bottomNavigationBar: const BottomNavBar(),
@@ -121,7 +122,7 @@ class ShotHistoryScreen extends StatelessWidget {
                     );
                     context
                         .read<ShotHistoryBloc>()
-                        .add(const LoadShotHistoryEvent());
+                        .add(LoadShotHistoryEvent(sessionNumber: sessionNumber));
                   }
                 },
                 child: BlocBuilder<ShotHistoryBloc, ShotHistoryState>(
@@ -188,9 +189,9 @@ class ShotHistoryScreen extends StatelessWidget {
                               const SizedBox(height: 32),
                               ElevatedButton.icon(
                                 onPressed: () {
-                                  context
-                                      .read<ShotHistoryBloc>()
-                                      .add(const LoadShotHistoryEvent());
+                                  // context
+                                  //     .read<ShotHistoryBloc>()
+                                  //     .add(const LoadShotHistoryEvent());
                                 },
                                 icon: const Icon(Icons.refresh_rounded),
                                 label: const Text('Try Again'),
@@ -563,7 +564,7 @@ class ShotHistoryScreen extends StatelessWidget {
               child: ActionButton(
                 text: 'Clear Record',
                 onPressed: () {
-                  context.read<ShotHistoryBloc>().add(ClearRecordEvent());
+                  context.read<ShotHistoryBloc>().add(ClearRecordEvent(sessionNumber: sessionNumber));
                 },
               ),
             ),

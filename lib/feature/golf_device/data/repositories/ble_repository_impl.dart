@@ -75,6 +75,7 @@ class BleRepositoryImpl implements BleRepository {
       sessionTime: shot.sessionTime,
       timestamp: shot.timestamp,
       isMeter: shot.isMeter,
+      sessionNumber: shot.sessionNumber,
     );
 
     await datasource.saveShot(model);
@@ -88,12 +89,12 @@ class BleRepositoryImpl implements BleRepository {
   @override
   Future<List<ShotAnalysisModel>> fetchShotsForUser(String userUid,
       {int limit = 100}) async {
-    final raw = await datasource.fetchShotsForUser(userUid, limit: limit);
+    final raw = await datasource.fetchShotsForUser(userUid, "");
     return raw;
   }
 
   @override
   Future<void> deleteAllShotsForUser(String userId) async {
-    await datasource.deleteAllShotsForUser(userId);
+    // await datasource.deleteAllShotsForUser(userId);
   }
 }

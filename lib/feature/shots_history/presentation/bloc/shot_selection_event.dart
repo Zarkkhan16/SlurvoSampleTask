@@ -10,7 +10,8 @@ abstract class ShotHistoryEvent extends Equatable {
 }
 
 class LoadShotHistoryEvent extends ShotHistoryEvent {
-  const LoadShotHistoryEvent();
+  final int sessionNumber;
+  const LoadShotHistoryEvent({required this.sessionNumber});
 }
 
 class SelectShotEvent extends ShotHistoryEvent {
@@ -26,10 +27,12 @@ class LoadInitialShotEvent extends ShotHistoryEvent {
   const LoadInitialShotEvent();
 }
 class ClearRecordEvent extends ShotHistoryEvent {
-  const ClearRecordEvent();
+  final int sessionNumber;
+  const ClearRecordEvent({required this.sessionNumber});
 }
 class ClearRecordResponseReceivedEvent extends ShotHistoryEvent {
-  const ClearRecordResponseReceivedEvent();
+  final int sessionNumber;
+  const ClearRecordResponseReceivedEvent({required this.sessionNumber});
 }
 
 class UpdateFilterEvent extends ShotHistoryEvent {
