@@ -1,4 +1,4 @@
-GOLF-CLUB
+# GOLF-CLUB
 
 
 GOLF-CLUB is a Flutter-based mobile application developed to interface with sensor-equipped Bluetooth Low Energy (BLE) hardware. The app acts as a digital caddie, capturing real-time ball and swing metrics directly from the device to provide golfers with immediate performance feedback.
