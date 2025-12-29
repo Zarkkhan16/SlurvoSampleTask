@@ -34,7 +34,7 @@ class BleConnectionDialog extends StatelessWidget {
         return Scaffold(
           backgroundColor: AppColors.primaryBackground,
           appBar: CustomAppBar(),
-          bottomNavigationBar: BottomNavBar(),
+          // bottomNavigationBar: BottomNavBar(),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
             child: Column(

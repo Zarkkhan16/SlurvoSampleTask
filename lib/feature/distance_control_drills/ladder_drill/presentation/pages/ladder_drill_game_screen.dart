@@ -21,19 +21,22 @@ class LadderDrillGameScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: BlocConsumer<LadderDrillBloc, LadderDrillState>(
         listener: (context, state) async {
           if (state is LevelCompleteState) {
             await Future.delayed(Duration(seconds: 2));
             context.read<LadderDrillBloc>().add(NextLevelEvent());
           } else if (state is SessionCompleteState) {
+            final bloc = context.read<LadderDrillBloc>();
+
+            // 2️⃣ Navigate safely
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (_) => BlocProvider.value(
-                  value: context.read<LadderDrillBloc>(),
-                  child: LadderDrillSessionSummary(),
+                  value: bloc,
+                  child: const LadderDrillSessionSummary(),
                 ),
               ),
             );

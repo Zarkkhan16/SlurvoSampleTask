@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/feature/bottom_controller.dart';
 import 'package:onegolf/feature/club_gapping/presentation/pages/shot_recording_page.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
@@ -48,20 +49,34 @@ class SessionSummaryPage extends StatelessWidget {
           canPop: false,
           onPopInvoked: (didPop) {
             if (!didPop) {
-              context.read<ClubGappingBloc>().add(
-                    SaveSessionEvent(),
-                  );
+              // context.read<ClubGappingBloc>().add(
+              //       SaveSessionEvent(),
+              //     );
+              //
+              // Navigator.popUntil(
+              //   context,
+              //   (route) => route.settings.name == "PracticeGamesScreen",
+              // );
 
-              Navigator.popUntil(
-                context,
-                (route) => route.settings.name == "PracticeGamesScreen",
+              final bloc = context.read<ClubGappingBloc>();
+
+              bloc.add(SaveSessionEvent());
+
+              // 1️⃣ Exit the gapping flow safely
+              Navigator.of(context).popUntil(
+                    (route) => route.isFirst,
               );
+
+              // 2️⃣ Switch tab AFTER pop completes
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                BottomNavController.goToTab(2); // Practice Games
+              });
             }
           },
           child: Scaffold(
             backgroundColor: Colors.black,
             appBar: CustomAppBar(),
-            bottomNavigationBar: BottomNavBar(),
+            // bottomNavigationBar: BottomNavBar(),
             body: Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
@@ -70,14 +85,29 @@ class SessionSummaryPage extends StatelessWidget {
                   HeaderRow(
                     headingName: "Club Gapping Summary",
                     onBackButton: () {
-                      context.read<ClubGappingBloc>().add(
-                            SaveSessionEvent(),
-                          );
+                      // context.read<ClubGappingBloc>().add(
+                      //       SaveSessionEvent(),
+                      //     );
+                      //
+                      // Navigator.popUntil(
+                      //   context,
+                      //   (route) => route.settings.name == "PracticeGamesScreen",
+                      // );
 
-                      Navigator.popUntil(
-                        context,
-                        (route) => route.settings.name == "PracticeGamesScreen",
+                      final bloc = context.read<ClubGappingBloc>();
+
+                      bloc.add(SaveSessionEvent());
+
+                      // 1️⃣ Exit the gapping flow safely
+                      Navigator.of(context).popUntil(
+                            (route) => route.isFirst,
                       );
+
+                      // 2️⃣ Switch tab AFTER pop completes
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        BottomNavController.goToTab(2); // Practice Games
+                      });
+
                     },
                   ),
                   SizedBox(height: 10),
@@ -161,14 +191,28 @@ class SessionSummaryPage extends StatelessWidget {
                   SizedBox(height: 10),
                   SessionViewButton(
                     onSessionClick: () {
-                      context.read<ClubGappingBloc>().add(
-                            SaveSessionEvent(),
-                          );
+                      // context.read<ClubGappingBloc>().add(
+                      //       SaveSessionEvent(),
+                      //     );
+                      // BottomNavController.goToTab(0);
+                      // // Navigator.popUntil(
+                      // //   context,
+                      // //   (route) => route.settings.name == "PracticeGamesScreen",
+                      // // );
 
-                      Navigator.popUntil(
-                        context,
-                        (route) => route.settings.name == "PracticeGamesScreen",
+                      final bloc = context.read<ClubGappingBloc>();
+
+                      bloc.add(SaveSessionEvent());
+
+                      // 1️⃣ Exit the gapping flow safely
+                      Navigator.of(context).popUntil(
+                            (route) => route.isFirst,
                       );
+
+                      // 2️⃣ Switch tab AFTER pop completes
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        BottomNavController.goToTab(2); // Practice Games
+                      });
                     },
                     buttonText: "Done",
                   ),

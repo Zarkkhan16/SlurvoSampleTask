@@ -38,16 +38,19 @@ class LongestDriveSessionEndPage extends StatelessWidget {
           canPop: false,
           onPopInvoked: (didPop) {
             if(!didPop){
-              context
-                  .read<PracticeGamesBloc>()
-                  .add(ResetSessionEvent());
-              Navigator.pop(context);
+              // context
+              //     .read<PracticeGamesBloc>()
+              //     .add(ResetSessionEvent());
+              // Navigator.pop(context);
+              final bloc = context.read<PracticeGamesBloc>();
+              bloc.add(ResetSessionEvent());
+              Navigator.of(context).pop();
             }
           },
           child: Scaffold(
             backgroundColor: AppColors.primaryBackground,
             appBar: CustomAppBar(),
-            bottomNavigationBar: BottomNavBar(),
+            // bottomNavigationBar: BottomNavBar(),
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
               child: Column(
@@ -55,10 +58,16 @@ class LongestDriveSessionEndPage extends StatelessWidget {
                   HeaderRow(
                     headingName: "Longest Drive",
                     onBackButton: (){
-                      context
-                          .read<PracticeGamesBloc>()
-                          .add(ResetSessionEvent());
-                      Navigator.pop(context);
+                      // context
+                      //     .read<PracticeGamesBloc>()
+                      //     .add(ResetSessionEvent());
+                      // Navigator.pop(context);
+                      final bloc = context.read<PracticeGamesBloc>();
+
+                      bloc.add(ResetSessionEvent());
+                      bloc.add(StopListeningToBleDataEvent());
+
+                      Navigator.of(context).pop();
                     },
                   ),
                   const SizedBox(height: 10),
@@ -90,13 +99,12 @@ class LongestDriveSessionEndPage extends StatelessWidget {
                   const Spacer(),
                   SessionViewButton(
                     onSessionClick: () {
-                      context
-                          .read<PracticeGamesBloc>()
-                          .add(ResetSessionEvent());
-                      context
-                          .read<PracticeGamesBloc>()
-                          .add(StopListeningToBleDataEvent());
-                      Navigator.pop(context);
+                      final bloc = context.read<PracticeGamesBloc>();
+
+                      bloc.add(ResetSessionEvent());
+                      bloc.add(StopListeningToBleDataEvent());
+
+                      Navigator.of(context).pop();
                     },
                     buttonText: "Start New",
                   ),

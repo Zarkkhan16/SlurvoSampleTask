@@ -59,7 +59,7 @@ class _ClubSelectionScreenState extends State<ClubSelectionScreen> {
         return Scaffold(
           backgroundColor: Colors.black,
           appBar: CustomAppBar(),
-          bottomNavigationBar: BottomNavBar(),
+          // bottomNavigationBar: BottomNavBar(),
           body: GestureDetector(
             onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
             child: Padding(

@@ -21,7 +21,7 @@ class AppImages {
   //png
   static const String slurvoLogo = 'assets/png/slurvo.png';
   static const String splashLogo = 'assets/png/splash_logo.png';
-  static const String groundGreen = 'assets/png/ground_green.png';
+  static const String groundGreen = 'assets/png/landing_dashboard_image.png';
   static const String deviceImage = 'assets/png/device.png';
   static const String dispersionGround = 'assets/png/dispersion_ground.png';
   static const String longestDriveImage = 'assets/png/longest_drive_image.png';

@@ -20,7 +20,7 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: Column(

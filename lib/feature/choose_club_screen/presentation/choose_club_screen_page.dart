@@ -67,7 +67,7 @@ class _ChooseClubScreenPageState extends State<ChooseClubScreenPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
-      bottomNavigationBar: const BottomNavBar(),
+      // bottomNavigationBar: const BottomNavBar(),
       appBar: const CustomAppBar(),
       body: Column(
         children: [

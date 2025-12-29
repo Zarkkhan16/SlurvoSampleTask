@@ -11,6 +11,7 @@ class HeaderRow extends StatefulWidget {
   final Club? selectedClub;
   final Function(Club)? onClubSelected;
   final bool goScanScreen;
+  final bool backButtonHide;
   final Function()? onBackButton;
 
   const HeaderRow({
@@ -20,6 +21,7 @@ class HeaderRow extends StatefulWidget {
     this.selectedClub, // 👈 optional
     this.onClubSelected, // 👈 optional
     this.goScanScreen = false,
+    this.backButtonHide = false,
     this.onBackButton,
   });
 
@@ -50,15 +52,9 @@ class _HeaderRowState extends State<HeaderRow> {
       mainAxisAlignment:
       widget.showClubName ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
       children: [
-        GestureDetector(
+        widget.backButtonHide ? SizedBox.shrink() : GestureDetector(
           onTap: widget.onBackButton ?? () {
             if (widget.goScanScreen) {
-              // Navigator.pushReplacement(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (_) => const ScannedDevicesScreen(),
-              //   ),
-              // );
             } else {
               Navigator.pop(context);
             }

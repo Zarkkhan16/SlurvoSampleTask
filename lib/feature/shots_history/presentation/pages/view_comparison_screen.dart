@@ -23,7 +23,7 @@ class ViewComparisonScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 5),
         child: Column(

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_images.dart';
+import 'package:onegolf/core/di/injection_container.dart';
+import 'package:onegolf/core/utils/navigation_helper.dart';
+import 'package:onegolf/feature/ble_management/domain/repositories/ble_management_repository.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/pages/distance_master_setup_screen.dart';
 import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_bloc.dart';
@@ -22,7 +25,7 @@ class DistanceControlDrillsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
         child: Column(
@@ -44,16 +47,35 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                     title: "Target Zone",
                     subtitle:
                         'Hone in one Carry distance, Pure repetition, Pure mastery.',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BlocProvider.value(
-                            value: context.read<TargetZoneBloc>(),
-                            child: TargetZoneSetupScreen(),
+                    onTap: () async {
+
+                      final bleRepo = sl<BleManagementRepository>();
+
+                      if (bleRepo.isConnected) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider.value(
+                              value: context.read<TargetZoneBloc>(),
+                              child: TargetZoneSetupScreen(),
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      } else {
+                        final isConnected = await NavigationHelper.isDeviceConnected(context);
+                        if (!isConnected) return;
+                        if(isConnected){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider.value(
+                                value: context.read<TargetZoneBloc>(),
+                                child: TargetZoneSetupScreen(),
+                              ),
+                            ),
+                          );
+                        }
+                      }
                     },
                   ),
                   SizedBox(height: 15),
@@ -65,7 +87,7 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                     title: "Distance Master",
                     subtitle:
                         'Hit 3 perfect shots in a row to level up. Window Shrinks. Challenge grows.',
-                    onTap: () {
+                    onTap: () async {
                       // Navigator.push(
                       //   context,
                       //   MaterialPageRoute(
@@ -75,17 +97,39 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                       //     ),
                       //   ),
                       // );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          settings:
-                              RouteSettings(name: "DistanceMasterSetupScreen"),
-                          builder: (_) => BlocProvider.value(
-                            value: context.read<DistanceMasterBloc>(),
-                            child: DistanceMasterSetupScreen(),
+
+
+                      final bleRepo = sl<BleManagementRepository>();
+
+                      if (bleRepo.isConnected) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            settings:
+                            RouteSettings(name: "DistanceMasterSetupScreen"),
+                            builder: (_) => BlocProvider.value(
+                              value: context.read<DistanceMasterBloc>(),
+                              child: DistanceMasterSetupScreen(),
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      } else {
+                        final isConnected = await NavigationHelper.isDeviceConnected(context);
+                        if (!isConnected) return;
+                        if(isConnected){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              settings:
+                              RouteSettings(name: "DistanceMasterSetupScreen"),
+                              builder: (_) => BlocProvider.value(
+                                value: context.read<DistanceMasterBloc>(),
+                                child: DistanceMasterSetupScreen(),
+                              ),
+                            ),
+                          );
+                        }
+                      }
                     },
                   ),
                   SizedBox(height: 15),
@@ -98,16 +142,35 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                     title: "Ladder Drills",
                     subtitle:
                         'Hone in one Carry distance, Pure repetition, Pure mastery.',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BlocProvider.value(
-                            value: di.sl<LadderDrillBloc>(),
-                            child: LadderDrillSetupScreen(),
+                    onTap: () async {
+
+                      final bleRepo = sl<BleManagementRepository>();
+
+                      if (bleRepo.isConnected) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider.value(
+                              value: di.sl<LadderDrillBloc>(),
+                              child: LadderDrillSetupScreen(),
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      } else {
+                        final isConnected = await NavigationHelper.isDeviceConnected(context);
+                        if (!isConnected) return;
+                        if(isConnected){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider.value(
+                                value: di.sl<LadderDrillBloc>(),
+                                child: LadderDrillSetupScreen(),
+                              ),
+                            ),
+                          );
+                        }
+                      }
                     },
                   ),
                   Spacer(),

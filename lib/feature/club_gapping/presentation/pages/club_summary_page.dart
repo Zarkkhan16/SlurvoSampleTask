@@ -23,13 +23,14 @@ class ClubSummaryScreen extends StatelessWidget {
         if (state is RecordingShotsState) {
           Navigator.pop(context);
         } else if (state is SessionSummaryState) {
+          final bloc = context.read<ClubGappingBloc>();
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               settings: const RouteSettings(name: "SessionSummaryScreen"),
               builder: (_) => BlocProvider.value(
-                value: context.read<ClubGappingBloc>(),
-                child: SessionSummaryPage(),
+                value: bloc,
+                child: const SessionSummaryPage(),
               ),
             ),
           );
@@ -61,7 +62,7 @@ class ClubSummaryScreen extends StatelessWidget {
           child: Scaffold(
             backgroundColor: Colors.black,
             appBar: CustomAppBar(),
-            bottomNavigationBar: BottomNavBar(),
+            // bottomNavigationBar: BottomNavBar(),
             body: Column(
               children: [
                 Padding(

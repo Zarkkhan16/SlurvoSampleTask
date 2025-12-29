@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/feature/bottom_controller.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_event.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_state.dart';
@@ -27,12 +28,14 @@ class _TargetZoneGameScreenState extends State<TargetZoneGameScreen> {
     return BlocListener<TargetZoneBloc, TargetZoneState>(
       listener: (context, state) {
         if (state is TargetZoneSessionCompleteState) {
+          final bloc = context.read<TargetZoneBloc>(); // ✅ capture first
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (_) => BlocProvider.value(
-                value: context.read<TargetZoneBloc>(),
-                child: TargetZoneSessionSummaryScreen(),
+                value: bloc,
+                child: const TargetZoneSessionSummaryScreen(),
               ),
             ),
           );
@@ -54,7 +57,7 @@ class _TargetZoneGameScreenState extends State<TargetZoneGameScreen> {
             },
             child: Scaffold(
               appBar: CustomAppBar(),
-              bottomNavigationBar: BottomNavBar(),
+              // bottomNavigationBar: BottomNavBar(),
               backgroundColor: AppColors.primaryBackground,
               body: Padding(
                 padding:

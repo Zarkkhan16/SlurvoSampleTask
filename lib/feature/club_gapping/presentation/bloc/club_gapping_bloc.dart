@@ -34,6 +34,7 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
     on<ExitSessionEvent>(_onExitSession);
     on<ResetToSelectionEvent>(_onResetToSelection);
     on<SelectCustomShotsEvent>(_onSelectCustomShots);
+    on<StopListeningToBleDataClubEvent>(_onStopListeningToBleData);
   }
 
   @override
@@ -268,10 +269,12 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
       return;
     }
 
+    final reversedClubs = List<ClubEntity>.from(event.selectedClubs.reversed);
+
     // Create new session
     final session = ClubGappingSessionEntity(
       id: "",
-      selectedClubs: event.selectedClubs,
+      selectedClubs: reversedClubs,
       shotsPerClub: event.shotsPerClub,
       currentClubIndex: 0,
       clubShots: {},
@@ -760,6 +763,20 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // EXIT SESSION
   // ============================================================
 
+
+  Future<void> _onStopListeningToBleData(
+      StopListeningToBleDataClubEvent event,
+      Emitter<ClubGappingState> emit,
+      ) async {
+
+    await _bleSubscription?.cancel();
+    _bleSubscription = null;
+
+    _syncTimer?.cancel();
+    _syncTimer = null;
+
+    print('✅ BLE listener stopped');
+  }
   void _onExitSession(
       ExitSessionEvent event,
       Emitter<ClubGappingState> emit,

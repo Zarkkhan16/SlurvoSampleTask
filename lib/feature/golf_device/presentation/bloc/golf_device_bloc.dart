@@ -53,6 +53,10 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   Stream<List<int>> get bleResponseStream => _bleResponseController.stream;
   int get currentSessionNumber => _currentSessionNumber;
 
+  GolfDataEntity? _firstPacketBaseline;
+  GolfDataEntity? _lastValidGolfData;
+  bool _isFirstPacketHandled = false;
+  bool _isBleSyncPaused = false;
   GolfDeviceBloc({
     required this.bleRepository,
     required this.sharedPreferences,
@@ -68,8 +72,13 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     on<ReturnToConnectedStateEvent>(_onReturnToConnectedState);
     on<DeleteLatestShotEvent>(_onDeleteLatestShot);
     on<UpdateMetricFilterEvent>(_onUpdateMetricFilter);
+    on<ResetGolfDeviceEvent>(_onReset);
+    on<PauseBleSyncEvent>(_onPauseBleSync);
+    on<ResumeBleSyncEvent>(_onResumeBleSync);
 
-    add(ConnectionStateChangedEvent(bleRepository.isConnected));
+
+
+    // add(ConnectionStateChangedEvent(bleRepository.isConnected));
   }
 
   Future<void> _onUpdateMetricFilter(
@@ -151,6 +160,15 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   //   );
   // }
 
+  bool _isSameGolfData(GolfDataEntity a, GolfDataEntity b) {
+    return a.recordNumber == b.recordNumber &&
+        a.clubName == b.clubName &&
+        a.clubSpeed == b.clubSpeed &&
+        a.ballSpeed == b.ballSpeed &&
+        a.carryDistance == b.carryDistance &&
+        a.totalDistance == b.totalDistance;
+  }
+
   Future<void> _onConnectionStateChanged(
     ConnectionStateChangedEvent event,
     Emitter<GolfDeviceState> emit,
@@ -183,7 +201,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
           elapsedTime: _formatElapsedTime(_elapsedSeconds),
         ));
       } catch (e) {
-        emit(ErrorState('Failed to setup connection: $e'));
+        // emit(ErrorState('Failed to setup connection: $e'));
       }
     }
   }
@@ -191,10 +209,26 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   void _startSyncTimer() {
     _syncTimer?.cancel();
     _syncTimer = Timer.periodic(Duration(seconds: 02), (_) {
-      if (bleRepository.isConnected) {
+      if (bleRepository.isConnected && !_isBleSyncPaused) {
         add(SendSyncPacketEvent());
       }
     });
+  }
+
+  Future<void> _onPauseBleSync(
+      PauseBleSyncEvent event,
+      Emitter<GolfDeviceState> emit,
+      ) async {
+    _isBleSyncPaused = true;
+    print("⏸️ BLE Sync Paused");
+  }
+
+  Future<void> _onResumeBleSync(
+      ResumeBleSyncEvent event,
+      Emitter<GolfDeviceState> emit,
+      ) async {
+    _isBleSyncPaused = false;
+    print("▶️ BLE Sync Resumed");
   }
 
   void _startElapsedTimer() {
@@ -226,6 +260,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   ) {
     final data = event.data;
 
+    print("@@@@@@");
+    print(data);
+
     _bleResponseController.add(data);
 
     if (data.length >= 3) {
@@ -233,6 +270,49 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
         case 0x01:
           if (data.length >= 16) {
             _parseGolfData(Uint8List.fromList(data));
+            // 🚫 1. Ignore ZERO packets
+            final isZeroPacket =
+                _golfData.recordNumber == 0 &&
+                    _golfData.carryDistance == 0 &&
+                    _golfData.totalDistance == 0;
+            if (!_isFirstPacketHandled) {
+              _isFirstPacketHandled = true;
+
+              // Case-1: First packet ZERO → ignore, wait for next
+              if (isZeroPacket) {
+                print("⚠️ First packet ZERO → ignored, waiting next");
+                return;
+              }
+
+              // Case-2: First packet NON-ZERO → baseline only
+              _firstPacketBaseline = _golfData;
+              print("🧠 First packet NON-ZERO → baseline stored");
+              return;
+            }
+
+            // 🔁 After first packet → normal comparison
+
+            // If baseline exists, compare with it ONCE
+            if (_firstPacketBaseline != null) {
+              if (_isSameGolfData(_firstPacketBaseline!, _golfData)) {
+                print("🔁 Second packet same as baseline → ignored");
+                return;
+              }
+
+              // Different → SHOW
+              print("✅ Second packet different → showing");
+              _firstPacketBaseline = null; // baseline used, discard
+            }
+
+            // Normal duplicate filtering (optional but recommended)
+            if (_lastValidGolfData != null &&
+                _isSameGolfData(_lastValidGolfData!, _golfData)) {
+              print("🔁 Duplicate packet ignored");
+              return;
+            }
+
+            // ✅ Store & emit
+            _lastValidGolfData = _golfData;
             _storeShotData(_golfData);
             if (state is ConnectedState) {
               emit((state as ConnectedState).copyWith(
@@ -285,6 +365,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     Emitter<GolfDeviceState> emit,
   ) async {
     if (state is ConnectedState) {
+      _isBleSyncPaused = true;
       final currentState = state as ConnectedState;
       _golfData = _golfData.copyWith(clubName: event.clubId);
 
@@ -294,8 +375,24 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
       ));
 
       try {
-        List<int> packet = [0x47, 0x46, 0x02, event.clubId, 0x00];
+        final int command = 0x02;
+        final int clubId = event.clubId & 0xFF;
+
+        final int checksum = (command + clubId) & 0xFF;
+
+        final List<int> packet = [
+          0x47,
+          0x46,
+          command,
+          clubId,
+          0x00,
+          checksum,
+        ];
+
+        print("📤 Club Packet: $packet");
         bleRepository.writeData(packet);
+        await Future.delayed(const Duration(milliseconds: 300));
+        _isBleSyncPaused = false;
       } catch (e) {
         emit(ErrorState('Failed to update club: $e'));
       }
@@ -315,16 +412,31 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
         print("📊 SESSION SUMMARY:");
         print(sessionSummary);
       }
-      emit(NavigateToSessionSummaryState(summaryData: sessionSummary));
+
+      if(event.isNotBottom){
+        emit(NavigateToSessionSummaryState(summaryData: sessionSummary));
+      }
+      if(event.isNotBottom == false){
+        _resetFirstPacketLogic();
+        add(ResetGolfDeviceEvent());
+      }
       await _notificationSubscription?.cancel();
       _notificationSubscription = null;
       _syncTimer?.cancel();
       _sessionData.clear();
       _elapsedTimer?.cancel();
+      _isBleSyncPaused = false;
     } catch (e) {
       print(e);
       emit(ErrorState('Failed to disconnect: $e'));
     }
+  }
+
+
+  void _resetFirstPacketLogic() {
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
   }
 
   Future<void> _onSaveAllShots(
@@ -531,6 +643,8 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     print("   Record: ${_golfData.recordNumber}");
     print("   Club: ${_golfData.clubName}");
     print("   Carry: ${_golfData.carryDistance} ${isMeters ? 'M' : 'YD'}");
+    print("   Ball Speed: ${_golfData.ballSpeed}");
+    print("   Club Speed: ${_golfData.clubSpeed}");
     print("   Total: ${_golfData.totalDistance}");
     print("   Unit Mode: ${isMeters ? 'METERS' : 'YARDS'}");
   }
@@ -700,5 +814,52 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     _syncTimer?.cancel();
     _elapsedTimer?.cancel();
     return super.close();
+  }
+
+  Future<void> _onReset(
+      ResetGolfDeviceEvent event,
+      Emitter<GolfDeviceState> emit,
+      ) async {
+    // 🧹 Cancel streams & timers
+    await _notificationSubscription?.cancel();
+    _notificationSubscription = null;
+
+    _syncTimer?.cancel();
+    _syncTimer = null;
+
+    _elapsedTimer?.cancel();
+    _elapsedTimer = null;
+
+    // await _bleResponseController.close();
+
+    // 🧹 Clear session data
+    _shotRecords.clear();
+    _sessionData.clear();
+
+    _isBleSyncPaused = false;
+
+    // 🧹 Reset flags
+    _elapsedSeconds = 0;
+    _currentSessionNumber = 0;
+    _currentSessionDate = "";
+    _isSessionInitialized = false;
+    _isSessionStart = true;
+    _units = false;
+
+    // 🧹 Reset golf data
+    _golfData = GolfDataEntity(
+      battery: 0,
+      recordNumber: 0,
+      clubName: 0,
+      clubSpeed: 0.0,
+      ballSpeed: 0.0,
+      carryDistance: 0.0,
+      totalDistance: 0.0,
+    );
+
+    _resetFirstPacketLogic();
+
+    // 🧹 Reset state
+    emit(GolfDeviceInitial());
   }
 }

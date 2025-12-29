@@ -39,20 +39,23 @@ class TargetZoneSessionSummaryScreen extends StatelessWidget {
           return PopScope(
             canPop: false,
             onPopInvoked: (didPop) {
-              context.read<TargetZoneBloc>().add(const ResetGameEvent());
+              final bloc = context.read<TargetZoneBloc>();
+
+              bloc.add(const ResetGameEvent()); // 🔥 BLE stop inside bloc
+
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (_) => BlocProvider.value(
-                    value: context.read<TargetZoneBloc>(),
-                    child: TargetZoneSetupScreen(),
+                    value: bloc,
+                    child: const TargetZoneSetupScreen(),
                   ),
                 ),
               );
             },
             child: Scaffold(
               appBar: CustomAppBar(),
-              bottomNavigationBar: BottomNavBar(),
+              // bottomNavigationBar: BottomNavBar(),
               backgroundColor: AppColors.primaryBackground,
               body: Padding(
                 padding:
@@ -62,13 +65,15 @@ class TargetZoneSessionSummaryScreen extends StatelessWidget {
                     HeaderRow(
                       headingName: "Target Zone",
                       onBackButton: (){
-                        context.read<TargetZoneBloc>().add(const ResetGameEvent());
+                        final bloc = context.read<TargetZoneBloc>();
+                        bloc.add(const ResetGameEvent());
+
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (_) => BlocProvider.value(
-                              value: context.read<TargetZoneBloc>(),
-                              child: TargetZoneSetupScreen(),
+                              value: bloc,
+                              child: const TargetZoneSetupScreen(),
                             ),
                           ),
                         );
@@ -113,13 +118,15 @@ class TargetZoneSessionSummaryScreen extends StatelessWidget {
                     Spacer(),
                     SessionViewButton(
                       onSessionClick: () {
-                        context.read<TargetZoneBloc>().add(const ResetGameEvent());
+                        final bloc = context.read<TargetZoneBloc>();
+                        bloc.add(const ResetGameEvent());
+
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (_) => BlocProvider.value(
-                              value: context.read<TargetZoneBloc>(),
-                              child: TargetZoneSetupScreen(),
+                              value: bloc,
+                              child: const TargetZoneSetupScreen(),
                             ),
                           ),
                         );

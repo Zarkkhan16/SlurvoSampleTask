@@ -109,8 +109,11 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
 
   void _onSessionEndAttempt(
       SessionEndAttemptEvent event, Emitter<PracticeGamesState> emit) {
+
+    print(state.latestBleData);
     if (state.latestBleData.isEmpty) {
-      emit(state.copyWith(bestShot: null));
+      emit(state.copyWith(bestShot: null, sessionCompleted: true,));
+      return;
     }
 
     final limitedList = state.latestBleData.take(state.currentAttempt).toList();
@@ -122,8 +125,13 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     emit(state.copyWith(bestShot: bestShot, sessionCompleted: true,));
   }
 
-  void _onResetSession(
-      ResetSessionEvent event, Emitter<PracticeGamesState> emit) {
+  Future<void> _onResetSession(
+      ResetSessionEvent event, Emitter<PracticeGamesState> emit) async {
+    await _notificationSubscription?.cancel();
+    _notificationSubscription = null;
+
+    _syncTimer?.cancel();
+    _syncTimer = null;
     _golfDataListItem.clear();
     emit(state.copyWith(
       currentAttempt: 1,

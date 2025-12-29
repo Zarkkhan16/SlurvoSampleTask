@@ -109,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen> {
         if (state is Authenticated) {
           Navigator.pushNamedAndRemoveUntil(
             context,
-            '/landingDashboard',
+            '/MainScreen',
                 (route) => false,
           );
         }

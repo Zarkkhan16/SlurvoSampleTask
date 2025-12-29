@@ -22,15 +22,26 @@ class LongestDriveSessionPage extends StatelessWidget {
     return BlocConsumer<PracticeGamesBloc, PracticeGamesState>(
       listener: (context, state) {
         if (state.sessionCompleted) {
+          final bloc = context.read<PracticeGamesBloc>(); // ✅ capture first
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (_) => BlocProvider.value(
-                value: context.read<PracticeGamesBloc>(),
-                child: LongestDriveSessionEndPage(),
+                value: bloc,
+                child: const LongestDriveSessionEndPage(),
               ),
             ),
           );
+          // Navigator.pushReplacement(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (_) => BlocProvider.value(
+          //       value: context.read<PracticeGamesBloc>(),
+          //       child: LongestDriveSessionEndPage(),
+          //     ),
+          //   ),
+          // );
         }
       },
       builder: (context, state) {
@@ -51,7 +62,7 @@ class LongestDriveSessionPage extends StatelessWidget {
         return Scaffold(
           backgroundColor: AppColors.primaryBackground,
           appBar: CustomAppBar(),
-          bottomNavigationBar: BottomNavBar(),
+          // bottomNavigationBar: BottomNavBar(),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
             child: Column(
@@ -83,15 +94,15 @@ class LongestDriveSessionPage extends StatelessWidget {
                 SessionViewButton(
                   onSessionClick: () {
                       context.read<PracticeGamesBloc>().add(SessionEndAttemptEvent());
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BlocProvider.value(
-                            value: BlocProvider.of<PracticeGamesBloc>(context),
-                            child: LongestDriveSessionEndPage(),
-                          ),
-                        ),
-                      );
+                      // Navigator.pushReplacement(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (_) => BlocProvider.value(
+                      //       value: BlocProvider.of<PracticeGamesBloc>(context),
+                      //       child: LongestDriveSessionEndPage(),
+                      //     ),
+                      //   ),
+                      // );
                   },
                   buttonText: "End Session",
                 ),

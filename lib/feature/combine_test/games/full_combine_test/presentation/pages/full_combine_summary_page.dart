@@ -25,7 +25,7 @@ class FullCombineSummaryPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         child: SingleChildScrollView(
@@ -185,9 +185,12 @@ class FullCombineSummaryPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (context) => CombineTestPage()),
-                                (route) => route.settings.name == 'PracticeGamesScreen',
+                          Navigator.of(context).popUntil((route) => route.isFirst); // go back to PracticeGamesScreen
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              settings: RouteSettings(name: 'CombineTestPage'),
+                              builder: (context) => CombineTestPage(),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(

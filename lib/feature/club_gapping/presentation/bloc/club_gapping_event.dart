@@ -143,3 +143,4 @@ class SubcribeToBleShotData extends ClubGappingEvent {}
 /// Reset to club selection
 class ResetToSelectionEvent extends ClubGappingEvent {}
 class SelectCustomShotsEvent extends ClubGappingEvent {}
+class StopListeningToBleDataClubEvent extends ClubGappingEvent {}

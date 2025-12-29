@@ -100,7 +100,7 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
       ) async {
     try {
       emit(ClearingRecordState());
-      List<int> packet = [0x47, 0x46, 0x05, 0x00, 0x00];
+      List<int> packet = [0x47, 0x46, 0x05, 0x00, 0x00, 0x05];
       await bleRepository.writeData(packet);
       print("📤 Sent Clear All Records command to device, waiting for response...");
       add(ClearRecordResponseReceivedEvent(sessionNumber: event.sessionNumber));

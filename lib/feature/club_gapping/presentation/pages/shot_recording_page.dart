@@ -55,7 +55,7 @@ class ShotRecordingScreen extends StatelessWidget {
           child: Scaffold(
           backgroundColor: Colors.black,
           appBar: CustomAppBar(),
-          bottomNavigationBar: BottomNavBar(),
+          // bottomNavigationBar: BottomNavBar(),
           body: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
             child: Column(

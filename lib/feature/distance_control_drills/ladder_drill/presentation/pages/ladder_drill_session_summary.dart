@@ -10,6 +10,8 @@ import 'package:onegolf/feature/widget/gradient_border_container.dart';
 import 'package:onegolf/feature/widget/header_row.dart';
 import 'package:onegolf/feature/widget/session_view_button.dart';
 
+import '../bloc/ladder_drill_event.dart';
+
 class LadderDrillSessionSummary extends StatelessWidget {
   const LadderDrillSessionSummary({super.key});
 
@@ -17,7 +19,7 @@ class LadderDrillSessionSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       backgroundColor: AppColors.scaffoldBackground,
       body: BlocBuilder<LadderDrillBloc, LadderDrillState>(
         builder: (context, state) {
@@ -177,7 +179,9 @@ class LadderDrillSessionSummary extends StatelessWidget {
                     ),
                     Spacer(),
                     SessionViewButton(
-                      onSessionClick: () {},
+                      onSessionClick: () {
+                        context.read<LadderDrillBloc>().add(RestartGameEvent());
+                      },
                       buttonText: "Restart",
                     ),
                     SizedBox(height: 10),

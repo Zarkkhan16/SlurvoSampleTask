@@ -20,7 +20,7 @@ class LevelUpScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: BlocConsumer<DistanceMasterBloc, DistanceMasterState>(
         listener: (context, state) {
           if (state is SessionCompleteState) {

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 class GolfDataEntity {
   final int battery;
   final int recordNumber;
@@ -17,7 +19,13 @@ class GolfDataEntity {
     required this.totalDistance,
   });
 
-  double get smashFactor => clubSpeed > 0 ? ballSpeed / clubSpeed : 0.0;
+  double get smashFactor {
+    if (clubSpeed <= 0) return 0.0;
+
+    final raw = ballSpeed / clubSpeed;
+    final factor = math.pow(10, 2);
+    return (raw * factor).truncate() / factor;
+  }
 
   GolfDataEntity copyWith({
     int? battery,

@@ -36,7 +36,7 @@ class SettingScreen extends StatelessWidget {
       )..add(LoadSettingsEvent(initialUnit: selectedUnit)),
       child: Scaffold(
         backgroundColor: AppColors.primaryBackground,
-        bottomNavigationBar: const BottomNavBar(),
+        // bottomNavigationBar: const BottomNavBar(),
         appBar: const CustomAppBar(),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),

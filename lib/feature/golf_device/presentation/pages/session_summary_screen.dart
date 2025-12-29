@@ -32,13 +32,14 @@ class SessionSummaryScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: CustomAppBar(),
-        bottomNavigationBar: BottomNavBar(),
+        // bottomNavigationBar: BottomNavBar(),
         body: Column(
           children: [
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
               child: HeaderRow(
                 headingName: "Session Summary",
+                backButtonHide: true,
                 onBackButton: () {
                   Navigator.pushNamedAndRemoveUntil(
                     context,

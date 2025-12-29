@@ -47,7 +47,7 @@ class _LadderDrillSetupScreenState extends State<LadderDrillSetupScreen> {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: BlocListener<LadderDrillBloc, LadderDrillState>(
         listener: (context, state) {
           if (state is GameSetupState && state.errorMessage != null) {

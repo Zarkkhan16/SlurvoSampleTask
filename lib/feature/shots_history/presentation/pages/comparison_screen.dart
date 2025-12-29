@@ -29,7 +29,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
       return Scaffold(
         backgroundColor: AppColors.scaffoldBackground,
         appBar: CustomAppBar(),
-        bottomNavigationBar: BottomNavBar(),
+        // bottomNavigationBar: BottomNavBar(),
         body: const Center(
           child: Text('No shots available'),
         ),
@@ -39,7 +39,7 @@ class _ComparisonScreenState extends State<ComparisonScreen> {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
         child: Column(
@@ -305,7 +305,7 @@ class _ComparisonShotSelectionScreenState
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 3),
         child: Column(

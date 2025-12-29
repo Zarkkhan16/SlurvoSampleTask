@@ -46,7 +46,14 @@ class UpdateClubEvent extends GolfDeviceEvent {
   List<Object?> get props => [clubId];
 }
 
-class DisconnectDeviceEvent extends GolfDeviceEvent {}
+class DisconnectDeviceEvent extends GolfDeviceEvent {
+  final bool isNotBottom;
+
+  DisconnectDeviceEvent({this.isNotBottom = true});
+
+  @override
+  List<Object?> get props => [isNotBottom];
+}
 
 class UpdateElapsedTimeEvent extends GolfDeviceEvent {}
 
@@ -71,3 +78,15 @@ class UpdateMetricFilterEvent extends GolfDeviceEvent {
   @override
   List<Object?> get props => [selectedMetrics];
 }
+
+class ResetGolfDeviceEvent extends GolfDeviceEvent {
+  ResetGolfDeviceEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class PauseBleSyncEvent extends GolfDeviceEvent {}
+
+class ResumeBleSyncEvent extends GolfDeviceEvent {}
+

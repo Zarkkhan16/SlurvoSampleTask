@@ -21,7 +21,7 @@ class SessionCompleteScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: BlocBuilder<DistanceMasterBloc, DistanceMasterState>(
         builder: (context, state) {
           if (state is SessionCompleteState) {

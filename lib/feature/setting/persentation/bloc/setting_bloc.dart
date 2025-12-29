@@ -39,7 +39,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
     emit(cur.copyWith(isSending: true));
     try {
-      List<int> packet = [0x47, 0x46, 0x06, event.enabled ? 1 : 0, 0x00];
+      List<int> packet = [0x47, 0x46, 0x06, event.enabled ? 0x01 : 0x00, 0x00, event.enabled ? 0x07 : 0x06,];
       await bleManagementRepository.writeData(packet);
       await sharedPreferences.setBool('backlight', event.enabled);
       emit(cur.copyWith(backlight: event.enabled, isSending: false));
@@ -61,8 +61,24 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     if (cur is! SettingLoaded || bleManagementRepository.isConnected == false) return;
 
     emit(cur.copyWith(isSending: true));
+    print (event.minutes);
+    print("sleep Time");
     try {
-      List<int> packet = [0x47, 0x46, 0x03, event.minutes, 0x00];
+      final int command = 0x03;
+      final int minutes = event.minutes & 0xFF;
+
+      final int checksum = (command + minutes) & 0xFF;
+
+      final List<int> packet = [
+        0x47,
+        0x46,
+        command,
+        minutes,
+        0x00,
+        checksum,
+      ];
+
+      print("📤 Packet: $packet");
       await bleManagementRepository.writeData(packet);
       await sharedPreferences.setInt('sleepTime', event.minutes);
       emit(cur.copyWith(sleepTime: event.minutes, isSending: false));
@@ -78,7 +94,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
     emit(cur.copyWith(isSending: true));
     try {
-      List<int> packet = [0x47, 0x46, 0x04, event.meters ? 1 : 0, 0x00];
+      List<int> packet = [0x47, 0x46, 0x04, event.meters ? 0x01 : 0x00, 0x00, event.meters ? 0x05 : 0x04];
       await bleManagementRepository.writeData(packet);
       emit(cur.copyWith(meters: event.meters, isSending: false));
     } catch (e) {

@@ -19,6 +19,7 @@ import 'package:onegolf/feature/widget/header_row.dart';
 import 'package:onegolf/feature/widget/session_view_button.dart';
 
 import '../../../golf_device/data/model/shot_anaylsis_model.dart';
+import '../../../profile/presentation/pages/profile_screen.dart';
 
 class ShotLibraryHomePage extends StatefulWidget {
   const ShotLibraryHomePage({super.key});
@@ -31,18 +32,20 @@ class _ShotLibraryHomePageState extends State<ShotLibraryHomePage> {
   final user = FirebaseAuth.instance.currentUser;
 
   @override
-  void initState() {
-    super.initState();
-    final userUid = user?.uid ?? '';
-    context.read<ShotLibraryBloc>().add(LoadAllShots(userUid));
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
-      appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      appBar: CustomAppBar(
+        onProfilePressed: (){
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProfileScreen(),
+            ),
+          );
+        },
+      ),
+      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5),
         child: BlocBuilder<ShotLibraryBloc, ShotLibraryState>(
@@ -61,7 +64,7 @@ class _ShotLibraryHomePageState extends State<ShotLibraryHomePage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                HeaderRow(headingName: "Shot Library"),
+                HeaderRow(headingName: "Shot Library", backButtonHide: true,),
                 SizedBox(height: 25),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),

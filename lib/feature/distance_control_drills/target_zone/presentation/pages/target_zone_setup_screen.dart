@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/core/di/injection_container.dart';
+import 'package:onegolf/core/utils/navigation_helper.dart';
+import 'package:onegolf/feature/ble_management/domain/repositories/ble_management_repository.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/data/model/target_zone_config.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_event.dart';
@@ -27,13 +30,16 @@ class _TargetZoneSetupScreenState extends State<TargetZoneSetupScreen> {
   Widget build(BuildContext context) {
     return BlocConsumer<TargetZoneBloc, TargetZoneState>(
       listener: (context, state) {
+        if (!context.mounted) return;
         if (state is TargetZoneGameState) {
+          final bloc = context.read<TargetZoneBloc>();
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (_) => BlocProvider.value(
-                value: context.read<TargetZoneBloc>(),
-                child: TargetZoneGameScreen(),
+                value: bloc,
+                child: const TargetZoneGameScreen(),
               ),
             ),
           );
@@ -53,7 +59,7 @@ class _TargetZoneSetupScreenState extends State<TargetZoneSetupScreen> {
         return Scaffold(
           appBar: CustomAppBar(),
           backgroundColor: AppColors.primaryBackground,
-          bottomNavigationBar: BottomNavBar(),
+          // bottomNavigationBar: BottomNavBar(),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
             child: Column(
@@ -85,13 +91,13 @@ class _TargetZoneSetupScreenState extends State<TargetZoneSetupScreen> {
                 _buildUnlimitedCheckbox(context, state),
                 Spacer(),
                 SessionViewButton(
-                  onSessionClick: () {
+                  onSessionClick: () async {
+
                     final config = TargetZoneConfig(
                       targetDistance: state.targetDistance,
                       difficulty: state.difficulty,
                       totalShots: state.shotCount,
                     );
-
                     context.read<TargetZoneBloc>().add(StartGameEvent(config));
                   },
                   buttonText: "Start Drill",

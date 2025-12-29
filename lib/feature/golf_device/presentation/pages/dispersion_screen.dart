@@ -58,7 +58,7 @@ class DispersionScreen extends StatelessWidget {
       return Scaffold(
           backgroundColor: Colors.black,
           appBar: CustomAppBar(),
-          bottomNavigationBar: const BottomNavBar(),
+          // bottomNavigationBar: const BottomNavBar(),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),
             child: Column(

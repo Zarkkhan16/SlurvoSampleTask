@@ -4,6 +4,9 @@ import 'package:flutter_svg/svg.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/core/utils/navigation_helper.dart';
+import 'package:onegolf/feature/bottom_controller.dart';
+import 'package:onegolf/feature/profile/presentation/pages/profile_screen.dart';
 import 'package:onegolf/feature/shot_library/presentation/pages/shot_library_home_page.dart';
 import 'package:onegolf/feature/widget/session_view_button.dart';
 import '../../../../core/di/injection_container.dart' as di;
@@ -15,6 +18,7 @@ import '../../../ble_management/presentation/bloc/ble_management_bloc.dart';
 import '../../../ble_management/presentation/bloc/ble_management_state.dart';
 import '../../../ble_management/presentation/presentation/device_connected_screen.dart';
 import '../../../golf_device/presentation/bloc/golf_device_bloc.dart';
+import '../../../golf_device/presentation/bloc/golf_device_event.dart';
 import '../../../golf_device/presentation/pages/golf_device_screen.dart';
 import '../../../shot_library/presentation/bloc/shot_library_bloc.dart';
 import '../../../widget/bottom_nav_bar.dart';
@@ -26,6 +30,7 @@ import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
 import '../widget/game_mode_icon.dart';
+
 class LandingDashboard extends StatefulWidget {
   const LandingDashboard({super.key});
 
@@ -55,6 +60,15 @@ class _LandingDashboardState extends State<LandingDashboard> {
         await BleConnectionHelper.ensureDeviceConnected(context);
 
     if (isConnected && mounted) {
+      final bloc = context.read<GolfDeviceBloc>();
+
+      // 🔥 THIS WAS MISSING
+      bloc.add(
+        ConnectionStateChangedEvent(
+          bloc.bleRepository.isConnected,
+        ),
+      );
+      BottomNavController.currentIndex.value = 1;
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -100,10 +114,18 @@ class _LandingDashboardState extends State<LandingDashboard> {
       },
       child: Scaffold(
         backgroundColor: AppColors.primaryBackground,
-        bottomNavigationBar: BottomNavBar(),
+        // bottomNavigationBar: BottomNavBar(),
         appBar: CustomAppBar(
           onProfilePressed: () {
-            Navigator.pushNamed(context, '/ProfileScreen');
+            // Navigator.pushNamed(context, '/ProfileScreen');
+            // Navigator.of(context, rootNavigator: true).pushNamed('/ProfileScreen');
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ProfileScreen(),
+              ),
+            );
           },
         ),
         body: BlocBuilder<DashboardBloc, DashboardState>(
@@ -157,31 +179,35 @@ class _LandingDashboardState extends State<LandingDashboard> {
                   ),
                   child: Stack(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.asset(
-                          AppImages.groundGreen,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
+                      GradientBorderContainer(
+                        borderRadius: 16,
+                        padding: EdgeInsets.zero,
+                        child: ClipRRect(
                           borderRadius: BorderRadius.circular(16),
-                          color: Colors.black.withOpacity(0.4),
-                        ),
-                      ),
-                      Center(
-                        child: Text(
-                          "Welcome Back $userName",
-                          style: AppTextStyle.oswald(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          child: Image.asset(
+                            AppImages.groundGreen,
+                            fit: BoxFit.fill,
+                            width: double.infinity,
+                            height: double.infinity,
                           ),
                         ),
-                      ),
+                      )
+                      // Container(
+                      //   decoration: BoxDecoration(
+                      //     borderRadius: BorderRadius.circular(16),
+                      //     color: Colors.black.withOpacity(0.4),
+                      //   ),
+                      // ),
+                      // Center(
+                      //   child: Text(
+                      //     "Welcome Back $userName",
+                      //     style: AppTextStyle.oswald(
+                      //       fontSize: 30,
+                      //       fontWeight: FontWeight.bold,
+                      //       color: Colors.white,
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -193,8 +219,8 @@ class _LandingDashboardState extends State<LandingDashboard> {
                       _navigateWithBleCheck(
                         context: context,
                         screenName: "GolfDeviceView",
-                        destination: BlocProvider(
-                          create: (context) => di.sl<GolfDeviceBloc>(),
+                        destination: BlocProvider.value(
+                          value: context.read<GolfDeviceBloc>(),
                           child: GolfDeviceView(),
                         ),
                       );
@@ -276,15 +302,17 @@ class _LandingDashboardState extends State<LandingDashboard> {
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
                   child: GestureDetector(
                     onTap: () {
+                      BottomNavController.goToTab(2);
+
                       // NEW: Check BLE connection before navigating
-                      _navigateWithBleCheck(
-                        context: context,
-                        screenName: "PracticeGamesScreen",
-                        destination: BlocProvider.value(
-                          value: context.read<PracticeGamesBloc>(),
-                          child: PracticeGamesScreen(),
-                        ),
-                      );
+                      // _navigateWithBleCheck(
+                      //   context: context,
+                      //   screenName: "PracticeGamesScreen",
+                      //   destination: BlocProvider.value(
+                      //     value: context.read<PracticeGamesBloc>(),
+                      //     child: PracticeGamesScreen(),
+                      //   ),
+                      // );
                     },
                     child: GradientBorderContainer(
                       borderRadius: 32,
@@ -392,15 +420,16 @@ class _LandingDashboardState extends State<LandingDashboard> {
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BlocProvider.value(
-                            value: context.read<ShotLibraryBloc>(),
-                            child: const ShotLibraryHomePage(),
-                          ),
-                        ),
-                      );
+                      BottomNavController.goToTab(3);
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => BlocProvider.value(
+                      //       value: context.read<ShotLibraryBloc>(),
+                      //       child: const ShotLibraryHomePage(),
+                      //     ),
+                      //   ),
+                      // );
                     },
                     child: GradientBorderContainer(
                       borderRadius: 32,
@@ -542,4 +571,3 @@ class _LandingDashboardState extends State<LandingDashboard> {
     }
   }
 }
-

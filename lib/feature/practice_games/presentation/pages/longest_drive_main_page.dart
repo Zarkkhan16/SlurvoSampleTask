@@ -145,7 +145,7 @@ class _LongestDriveMainPageState extends State<LongestDriveMainPage> {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       resizeToAvoidBottomInset: true,
       body: BlocBuilder<PracticeGamesBloc, PracticeGamesState>(
         builder: (context, state) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
+import 'package:onegolf/feature/bottom_controller.dart';
 import 'package:onegolf/feature/combine_test/presentation/pages/combine_test_page.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
@@ -25,7 +26,7 @@ class WedgeCombineSummaryPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         child: SingleChildScrollView(
@@ -185,10 +186,19 @@ class WedgeCombineSummaryPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (context) => CombineTestPage()),
-                                (route) => route.settings.name == 'PracticeGamesScreen',
+                          // BottomNavController.goToTab(2); // Ensure tab is correct
+                          // Navigator.of(context).popUntil((route) => route.isFirst); // Back to root
+                          Navigator.of(context).popUntil((route) => route.isFirst); // go back to PracticeGamesScreen
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              settings: RouteSettings(name: 'CombineTestPage'),
+                              builder: (context) => CombineTestPage(),
+                            ),
                           );
+                          // Navigator.of(context).pushAndRemoveUntil(
+                          //   MaterialPageRoute(builder: (context) => CombineTestPage()),
+                          //       (route) => route.settings.name == 'PracticeGamesScreen',
+                          // );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.buttonBackground,

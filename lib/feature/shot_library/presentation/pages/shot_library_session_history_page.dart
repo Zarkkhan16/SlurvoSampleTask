@@ -90,7 +90,7 @@ class _ShotLibrarySessionHistoryPageState
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
-      bottomNavigationBar: const BottomNavBar(),
+      // bottomNavigationBar: const BottomNavBar(),
       appBar: CustomAppBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5),

@@ -95,6 +95,7 @@ class ShotHistoryScreen extends StatelessWidget {
         canPop: false,
         onPopInvoked: (didPop) {
           if (!didPop) {
+            context.read<GolfDeviceBloc>().add(ResumeBleSyncEvent());
             Navigator.pop(context, 'connected');
           }
         },
@@ -103,7 +104,7 @@ class ShotHistoryScreen extends StatelessWidget {
               sl<ShotHistoryBloc>()..add(LoadShotHistoryEvent(sessionNumber: sessionNumber)),
           child: Scaffold(
             backgroundColor: Colors.black,
-            bottomNavigationBar: const BottomNavBar(),
+            // bottomNavigationBar: const BottomNavBar(),
             appBar: CustomAppBar(),
             body: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -239,6 +240,7 @@ class ShotHistoryScreen extends StatelessWidget {
                               headingName: "Session View",
                               goScanScreen: false,
                               onBackButton: () {
+                                context.read<GolfDeviceBloc>().add(ResumeBleSyncEvent());
                                 Navigator.pop(context, 'connected');
                               },
                             ),

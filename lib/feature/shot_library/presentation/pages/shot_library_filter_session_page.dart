@@ -20,7 +20,7 @@ class ShotLibraryFilterSessionPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: CustomAppBar(),
-      bottomNavigationBar: BottomNavBar(),
+      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5),
         child: BlocBuilder<ShotLibraryBloc, ShotLibraryState>(

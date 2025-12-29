@@ -21,9 +21,14 @@ import '../../../setting/persentation/pages/setting_screen.dart';
 import 'dispersion_screen.dart';
 import 'metric_filter_screen.dart';
 
-class GolfDeviceView extends StatelessWidget {
+class GolfDeviceView extends StatefulWidget {
   const GolfDeviceView({super.key});
 
+  @override
+  State<GolfDeviceView> createState() => _GolfDeviceViewState();
+}
+
+class _GolfDeviceViewState extends State<GolfDeviceView> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<GolfDeviceBloc, GolfDeviceState>(
@@ -45,7 +50,9 @@ class GolfDeviceView extends StatelessWidget {
             SnackBar(content: Text(state.message)),
           );
         } else if (state is NavigateToSessionSummaryState) {
-          Navigator.pushReplacement(
+
+
+          Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => SessionSummaryScreen(
@@ -53,6 +60,15 @@ class GolfDeviceView extends StatelessWidget {
               ),
             ),
           );
+
+          // Navigator.pushReplacement(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (_) => SessionSummaryScreen(
+          //       summaryData: state.summaryData,
+          //     ),
+          //   ),
+          // );
         } else if (state is SaveShotsSuccessfully) {
 
           print("session number");
@@ -131,7 +147,7 @@ class GolfDeviceView extends StatelessWidget {
       },
       {
         "metric": "Smash Factor",
-        "value": state.golfData.smashFactor.toStringAsFixed(2),
+        "value": state.golfData.smashFactor.toString(),
         "unit": ""
       },
     ];
@@ -151,12 +167,13 @@ class GolfDeviceView extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: AppColors.primaryBackground,
-        bottomNavigationBar: BottomNavBar(),
+        // bottomNavigationBar: BottomNavBar(),
         appBar: CustomAppBar(
           batteryLevel: state.golfData.battery,
           showSettingButton: true,
           showBatteryLevel: true,
           onSettingsPressed: () {
+            context.read<GolfDeviceBloc>().add(PauseBleSyncEvent());
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -164,7 +181,9 @@ class GolfDeviceView extends StatelessWidget {
                   selectedUnit: state.units,
                 ),
               ),
-            );
+            ).then((_) {
+              context.read<GolfDeviceBloc>().add(ResumeBleSyncEvent());
+            });
           },
         ),
         body: Column(
@@ -187,6 +206,7 @@ class GolfDeviceView extends StatelessWidget {
                             .read<GolfDeviceBloc>()
                             .add(UpdateClubEvent(int.parse(value.code)));
                       },
+                      backButtonHide: true,
                       onBackButton: () async {
                         context
                             .read<GolfDeviceBloc>()
@@ -320,6 +340,7 @@ class GolfDeviceView extends StatelessWidget {
                           child: ActionButton(
                             text: 'Session View',
                             onPressed: () {
+                              context.read<GolfDeviceBloc>().add(PauseBleSyncEvent());
                               context
                                   .read<GolfDeviceBloc>()
                                   .add(SaveAllShotsEvent());

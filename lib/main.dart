@@ -16,7 +16,9 @@ import 'feature/auth/presentation/bloc/auth_bloc.dart';
 import 'feature/auth/presentation/pages/sign_up_screen.dart';
 import 'feature/ble_management/presentation/bloc/ble_management_bloc.dart';
 import 'feature/golf_device/domain/repositories/ble_repository.dart';
+import 'feature/golf_device/presentation/bloc/golf_device_bloc.dart';
 import 'feature/landing_dashboard/persentation/bloc/dashboard_bloc.dart';
+import 'feature/main_screen.dart';
 import 'feature/practice_games/presentation/bloc/practice_games_bloc.dart';
 import 'feature/profile/presentation/pages/profile_screen.dart';
 import 'feature/shot_library/presentation/bloc/shot_library_bloc.dart';
@@ -81,6 +83,9 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (context) => di.sl<ShotLibraryBloc>(),
         ),
+        BlocProvider(
+          create: (context) => di.sl<GolfDeviceBloc>(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -92,6 +97,7 @@ class MyApp extends StatelessWidget {
           '/SignInScreen': (context) => const SignInScreen(),
           '/SignUpScreen': (context) => const SignUpScreen(),
           '/landingDashboard': (context) => const LandingDashboard(),
+          '/MainScreen': (context) => const MainScreen(),
           '/ProfileScreen': (context) => const ProfileScreen(),
         },
       ),

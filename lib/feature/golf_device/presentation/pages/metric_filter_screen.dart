@@ -58,7 +58,7 @@ class _MetricFilterScreenState extends State<MetricFilterScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: CustomAppBar(),
-      bottomNavigationBar: const BottomNavBar(),
+      // bottomNavigationBar: const BottomNavBar(),
       body: Column(
         children: [
           Expanded(
