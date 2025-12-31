@@ -31,6 +31,10 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
   final GolfDataEntity? bestShot = null;
   bool _units = false;
   Timer? _syncTimer;
+  GolfDataEntity? _firstPacketBaseline;
+  GolfDataEntity? _lastValidGolfData;
+  bool _isFirstPacketHandled = false;
+
 
   PracticeGamesBloc({required this.bleRepository})
       : super(PracticeGamesState()) {
@@ -133,6 +137,9 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     _syncTimer?.cancel();
     _syncTimer = null;
     _golfDataListItem.clear();
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
     emit(state.copyWith(
       currentAttempt: 1,
       selectedShots: 3,
@@ -206,6 +213,13 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     _syncTimer = null;
 
     _golfDataListItem.clear();
+
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
+
+
+
     emit(state.copyWith(
       isListeningToBle: false,
       currentAttempt: 1,
@@ -247,6 +261,16 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     });
   }
 
+
+  bool _isSameGolfData(GolfDataEntity a, GolfDataEntity b) {
+    return a.recordNumber == b.recordNumber &&
+        a.clubName == b.clubName &&
+        a.clubSpeed == b.clubSpeed &&
+        a.ballSpeed == b.ballSpeed &&
+        a.carryDistance == b.carryDistance &&
+        a.totalDistance == b.totalDistance;
+  }
+
   Future<void> _onBleDataReceived(
     BleDataReceivedEvent event,
     Emitter<PracticeGamesState> emit,
@@ -255,6 +279,33 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
     try {
       _bleDataController.add(event.data);
       _parseGolfData(Uint8List.fromList(event.data));
+
+
+      if (!_isFirstPacketHandled) {
+        _isFirstPacketHandled = true;
+        _firstPacketBaseline = _golfData;
+        print("🧠 First packet stored as baseline");
+        return;
+      }
+
+      if (_firstPacketBaseline != null) {
+        if (_isSameGolfData(_firstPacketBaseline!, _golfData)) {
+          print("🔁 Same as baseline → ignored");
+          return;
+        }
+
+        print("✅ Different from baseline → SHOW");
+        _firstPacketBaseline = null; // baseline consumed
+      }
+
+      if (_lastValidGolfData != null &&
+          _isSameGolfData(_lastValidGolfData!, _golfData)) {
+        print("🔁 Duplicate ignored");
+        return;
+      }
+
+      _lastValidGolfData = _golfData;
+
       _golfDataListItem.add(_golfData);
       emit(state.copyWith(
         latestBleData: _golfDataListItem,

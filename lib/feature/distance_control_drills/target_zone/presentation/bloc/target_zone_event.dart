@@ -48,7 +48,7 @@ class StartGameEvent extends TargetZoneEvent {
 
 // In-game events
 class ShotRecordedEvent extends TargetZoneEvent {
-  final int actualCarry;
+  final double actualCarry;
 
   const ShotRecordedEvent(this.actualCarry);
 

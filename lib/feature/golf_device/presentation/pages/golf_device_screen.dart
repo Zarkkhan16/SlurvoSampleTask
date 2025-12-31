@@ -34,17 +34,17 @@ class _GolfDeviceViewState extends State<GolfDeviceView> {
     return BlocConsumer<GolfDeviceBloc, GolfDeviceState>(
       listener: (context, state) async {
         if (state is ClubUpdatedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Club updated",
-                style: AppTextStyle.roboto(
-                  color: Colors.black,
-                ),
-              ),
-              backgroundColor: Colors.white,
-            ),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(
+          //     content: Text(
+          //       "Club updated",
+          //       style: AppTextStyle.roboto(
+          //         color: Colors.black,
+          //       ),
+          //     ),
+          //     backgroundColor: Colors.white,
+          //   ),
+          // );
         } else if (state is ErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
@@ -202,9 +202,11 @@ class _GolfDeviceViewState extends State<GolfDeviceView> {
                         name: AppStrings.clubs[state.golfData.clubName],
                       ),
                       onClubSelected: (value) {
+                        context.read<GolfDeviceBloc>().add(PauseBleSyncEvent());
                         context
                             .read<GolfDeviceBloc>()
                             .add(UpdateClubEvent(int.parse(value.code)));
+                        context.read<GolfDeviceBloc>().add(ResumeBleSyncEvent());
                       },
                       backButtonHide: true,
                       onBackButton: () async {

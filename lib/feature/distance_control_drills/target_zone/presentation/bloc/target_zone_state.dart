@@ -56,7 +56,7 @@ class TargetZoneGameState extends TargetZoneState {
 
   int get tolerance => session.config.tolerance;
 
-  int? get lastActualCarry {
+  double? get lastActualCarry {
     if (session.shots.isEmpty) return null;
     return session.shots.last.actualCarry;
   }

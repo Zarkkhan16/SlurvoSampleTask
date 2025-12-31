@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 class ShotResult extends Equatable {
-  final int actualCarry;
+  final double actualCarry;
   final DateTime timestamp;
   final bool isWithinTarget;
 

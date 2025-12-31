@@ -111,7 +111,7 @@ class _TargetZoneGameScreenState extends State<TargetZoneGameScreen> {
                     const SizedBox(height: 16),
                     StatBoxWidget(
                       label: 'Actual Carry',
-                      value: '${state.lastActualCarry ?? 0} yds',
+                      value: '${state.lastActualCarry ?? 0.0} yds',
                       isGreen: state.isLastShotWithinTarget,
                       showColor: state.lastActualCarry == null ? false : true,
                     ),

@@ -30,6 +30,9 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
     totalDistance: 0.0,
   );
   bool _units = false;
+  GolfDataEntity? _firstPacketBaseline;
+  GolfDataEntity? _lastValidGolfData;
+  bool _isFirstPacketHandled = false;
 
   TargetZoneBloc({required this.bleRepository})
       : super(
@@ -48,6 +51,16 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
     on<RestartSessionEvent>(_onRestartSession);
     on<ResetGameEvent>(_onResetGame);
     on<BleDataReceivedEvent>(_onBleDataReceived);
+  }
+
+
+  bool _isSameGolfData(GolfDataEntity a, GolfDataEntity b) {
+    return a.recordNumber == b.recordNumber &&
+        a.clubName == b.clubName &&
+        a.clubSpeed == b.clubSpeed &&
+        a.ballSpeed == b.ballSpeed &&
+        a.carryDistance == b.carryDistance &&
+        a.totalDistance == b.totalDistance;
   }
 
   // Setup Phase Handlers
@@ -159,10 +172,40 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
     print('🎮 Practice Games: Processing BLE data...');
     try {
       _parseGolfData(Uint8List.fromList(event.data));
+
+      if (!_isFirstPacketHandled) {
+        _isFirstPacketHandled = true;
+        _firstPacketBaseline = _golfData;
+        print("🧠 TargetZone: Baseline stored (first packet)");
+        return;
+      }
+
+      // 🔁 SECOND PACKET vs BASELINE
+      if (_firstPacketBaseline != null) {
+        if (_isSameGolfData(_firstPacketBaseline!, _golfData)) {
+          print("🔁 TargetZone: Same as baseline → ignored");
+          return;
+        }
+
+        print("✅ TargetZone: Different from baseline → accepted");
+        _firstPacketBaseline = null; // baseline consumed
+      }
+
+      // 🔁 DUPLICATE FILTER (after baseline phase)
+      if (_lastValidGolfData != null &&
+          _isSameGolfData(_lastValidGolfData!, _golfData)) {
+        print("🔁 TargetZone: Duplicate packet ignored");
+        return;
+      }
+
+      // ✅ VALID SHOT
+      _lastValidGolfData = _golfData;
+
+
       add(
         ShotRecordedEvent(
-          int.parse(
-            _golfData.carryDistance.toStringAsFixed(0),
+          double.parse(
+            _golfData.carryDistance.toStringAsFixed(1),
           ),
         ),
       );
@@ -290,6 +333,9 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
       print('🛑 Stopping old BLE subscription - Restarting session');
       await _bleSubscription?.cancel();
       _syncTimer?.cancel();
+      _isFirstPacketHandled = false;
+      _firstPacketBaseline = null;
+      _lastValidGolfData = null;
 
       await Future.delayed(Duration(milliseconds: 500));
 
@@ -317,6 +363,9 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
     print('🛑 Resetting game - Stopping all BLE resources');
     await _bleSubscription?.cancel();
     _syncTimer?.cancel();
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
 
     emit(
       const TargetZoneSetupState(

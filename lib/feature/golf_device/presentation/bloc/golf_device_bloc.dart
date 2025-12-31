@@ -216,17 +216,17 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onPauseBleSync(
-      PauseBleSyncEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    PauseBleSyncEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     _isBleSyncPaused = true;
     print("⏸️ BLE Sync Paused");
   }
 
   Future<void> _onResumeBleSync(
-      ResumeBleSyncEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    ResumeBleSyncEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     _isBleSyncPaused = false;
     print("▶️ BLE Sync Resumed");
   }
@@ -247,7 +247,8 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     if (bleRepository.isConnected) {
       try {
         int checksum = (0x01 + _golfData.clubName) & 0xFF;
-        bleRepository.writeData([0x47, 0x46, 0x01, _golfData.clubName, 0x00, checksum]);
+        bleRepository
+            .writeData([0x47, 0x46, 0x01, _golfData.clubName, 0x00, checksum]);
       } catch (e) {
         emit(ErrorState('Failed to send sync packet: $e'));
       }
@@ -260,9 +261,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   ) {
     final data = event.data;
 
-    print("@@@@@@");
-    print(data);
-
     _bleResponseController.add(data);
 
     if (data.length >= 3) {
@@ -271,10 +269,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
           if (data.length >= 16) {
             _parseGolfData(Uint8List.fromList(data));
             // 🚫 1. Ignore ZERO packets
-            final isZeroPacket =
-                _golfData.recordNumber == 0 &&
-                    _golfData.carryDistance == 0 &&
-                    _golfData.totalDistance == 0;
+            final isZeroPacket = _golfData.recordNumber == 0 &&
+                _golfData.carryDistance == 0 &&
+                _golfData.totalDistance == 0;
             if (!_isFirstPacketHandled) {
               _isFirstPacketHandled = true;
 
@@ -365,15 +362,8 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     Emitter<GolfDeviceState> emit,
   ) async {
     if (state is ConnectedState) {
-      _isBleSyncPaused = true;
+      // _isBleSyncPaused = true;
       final currentState = state as ConnectedState;
-      _golfData = _golfData.copyWith(clubName: event.clubId);
-
-      emit(currentState.copyWith(
-        golfData: _golfData,
-        isLoading: false,
-      ));
-
       try {
         final int command = 0x02;
         final int clubId = event.clubId & 0xFF;
@@ -388,14 +378,21 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
           0x00,
           checksum,
         ];
-
-        print("📤 Club Packet: $packet");
         bleRepository.writeData(packet);
         await Future.delayed(const Duration(milliseconds: 300));
-        _isBleSyncPaused = false;
+        // _isBleSyncPaused = false;
       } catch (e) {
         emit(ErrorState('Failed to update club: $e'));
       }
+
+      _golfData = _golfData.copyWith(clubName: event.clubId);
+
+      emit(
+        currentState.copyWith(
+          golfData: _golfData,
+          isLoading: false,
+        ),
+      );
     }
   }
 
@@ -413,10 +410,10 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
         print(sessionSummary);
       }
 
-      if(event.isNotBottom){
+      if (event.isNotBottom) {
         emit(NavigateToSessionSummaryState(summaryData: sessionSummary));
       }
-      if(event.isNotBottom == false){
+      if (event.isNotBottom == false) {
         _resetFirstPacketLogic();
         add(ResetGolfDeviceEvent());
       }
@@ -432,7 +429,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     }
   }
 
-
   void _resetFirstPacketLogic() {
     _isFirstPacketHandled = false;
     _firstPacketBaseline = null;
@@ -440,9 +436,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onSaveAllShots(
-      SaveAllShotsEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    SaveAllShotsEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     if (_shotRecords.isNotEmpty) {
       emit(SaveDataLoading());
       await _saveAllShotsToFirebase();
@@ -649,7 +645,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     print("   Unit Mode: ${isMeters ? 'METERS' : 'YARDS'}");
   }
 
-  void _storeShotData(GolfDataEntity data) async{
+  void _storeShotData(GolfDataEntity data) async {
     final now = DateTime.now();
     final date =
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
@@ -671,13 +667,13 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     }
 
     if (!_isSessionInitialized || _currentSessionDate != date) {
-      _currentSessionNumber = await datasource.getTodayNextSessionNumber(userUid, date);
+      _currentSessionNumber =
+          await datasource.getTodayNextSessionNumber(userUid, date);
       _currentSessionDate = date;
       _isSessionInitialized = true;
-      print("✅ New session started for $date, Session Number: $_currentSessionNumber");
+      print(
+          "✅ New session started for $date, Session Number: $_currentSessionNumber");
     }
-
-
 
     final shotModel = ShotAnalysisModel(
       id: '',
@@ -703,7 +699,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     print("📊 Stored Shots: $_shotRecords");
     print("📦 Session Data Count: ${_sessionData.length}");
   }
-
 
   Future<void> _onDeleteLatestShot(
     DeleteLatestShotEvent event,
@@ -817,9 +812,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onReset(
-      ResetGolfDeviceEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    ResetGolfDeviceEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     // 🧹 Cancel streams & timers
     await _notificationSubscription?.cancel();
     _notificationSubscription = null;
