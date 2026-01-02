@@ -32,6 +32,10 @@ class DistanceMasterBloc
   int? _setupLongestDistance;
   int? _setupIncrementValue;
 
+  GolfDataEntity? _firstPacketBaseline;
+  GolfDataEntity? _lastValidGolfData;
+  bool _isFirstPacketHandled = false;
+
   DistanceMasterBloc({required this.bleRepository})
       : super(DistanceMasterInitial()) {
     on<InitializeGameEvent>(_onInitializeGame);
@@ -41,6 +45,7 @@ class DistanceMasterBloc
     on<EndSessionEvent>(_onEndSession);
     on<RestartGameEvent>(_onRestartGame);
     on<BleDataReceivedEvent>(_onBleDataReceived);
+    on<EndGameEvent>(_onEndGame);
   }
 
   void _onInitializeGame(
@@ -128,6 +133,14 @@ class DistanceMasterBloc
     ));
   }
 
+  bool _isSameGolfData(GolfDataEntity a, GolfDataEntity b) {
+    return a.recordNumber == b.recordNumber &&
+        a.clubSpeed == b.clubSpeed &&
+        a.ballSpeed == b.ballSpeed &&
+        a.carryDistance == b.carryDistance &&
+        a.totalDistance == b.totalDistance;
+  }
+
   void _onStartGame(StartGameEvent event, Emitter<DistanceMasterState> emit) {
     if (state is GameSetupState) {
       final setupState = state as GameSetupState;
@@ -177,7 +190,10 @@ class DistanceMasterBloc
     if (state is GameInProgressState) {
       final currentState = state as GameInProgressState;
 
-      final int carry = event.carryDistance.round();
+      final double carry = event.carryDistance;
+
+      print("value");
+      print(carry);
 
       // Check if shot is within tolerance
       bool isSuccess = carry >= currentState.minDistance &&
@@ -335,6 +351,7 @@ class DistanceMasterBloc
   }
 
   void _onEndSession(EndSessionEvent event, Emitter<DistanceMasterState> emit) {
+    _resetBaselineLogic();
     if (state is GameInProgressState) {
       final currentState = state as GameInProgressState;
       _calculateAndEmitSessionComplete(
@@ -342,9 +359,13 @@ class DistanceMasterBloc
     }
   }
 
-  void _onRestartGame(
-      RestartGameEvent event, Emitter<DistanceMasterState> emit) {
-    _bleSubscription?.cancel();
+  Future<void> _onRestartGame(
+      RestartGameEvent event, Emitter<DistanceMasterState> emit) async {
+    await _bleSubscription?.cancel();
+    _bleSubscription = null;
+    _syncTimer?.cancel();
+    _syncTimer = null;
+    _resetBaselineLogic();
     _setupShortestDistance = null;
     _setupLongestDistance = null;
     _setupIncrementValue = null;
@@ -412,10 +433,45 @@ class DistanceMasterBloc
     print('🎮 Practice Games: Processing BLE data...');
     try {
       _parseGolfData(Uint8List.fromList(event.data));
+
+      // 🧠 FIRST PACKET → BASELINE
+      if (!_isFirstPacketHandled) {
+        _isFirstPacketHandled = true;
+        _firstPacketBaseline = _golfData;
+        print("🧠 DistanceMaster: Baseline stored (first packet)");
+        return;
+      }
+
+      // 🔁 SECOND PACKET vs BASELINE
+      if (_firstPacketBaseline != null) {
+        if (_isSameGolfData(_firstPacketBaseline!, _golfData)) {
+          print("🔁 DistanceMaster: Same as baseline → ignored");
+          return;
+        }
+
+        print("✅ DistanceMaster: Different from baseline → accepted");
+        _firstPacketBaseline = null; // baseline consumed
+      }
+
+      // 🔁 DUPLICATE FILTER
+      if (_lastValidGolfData != null &&
+          _isSameGolfData(_lastValidGolfData!, _golfData)) {
+        print("🔁 DistanceMaster: Duplicate packet ignored");
+        return;
+      }
+
+      // ✅ VALID SHOT
+      _lastValidGolfData = _golfData;
       add(ShotReceivedEvent(_golfData.carryDistance));
     } catch (e) {
       print('❌ Failed to parse BLE data: $e');
     }
+  }
+
+  void _resetBaselineLogic() {
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
   }
 
   void _parseGolfData(Uint8List data) {
@@ -465,6 +521,47 @@ class DistanceMasterBloc
   @override
   Future<void> close() {
     _bleSubscription?.cancel();
+    _resetBaselineLogic();
     return super.close();
   }
+
+  Future<void> _onEndGame(
+      EndGameEvent event,
+      Emitter<DistanceMasterState> emit,
+      ) async {
+    print('🛑 DistanceMaster: Ending game & cleaning resources');
+
+    // 🛑 Stop BLE
+    await _bleSubscription?.cancel();
+    _bleSubscription = null;
+
+    // 🛑 Stop sync timer
+    _syncTimer?.cancel();
+    _syncTimer = null;
+
+    // 🧹 Reset baseline / duplicate logic
+    _resetBaselineLogic();
+
+    // 🧹 Clear setup values
+    _setupShortestDistance = null;
+    _setupLongestDistance = null;
+    _setupIncrementValue = null;
+
+    // 🧹 Reset golf data
+    _golfData = GolfDataEntity(
+      battery: 0,
+      recordNumber: 0,
+      clubName: 0,
+      clubSpeed: 0.0,
+      ballSpeed: 0.0,
+      carryDistance: 0.0,
+      totalDistance: 0.0,
+    );
+
+    // ⬅️ Go back to initial screen
+    emit(DistanceMasterInitial());
+
+    print('✅ DistanceMaster: Game ended successfully');
+  }
+
 }

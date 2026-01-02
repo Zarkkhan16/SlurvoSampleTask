@@ -124,5 +124,5 @@ class RetryCurrentLevelEvent extends LadderDrillEvent {}
 
 class EndSessionEvent extends LadderDrillEvent {}
 
-class RestartGameEvent extends LadderDrillEvent {}
+class RestartLadderDrillGameEvent extends LadderDrillEvent {}
 class NextLevelEvent extends LadderDrillEvent {}

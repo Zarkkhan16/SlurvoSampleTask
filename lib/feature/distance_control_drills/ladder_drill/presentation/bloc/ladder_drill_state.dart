@@ -75,9 +75,9 @@ class GameInProgressState extends LadderDrillState {
   final int streak;
   final int maxStreak;
 
-  int? get lastActualCarry {
+  double? get lastActualCarry {
     if (currentShots.isEmpty) return null;
-    return currentShots.last.carryDistance.toInt();
+    return currentShots.last.carryDistance;
   }
 
   bool get isLastShotWithinTarget {

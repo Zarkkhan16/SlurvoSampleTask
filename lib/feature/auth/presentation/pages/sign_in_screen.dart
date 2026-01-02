@@ -45,7 +45,7 @@ class _SignInScreenState extends State<SignInScreen> {
             if (state is Authenticated) {
               Navigator.pushNamedAndRemoveUntil(
                 context,
-                '/landingDashboard',
+                '/MainScreen',
                 (route) => false,
               );
             } else if (state is AuthLoginSuccess) {
@@ -53,14 +53,14 @@ class _SignInScreenState extends State<SignInScreen> {
                 const SnackBar(
                   content: Text('Login successful!'),
                   backgroundColor: Colors.green,
-                  duration: Duration(seconds: 2),
+                  duration: Duration(seconds: 1),
                 ),
               );
 
               Future.delayed(const Duration(milliseconds: 500), () {
                 Navigator.pushNamedAndRemoveUntil(
                   context,
-                  '/landingDashboard',
+                  '/MainScreen',
                   (route) => false,
                 );
               });

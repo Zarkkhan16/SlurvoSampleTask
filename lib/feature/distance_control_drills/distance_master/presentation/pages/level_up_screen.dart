@@ -176,8 +176,7 @@ class LevelUpScreen extends StatelessWidget {
                           Text(
                             state.currentShots.isEmpty
                                 ? "0"
-                                : state.currentShots.last.carryDistance
-                                    .toStringAsFixed(0),
+                                : state.currentShots.last.carryDistance.toString(),
                             style: AppTextStyle.oswald(
                               fontWeight: FontWeight.w700,
                               fontSize: 40,

@@ -26,7 +26,14 @@ class InitializeGameEvent extends DistanceMasterEvent {
   });
 
   @override
-  List<Object?> get props => [shortestDistance, longestDistance, difficulty, increment, customIncrement, players];
+  List<Object?> get props => [
+        shortestDistance,
+        longestDistance,
+        difficulty,
+        increment,
+        customIncrement,
+        players
+      ];
 }
 
 class StartGameEvent extends DistanceMasterEvent {}
@@ -126,4 +133,8 @@ class EditPlayerEvent extends DistanceMasterEvent {
 
   @override
   List<Object> get props => [playerIndex, newName];
+}
+
+class EndGameEvent extends DistanceMasterEvent {
+  EndGameEvent();
 }

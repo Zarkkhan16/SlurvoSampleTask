@@ -180,7 +180,8 @@ class LadderDrillSessionSummary extends StatelessWidget {
                     Spacer(),
                     SessionViewButton(
                       onSessionClick: () {
-                        context.read<LadderDrillBloc>().add(RestartGameEvent());
+                        context.read<LadderDrillBloc>().add(RestartLadderDrillGameEvent());
+                        Navigator.pop(context);
                       },
                       buttonText: "Restart",
                     ),

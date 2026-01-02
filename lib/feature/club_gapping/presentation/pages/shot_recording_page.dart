@@ -97,7 +97,7 @@ class ShotRecordingScreen extends StatelessWidget {
                   children: [
                     Text(
                       latestShot != null
-                          ? latestShot.carryDistance.toStringAsFixed(2)
+                          ? latestShot.carryDistance.toStringAsFixed(1)
                           : '0.00',
                       style: AppTextStyle.oswald(
                         fontSize: 65,

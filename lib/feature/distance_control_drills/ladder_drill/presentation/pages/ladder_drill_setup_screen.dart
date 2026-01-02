@@ -50,6 +50,9 @@ class _LadderDrillSetupScreenState extends State<LadderDrillSetupScreen> {
       // bottomNavigationBar: BottomNavBar(),
       body: BlocListener<LadderDrillBloc, LadderDrillState>(
         listener: (context, state) {
+          if (state is GameSetupState) {
+            _navigatedToLevelUp = true; // ✅ RESET HERE
+          }
           if (state is GameSetupState && state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.errorMessage!)),

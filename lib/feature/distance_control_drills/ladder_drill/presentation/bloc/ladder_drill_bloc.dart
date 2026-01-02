@@ -30,6 +30,9 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
     totalDistance: 0.0,
   );
 
+  GolfDataEntity? _firstPacketBaseline;
+  GolfDataEntity? _lastValidGolfData;
+  bool _isFirstPacketHandled = false;
   LadderDrillBloc({required this.bleRepository}) : super(GameSetupState()) {
     // Setup Events
     on<UpdateShortestDistanceEvent>(_onUpdateShortestDistance);
@@ -48,7 +51,7 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
     on<NextLevelEvent>(_onNextLevel);
     on<BleDataReceivedEvent>(_onBleDataReceived);
     on<EndSessionEvent>(_onEndSession);
-    on<RestartGameEvent>(_onRestartGame);
+    on<RestartLadderDrillGameEvent>(_onRestartGame);
 
     _initializeBleListener();
   }
@@ -80,6 +83,15 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
         errorMessage: null,
       ));
     }
+  }
+
+  bool _isSameGolfData(GolfDataEntity a, GolfDataEntity b) {
+    return a.recordNumber == b.recordNumber &&
+        a.clubName == b.clubName &&
+        a.clubSpeed == b.clubSpeed &&
+        a.ballSpeed == b.ballSpeed &&
+        a.carryDistance == b.carryDistance &&
+        a.totalDistance == b.totalDistance;
   }
 
   Future<void> _onUpdateLongestDistance(
@@ -322,10 +334,48 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
     // print('🎮 Practice Games: Processing BLE data...');
     try {
       _parseGolfData(Uint8List.fromList(event.data));
+
+      // 🧠 FIRST PACKET → baseline (ZERO or NON-ZERO)
+      if (!_isFirstPacketHandled) {
+        _isFirstPacketHandled = true;
+        _firstPacketBaseline = _golfData;
+        print("🧠 LadderDrill: Baseline stored (first packet)");
+        return;
+      }
+
+      // 🔁 Compare with baseline ONCE
+      if (_firstPacketBaseline != null) {
+        if (_isSameGolfData(_firstPacketBaseline!, _golfData)) {
+          print("🔁 LadderDrill: Same as baseline → ignored");
+          return;
+        }
+
+        print("✅ LadderDrill: Different from baseline → accepted");
+        _firstPacketBaseline = null; // consume baseline
+      }
+
+      // 🔁 Duplicate protection (after baseline)
+      if (_lastValidGolfData != null &&
+          _isSameGolfData(_lastValidGolfData!, _golfData)) {
+        print("🔁 LadderDrill: Duplicate ignored");
+        return;
+      }
+
+      // ✅ VALID SHOT
+      _lastValidGolfData = _golfData;
+
+
       add(ShotReceivedEvent(_golfData.carryDistance));
     } catch (e) {
       // print('❌ Failed to parse BLE data: $e');
     }
+  }
+
+
+  void _resetBaselineLogic() {
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
   }
 
   void _parseGolfData(Uint8List data) {
@@ -379,7 +429,7 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
     if (state is GameInProgressState) {
       final gameState = state as GameInProgressState;
 
-      final int carry = event.carryDistance.round();
+      final double carry = event.carryDistance;
 
       final isSuccess = carry >= gameState.minDistance &&
           carry <= gameState.maxDistance;
@@ -547,6 +597,7 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
     EndSessionEvent event,
     Emitter<LadderDrillState> emit,
   ) async {
+    _resetBaselineLogic();
     if (state is GameInProgressState) {
       final gameState = state as GameInProgressState;
       _emitSessionComplete(
@@ -555,10 +606,12 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
   }
 
   Future<void> _onRestartGame(
-    RestartGameEvent event,
+      RestartLadderDrillGameEvent event,
     Emitter<LadderDrillState> emit,
   ) async {
-    emit(GameSetupState());
+    _stopBle();
+    _resetBaselineLogic();
+    // emit(GameSetupState());
   }
 
   // ========== Helper Methods ==========
@@ -587,6 +640,7 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
             ) /
             allLevels.fold<int>(0, (sum, level) => sum + level.shots.length);
 
+    _stopBle();
     emit(SessionCompleteState(
       allLevels: allLevels,
       highestLevelReached: gameState.currentLevel,
@@ -599,10 +653,23 @@ class LadderDrillBloc extends Bloc<LadderDrillEvent, LadderDrillState> {
       finalTargetDistance: gameState.targetDistance,
     ));
   }
+  Future<void> _stopBle() async {
+    print("🛑 LadderDrill: Stopping BLE");
+
+    await _bleSubscription?.cancel();
+    _bleSubscription = null;
+
+    _syncTimer?.cancel();
+    _syncTimer = null;
+
+    _resetBaselineLogic();
+  }
+
 
   @override
   Future<void> close() {
     _bleSubscription?.cancel();
+    _resetBaselineLogic();
     return super.close();
   }
 }

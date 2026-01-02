@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onegolf/feature/golf_device/domain/entities/golf_data_entities.dart';
 
 import '../../../ble_management/domain/repositories/ble_management_repository.dart';
 import '../../domain/entities/club_entity.dart';
@@ -15,6 +16,11 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   StreamSubscription? _bleSubscription;
   Timer? _syncTimer;
   int _currentClubId = 0;
+  GolfDataEntity? _firstPacketBaseline;
+  GolfDataEntity? _lastValidGolfData;
+  bool _isFirstPacketHandled = false;
+  bool _clubCommandSent = false;
+
   ClubGappingBloc({required this.bleRepository}) : super(ClubGappingInitial()) {
     on<LoadAvailableClubsEvent>(_onLoadAvailableClubs);
     on<ToggleClubSelectionEvent>(_onToggleClubSelection);
@@ -74,7 +80,7 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
 
     // Subscribe to BLE notifications
     _bleSubscription = bleRepository.subscribeToNotifications().listen(
-          (data) {
+      (data) {
         print('📡 BLE Data received: $data');
         _parseGolfData(Uint8List.fromList(data));
       },
@@ -105,10 +111,36 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
     print('⏱️ Sync timer started (1 second interval)');
   }
 
+  Future<void> _sendClubCommand(int clubId) async {
+    print("🎯 Sending CLUB command for clubId: $clubId");
+
+    int checksum = (0x02 + clubId) & 0xFF;
+
+    final packet = [
+      0x47,
+      0x46,
+      0x02, // 👈 CLUB COMMAND
+      clubId,
+      0x00,
+      checksum,
+    ];
+
+    await bleRepository.writeData(packet);
+  }
+
   Future<void> _sendSyncPacket() async {
     int checksum = (0x01 + _currentClubId) & 0xFF;
     final packet = [0x47, 0x46, 0x01, _currentClubId, 0x00, checksum];
     await bleRepository.writeData(packet);
+  }
+
+  bool _isSameGolfData(GolfDataEntity a, GolfDataEntity b) {
+    return a.recordNumber == b.recordNumber &&
+        a.clubName == b.clubName &&
+        a.clubSpeed == b.clubSpeed &&
+        a.ballSpeed == b.ballSpeed &&
+        a.carryDistance == b.carryDistance &&
+        a.totalDistance == b.totalDistance;
   }
 
   void _parseGolfData(Uint8List data) {
@@ -143,19 +175,62 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
     print("   Total: ${totalDistance.toStringAsFixed(1)} yds");
     print("   Smash: ${smashFactor.toStringAsFixed(2)}");
 
-    // ✅ Trigger shot received event
-    add(ShotDataReceivedEvent(
-      carryDistance: carryDistance,
-      totalDistance: totalDistance,
+    final _golfData = GolfDataEntity(
+      battery: data[3],
+      recordNumber: (data[4] << 8) | data[5],
+      clubName: data[6],
       clubSpeed: clubSpeed,
       ballSpeed: ballSpeed,
-      smashFactor: smashFactor,
+      carryDistance: carryDistance,
+      totalDistance: totalDistance,
+    );
+
+    // 🧠 FIRST PACKET → baseline (ZERO or NON-ZERO)
+    if (!_isFirstPacketHandled) {
+      _isFirstPacketHandled = true;
+      _firstPacketBaseline = _golfData;
+      print("🧠 LadderDrill: Baseline stored (first packet)");
+      return;
+    }
+
+    // 🔁 Compare with baseline ONCE
+    if (_firstPacketBaseline != null) {
+      if (_isSameGolfData(_firstPacketBaseline!, _golfData)) {
+        print("🔁 LadderDrill: Same as baseline → ignored");
+        return;
+      }
+
+      print("✅ LadderDrill: Different from baseline → accepted");
+      _firstPacketBaseline = null; // consume baseline
+    }
+
+    // 🔁 Duplicate protection (after baseline)
+    if (_lastValidGolfData != null &&
+        _isSameGolfData(_lastValidGolfData!, _golfData)) {
+      print("🔁 LadderDrill: Duplicate ignored");
+      return;
+    }
+
+    // ✅ VALID SHOT
+    _lastValidGolfData = _golfData;
+
+    // ✅ Trigger shot received event
+    add(ShotDataReceivedEvent(
+      carryDistance: _golfData.carryDistance,
+      totalDistance: _golfData.totalDistance,
+      clubSpeed: _golfData.clubSpeed,
+      ballSpeed: _golfData.ballSpeed,
+      smashFactor: _golfData.smashFactor,
     ));
   }
 
   void _stopSyncTimer() {
     _syncTimer?.cancel();
     _syncTimer = null;
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
+    // _clubCommandSent = false;
     print('⏹️ Sync timer stopped');
   }
 
@@ -164,9 +239,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   Future<void> _onLoadAvailableClubs(
-      LoadAvailableClubsEvent event,
-      Emitter<ClubGappingState> emit,
-      ) async {
+    LoadAvailableClubsEvent event,
+    Emitter<ClubGappingState> emit,
+  ) async {
     emit(ClubGappingLoading());
 
     try {
@@ -190,9 +265,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onToggleClubSelection(
-      ToggleClubSelectionEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    ToggleClubSelectionEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (state is! ClubSelectionState) return;
 
     final currentState = state as ClubSelectionState;
@@ -219,9 +294,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onUpdateShotsPerClub(
-      UpdateShotsPerClubEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    UpdateShotsPerClubEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (state is! ClubSelectionState) return;
 
     final currentState = state as ClubSelectionState;
@@ -240,9 +315,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   }
 
   void _onSelectCustomShots(
-      SelectCustomShotsEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    SelectCustomShotsEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (state is! ClubSelectionState) return;
 
     final currentState = state as ClubSelectionState;
@@ -258,9 +333,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onStartGappingSession(
-      StartGappingSessionEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    StartGappingSessionEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (event.selectedClubs.length < 2) {
       emit(ClubGappingError(
         message: 'Please select at least 2 clubs',
@@ -287,6 +362,7 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
 
     // ✅ Set current club ID for sync packets
     _currentClubId = firstClub.clubId;
+    _clubCommandSent = false;
 
     emit(RecordingShotsState(
       session: session,
@@ -297,10 +373,23 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
       isWaitingForShot: true,
     ));
 
-    // Subscribe to BLE and start sync
-    _subscribeToBleShotData();
+    _sendClubCommand(_currentClubId).then((_) {
+      _clubCommandSent = true;
 
-    print('🏌️ Started session for club: ${firstClub.name} (ID: $_currentClubId)');
+      // 2️⃣ Reset baseline for new club
+      _isFirstPacketHandled = false;
+      _firstPacketBaseline = null;
+      _lastValidGolfData = null;
+
+      // 3️⃣ Start BLE listening + sync
+      _subscribeToBleShotData();
+    });
+
+    // Subscribe to BLE and start sync
+    // _subscribeToBleShotData();
+
+    print(
+        '🏌️ Started session for club: ${firstClub.name} (ID: $_currentClubId)');
   }
 
   // ============================================================
@@ -308,9 +397,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   Future<void> _onShotDataReceived(
-      ShotDataReceivedEvent event,
-      Emitter<ClubGappingState> emit,
-      ) async {
+    ShotDataReceivedEvent event,
+    Emitter<ClubGappingState> emit,
+  ) async {
     if (state is! RecordingShotsState) return;
 
     final currentState = state as RecordingShotsState;
@@ -346,12 +435,15 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
       isWaitingForShot: false,
     ));
 
-    print('✅ Shot ${updatedShots.length} recorded for ${currentState.currentClub.name}');
+    print(
+        '✅ Shot ${updatedShots.length} recorded for ${currentState.currentClub.name}');
 
     // Auto-complete club if all shots recorded
     if (updatedShots.length >= currentState.totalShots) {
       print('⏰ Last shot recorded! Waiting 1 second before showing summary...');
-      await Future.delayed(Duration(seconds: 1),);
+      await Future.delayed(
+        Duration(seconds: 1),
+      );
       add(CompleteCurrentClubEvent());
     }
   }
@@ -361,9 +453,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onRecordShot(
-      RecordShotEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    RecordShotEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (state is! RecordingShotsState) return;
 
     final currentState = state as RecordingShotsState;
@@ -390,9 +482,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onReHitShot(
-      ReHitShotEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    ReHitShotEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (state is! RecordingShotsState) return;
 
     final currentState = state as RecordingShotsState;
@@ -414,13 +506,13 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
     );
 
     // ✅ FIX: Show previous shot if available, otherwise null (zeros)
-    final ShotEntity? newLatestShot = updatedShots.isNotEmpty
-        ? updatedShots.last
-        : null;
+    final ShotEntity? newLatestShot =
+        updatedShots.isNotEmpty ? updatedShots.last : null;
 
     print('🔄 Re-hit: Removed shot, ${updatedShots.length} shots remaining');
     if (newLatestShot != null) {
-      print('   Showing previous shot data: ${newLatestShot.carryDistance.toStringAsFixed(1)} yds');
+      print(
+          '   Showing previous shot data: ${newLatestShot.carryDistance.toStringAsFixed(1)} yds');
     } else {
       print('   No shots remaining - showing zeros');
     }
@@ -441,9 +533,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onDeleteLastShot(
-      DeleteLastShotEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    DeleteLastShotEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (state is! RecordingShotsState) return;
 
     final currentState = state as RecordingShotsState;
@@ -474,9 +566,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   Future<void> _onCompleteCurrentClub(
-      CompleteCurrentClubEvent event,
-      Emitter<ClubGappingState> emit,
-      ) async {
+    CompleteCurrentClubEvent event,
+    Emitter<ClubGappingState> emit,
+  ) async {
     if (state is! RecordingShotsState) return;
 
     final currentState = state as RecordingShotsState;
@@ -511,9 +603,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onRetakeCurrentClub(
-      RetakeCurrentClubEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    RetakeCurrentClubEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (state is! ClubSummaryState) return;
 
     final currentState = state as ClubSummaryState;
@@ -531,6 +623,19 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
 
     // ✅ Update current club ID for sync packets
     _currentClubId = currentState.clubSummary.club.clubId;
+
+    _clubCommandSent = false;
+
+    _syncTimer?.cancel();
+
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
+
+    _sendClubCommand(_currentClubId).then((_) {
+      _clubCommandSent = true;
+      _startSyncTimer();
+    });
 
     // Return to recording state
     emit(RecordingShotsState(
@@ -550,9 +655,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onMoveToNextClub(
-      MoveToNextClubEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    MoveToNextClubEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (state is! ClubSummaryState) return;
 
     final currentState = state as ClubSummaryState;
@@ -574,6 +679,19 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
 
     // ✅ Update current club ID for sync packets
     _currentClubId = nextClub.clubId;
+    _clubCommandSent = false;
+
+// 🛑 Stop sync before switching club
+    _syncTimer?.cancel();
+
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
+
+    _sendClubCommand(_currentClubId).then((_) {
+      _clubCommandSent = true;
+      _startSyncTimer();
+    });
 
     emit(RecordingShotsState(
       session: updatedSession,
@@ -592,9 +710,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onGoToClub(
-      GoToClubEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    GoToClubEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     ClubGappingSessionEntity? session;
 
     if (state is RecordingShotsState) {
@@ -630,9 +748,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onCompleteSession(
-      CompleteSessionEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    CompleteSessionEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     ClubGappingSessionEntity? session;
 
     if (state is RecordingShotsState) {
@@ -680,9 +798,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onRetakeSession(
-      RetakeSessionEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    RetakeSessionEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     if (state is! SessionSummaryState) return;
 
     final currentState = state as SessionSummaryState;
@@ -723,9 +841,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   Future<void> _onSaveSession(
-      SaveSessionEvent event,
-      Emitter<ClubGappingState> emit,
-      ) async {
+    SaveSessionEvent event,
+    Emitter<ClubGappingState> emit,
+  ) async {
     ClubGappingSessionEntity? session;
 
     if (state is SessionSummaryState) {
@@ -763,24 +881,28 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // EXIT SESSION
   // ============================================================
 
-
   Future<void> _onStopListeningToBleData(
-      StopListeningToBleDataClubEvent event,
-      Emitter<ClubGappingState> emit,
-      ) async {
-
+    StopListeningToBleDataClubEvent event,
+    Emitter<ClubGappingState> emit,
+  ) async {
     await _bleSubscription?.cancel();
     _bleSubscription = null;
 
+    _isFirstPacketHandled = false;
+    _firstPacketBaseline = null;
+    _lastValidGolfData = null;
+
     _syncTimer?.cancel();
     _syncTimer = null;
+    _clubCommandSent = false;
 
     print('✅ BLE listener stopped');
   }
+
   void _onExitSession(
-      ExitSessionEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    ExitSessionEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     // ✅ Stop sync timer
     _stopSyncTimer();
 
@@ -793,9 +915,9 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
   // ============================================================
 
   void _onResetToSelection(
-      ResetToSelectionEvent event,
-      Emitter<ClubGappingState> emit,
-      ) {
+    ResetToSelectionEvent event,
+    Emitter<ClubGappingState> emit,
+  ) {
     // ✅ Stop sync timer
     _stopSyncTimer();
 

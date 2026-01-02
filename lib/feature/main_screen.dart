@@ -2,6 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/feature/club_gapping/presentation/bloc/club_gapping_event.dart';
+import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_bloc.dart';
+import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_event.dart';
+import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_bloc.dart';
+import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_event.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_event.dart';
 import 'package:onegolf/feature/golf_device/presentation/bloc/golf_device_bloc.dart';
@@ -64,6 +68,8 @@ class _MainScreenState extends State<MainScreen> {
       context.read<PracticeGamesBloc>().add(ResetSessionEvent());
       context.read<ClubGappingBloc>().add(StopListeningToBleDataClubEvent());
       context.read<TargetZoneBloc>().add(ResetGameEvent());
+      context.read<DistanceMasterBloc>().add(EndGameEvent());
+      context.read<LadderDrillBloc>().add(RestartLadderDrillGameEvent());
     }
 
     if(newIndex == 0 || newIndex == 2 || newIndex == 3)
