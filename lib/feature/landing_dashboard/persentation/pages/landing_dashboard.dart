@@ -171,45 +171,25 @@ class _LandingDashboardState extends State<LandingDashboard> {
             return Column(
               children: [
                 Container(
-                  margin: const EdgeInsets.all(12),
-                  width: double.infinity,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Stack(
-                    children: [
-                      GradientBorderContainer(
-                        borderRadius: 16,
-                        padding: EdgeInsets.zero,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.asset(
-                            AppImages.groundGreen,
-                            fit: BoxFit.fill,
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
+                    margin: const EdgeInsets.all(12),
+                    width: double.infinity,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: GradientBorderContainer(
+                      borderRadius: 16,
+                      padding: EdgeInsets.zero,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/png/test.jpeg',
+                          fit: BoxFit.fill,
+                          width: double.infinity,
+                          height: double.infinity,
                         ),
-                      )
-                      // Container(
-                      //   decoration: BoxDecoration(
-                      //     borderRadius: BorderRadius.circular(16),
-                      //     color: Colors.black.withOpacity(0.4),
-                      //   ),
-                      // ),
-                      // Center(
-                      //   child: Text(
-                      //     "Welcome Back $userName",
-                      //     style: AppTextStyle.oswald(
-                      //       fontSize: 30,
-                      //       fontWeight: FontWeight.bold,
-                      //       color: Colors.white,
-                      //     ),
-                      //   ),
-                      // ),
-                    ],
-                  ),
+                      ),
+                    )
                 ),
                 // Shot Analysis Card
                 Padding(
