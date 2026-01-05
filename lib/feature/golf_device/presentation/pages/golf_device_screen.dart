@@ -202,11 +202,9 @@ class _GolfDeviceViewState extends State<GolfDeviceView> {
                         name: AppStrings.clubs[state.golfData.clubName],
                       ),
                       onClubSelected: (value) {
-                        context.read<GolfDeviceBloc>().add(PauseBleSyncEvent());
                         context
                             .read<GolfDeviceBloc>()
                             .add(UpdateClubEvent(int.parse(value.code)));
-                        context.read<GolfDeviceBloc>().add(ResumeBleSyncEvent());
                       },
                       backButtonHide: true,
                       onBackButton: () async {

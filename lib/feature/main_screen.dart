@@ -39,11 +39,13 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     BottomNavController.currentIndex.addListener(_onTabChanged);
+    BottomNavController.reTapIndex.addListener(_onSameTabTapped);
   }
 
   @override
   void dispose() {
     BottomNavController.currentIndex.removeListener(_onTabChanged);
+    BottomNavController.reTapIndex.removeListener(_onSameTabTapped);
     super.dispose();
   }
 
@@ -62,40 +64,59 @@ class _MainScreenState extends State<MainScreen> {
   void _onTabChanged() {
     final newIndex = BottomNavController.currentIndex.value;
 
+    _resetTabSideEffects(newIndex);
+
     final navigator = _navigatorKeys[newIndex].currentState;
-
-    if (newIndex == 0 || newIndex == 1 || newIndex == 3) {
-      context.read<PracticeGamesBloc>().add(ResetSessionEvent());
-      context.read<ClubGappingBloc>().add(StopListeningToBleDataClubEvent());
-      context.read<TargetZoneBloc>().add(ResetGameEvent());
-      context.read<DistanceMasterBloc>().add(EndGameEvent());
-      context.read<LadderDrillBloc>().add(RestartLadderDrillGameEvent());
-    }
-
-    if(newIndex == 0 || newIndex == 2 || newIndex == 3)
-      {
-        context.read<GolfDeviceBloc>().add(DisconnectDeviceEvent(isNotBottom: false));
-      }
-
-    if (newIndex == 1) {
-      final bloc = context.read<GolfDeviceBloc>();
-      bloc.add(
-        ConnectionStateChangedEvent(
-          bloc.bleRepository.isConnected,
-        ),
-      );
-    }
-
-    if (newIndex == 3) { // Shot Library tab
-      final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-      context.read<ShotLibraryBloc>().add(LoadAllShots(uid));
-    }
-
     if (navigator != null && navigator.canPop()) {
       navigator.popUntil((route) => route.isFirst);
     }
 
     setState(() {});
+  }
+
+  void _resetTabSideEffects(int index) {
+
+      context.read<PracticeGamesBloc>().add(ResetSessionEvent());
+      context.read<ClubGappingBloc>().add(StopListeningToBleDataClubEvent());
+      context.read<TargetZoneBloc>().add(ResetGameEvent());
+      context.read<DistanceMasterBloc>().add(EndGameEvent());
+      context.read<LadderDrillBloc>().add(RestartLadderDrillGameEvent());
+
+    if (index == 0 || index == 2 || index == 3) {
+      context.read<GolfDeviceBloc>()
+          .add(DisconnectDeviceEvent(isNotBottom: false));
+    }
+
+    if (index == 1) {
+      final bloc = context.read<GolfDeviceBloc>();
+      bloc.add(
+        ConnectionStateChangedEvent(bloc.bleRepository.isConnected),
+      );
+    }
+
+    if (index == 3) {
+      final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+      context.read<ShotLibraryBloc>().add(LoadAllShots(uid));
+    }
+  }
+
+
+
+  void _onSameTabTapped() {
+    final index = BottomNavController.reTapIndex.value;
+    if (index == null) return;
+
+    final navigator = _navigatorKeys[index].currentState;
+
+    if (navigator != null && navigator.canPop()) {
+      navigator.popUntil((route) => route.isFirst);
+    }
+
+    // Optional: reset games / BLE when re-tapping
+    _resetTabSideEffects(index);
+
+    // Clear notifier
+    BottomNavController.reTapIndex.value = null;
   }
 
   @override

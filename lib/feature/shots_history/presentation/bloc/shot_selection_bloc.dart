@@ -49,7 +49,7 @@ class ShotHistoryBloc extends Bloc<ShotHistoryEvent, ShotHistoryState> {
       // print(sessionNumber-1);
       // shots = await datasource.fetchShotsForUser(userId, date, sessionNumber-1);
       final allShots = await datasource.fetchShotsForUser(userId, date);
-      shots = allShots.where((s) => s.sessionNumber == event.sessionNumber).toList();
+      shots = allShots.where((s) => s.sessionNumber == event.sessionNumber).toList().reversed.toList();
 
       if (shots.isEmpty) {
         emit(ShotHistoryLoadedState(

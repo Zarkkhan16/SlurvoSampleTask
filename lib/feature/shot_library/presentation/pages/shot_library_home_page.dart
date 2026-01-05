@@ -131,7 +131,7 @@ class _ShotLibraryHomePageState extends State<ShotLibraryHomePage> {
                                     child: RowTileWidget(
                                       onTap: (){
                                         final sortedSessionShots = [...sessionShots]
-                                          ..sort((a, b) => a.shotNumber.compareTo(b.shotNumber));
+                                          ..sort((a, b) => b.shotNumber.compareTo(a.shotNumber));
 
                                         Navigator.push(
                                           context,

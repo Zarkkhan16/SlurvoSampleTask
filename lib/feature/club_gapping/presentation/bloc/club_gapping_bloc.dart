@@ -102,7 +102,7 @@ class ClubGappingBloc extends Bloc<ClubGappingEvent, ClubGappingState> {
     _syncTimer?.cancel();
 
     // ✅ Send sync packet every 1 second with current club ID
-    _syncTimer = Timer.periodic(Duration(seconds: 2), (_) async {
+    _syncTimer = Timer.periodic(Duration(seconds: 1), (_) async {
       if (bleRepository.isConnected) {
         await _sendSyncPacket();
       }

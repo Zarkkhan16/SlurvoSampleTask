@@ -253,7 +253,7 @@ class PracticeGamesBloc extends Bloc<PracticeGamesEvent, PracticeGamesState> {
 
   void _startSyncTimer() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(Duration(seconds: 2), (_) async {
+    _syncTimer = Timer.periodic(Duration(seconds: 1), (_) async {
       if (bleRepository.isConnected) {
         int checksum = (0x01 + 0x00) & 0xFF;
         await bleRepository.writeData([0x47, 0x46, 0x01, 0x00, 0x00, checksum]);

@@ -26,6 +26,62 @@ class RowTileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        // 👇 WHOLE TILE (Avatar + Text)
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque, // 🔥 full row tap
+            onTap: onTap,
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 25,
+                  backgroundColor: AppColors.primaryText,
+                  child: Text(
+                    name[0],
+                    style: AppTextStyle.roboto(
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.buttonText,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: AppTextStyle.roboto(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "$shotNumber Shots, $groupNumber Group",
+                        style: AppTextStyle.roboto(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ⭐ STAR — separate gesture
+        GestureDetector(
+          onTap: onTapStar,
+          child: Icon(
+            Icons.star,
+            color: isFavorite ? AppColors.starColor : Colors.white,
+          ),
+        ),
+      ],
+    );
+    return Row(
+      children: [
         CircleAvatar(
           radius: 25,
           backgroundColor: AppColors.primaryText,
@@ -40,6 +96,7 @@ class RowTileWidget extends StatelessWidget {
         SizedBox(width: 10),
         Expanded(
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque, // 🔥 poora area tappable
             onTap: onTap,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

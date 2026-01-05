@@ -32,6 +32,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   Timer? _syncTimer;
   final Map<int, ShotAnalysisModel> _shotRecords = {};
   final Map<int, ShotAnalysisModel> _sessionData = {};
+  int? _pendingClubId;
   GolfDataEntity _golfData = GolfDataEntity(
     battery: 0,
     recordNumber: 0,
@@ -50,13 +51,16 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   bool _isSessionStart = true;
   final user = FirebaseAuth.instance.currentUser;
   final _bleResponseController = StreamController<List<int>>.broadcast();
+
   Stream<List<int>> get bleResponseStream => _bleResponseController.stream;
+
   int get currentSessionNumber => _currentSessionNumber;
 
   GolfDataEntity? _firstPacketBaseline;
   GolfDataEntity? _lastValidGolfData;
   bool _isFirstPacketHandled = false;
   bool _isBleSyncPaused = false;
+
   GolfDeviceBloc({
     required this.bleRepository,
     required this.sharedPreferences,
@@ -76,8 +80,6 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     on<PauseBleSyncEvent>(_onPauseBleSync);
     on<ResumeBleSyncEvent>(_onResumeBleSync);
 
-
-
     // add(ConnectionStateChangedEvent(bleRepository.isConnected));
   }
 
@@ -92,9 +94,9 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onUpdateElapsedTime(
-      UpdateElapsedTimeEvent event,
-      Emitter<GolfDeviceState> emit,
-      ) async {
+    UpdateElapsedTimeEvent event,
+    Emitter<GolfDeviceState> emit,
+  ) async {
     if (state is ConnectedState) {
       final currentState = state as ConnectedState;
       emit(currentState.copyWith(
@@ -208,7 +210,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
 
   void _startSyncTimer() {
     _syncTimer?.cancel();
-    _syncTimer = Timer.periodic(Duration(seconds: 02), (_) {
+    _syncTimer = Timer.periodic(Duration(seconds: 1), (_) {
       if (bleRepository.isConnected && !_isBleSyncPaused) {
         add(SendSyncPacketEvent());
       }
@@ -261,7 +263,7 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   ) {
     final data = event.data;
 
-    _bleResponseController.add(data);
+    // _bleResponseController.add(data);
 
     if (data.length >= 3) {
       switch (data[2]) {
@@ -320,13 +322,43 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
           }
           break;
         case 0x02:
-          if (state is ConnectedState) {
-            final currentState = state as ConnectedState;
-            emit(ClubUpdatedState(
-              golfData: currentState.golfData,
-              units: currentState.units,
-            ));
+          if (data.length < 6) return;
+          if (data[3] != 0x4F || data[4] != 0x4B) {
+            print("❌ Invalid club ACK");
+            return;
           }
+          print("✅ Club ACK received");
+
+          _isBleSyncPaused = false;
+
+          if (_pendingClubId != null) {
+            _golfData = _golfData.copyWith(
+              clubName: _pendingClubId!,
+            );
+          }
+
+          _pendingClubId = null;
+
+          if (state is ConnectedState) {
+            final current = state as ConnectedState;
+            emit(current.copyWith(golfData: _golfData));
+          }
+
+          emit(ClubUpdatedState(
+            golfData: _golfData,
+            units: _units,
+          ));
+
+          return;
+
+          // if (state is ConnectedState) {
+          //   final currentState = state as ConnectedState;
+          //   _isBleSyncPaused = false;
+          //   emit(ClubUpdatedState(
+          //     golfData: currentState.golfData,
+          //     units: currentState.units,
+          //   ));
+          // }
           break;
         case 0x04:
           _units = !_units;
@@ -358,43 +390,31 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
   }
 
   Future<void> _onUpdateClub(
-    UpdateClubEvent event,
-    Emitter<GolfDeviceState> emit,
-  ) async {
-    if (state is ConnectedState) {
-      // _isBleSyncPaused = true;
-      final currentState = state as ConnectedState;
-      try {
-        final int command = 0x02;
-        final int clubId = event.clubId & 0xFF;
+      UpdateClubEvent event,
+      Emitter<GolfDeviceState> emit,
+      ) async {
+    if (!bleRepository.isConnected) return;
 
-        final int checksum = (command + clubId) & 0xFF;
+    _isBleSyncPaused = true;
+    _pendingClubId = event.clubId;
 
-        final List<int> packet = [
-          0x47,
-          0x46,
-          command,
-          clubId,
-          0x00,
-          checksum,
-        ];
-        bleRepository.writeData(packet);
-        await Future.delayed(const Duration(milliseconds: 300));
-        // _isBleSyncPaused = false;
-      } catch (e) {
-        emit(ErrorState('Failed to update club: $e'));
-      }
+    final cmd = 0x02;
+    final clubId = event.clubId & 0xFF;
+    final checksum = (cmd + clubId + 0x00) & 0xFF;
 
-      _golfData = _golfData.copyWith(clubName: event.clubId);
+    final packet = [
+      0x47,
+      0x46,
+      cmd,
+      clubId,
+      0x00,
+      checksum,
+    ];
 
-      emit(
-        currentState.copyWith(
-          golfData: _golfData,
-          isLoading: false,
-        ),
-      );
-    }
+    print("📤 Sending club packet: $packet");
+    bleRepository.writeData(packet);
   }
+
 
   Future<void> _onDisconnect(
     DisconnectDeviceEvent event,
@@ -635,14 +655,14 @@ class GolfDeviceBloc extends Bloc<GolfDeviceEvent, GolfDeviceState> {
     );
 
     _units = isMeters;
-    print("📊 Parsed Golf Data:");
-    print("   Record: ${_golfData.recordNumber}");
-    print("   Club: ${_golfData.clubName}");
-    print("   Carry: ${_golfData.carryDistance} ${isMeters ? 'M' : 'YD'}");
-    print("   Ball Speed: ${_golfData.ballSpeed}");
-    print("   Club Speed: ${_golfData.clubSpeed}");
-    print("   Total: ${_golfData.totalDistance}");
-    print("   Unit Mode: ${isMeters ? 'METERS' : 'YARDS'}");
+    // print("📊 Parsed Golf Data:");
+    // print("   Record: ${_golfData.recordNumber}");
+    // print("   Club: ${_golfData.clubName}");
+    // print("   Carry: ${_golfData.carryDistance} ${isMeters ? 'M' : 'YD'}");
+    // print("   Ball Speed: ${_golfData.ballSpeed}");
+    // print("   Club Speed: ${_golfData.clubSpeed}");
+    // print("   Total: ${_golfData.totalDistance}");
+    // print("   Unit Mode: ${isMeters ? 'METERS' : 'YARDS'}");
   }
 
   void _storeShotData(GolfDataEntity data) async {

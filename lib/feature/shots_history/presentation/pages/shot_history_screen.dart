@@ -304,6 +304,7 @@ class ShotHistoryScreen extends StatelessWidget {
               headingName: "Session View",
               goScanScreen: false,
               onBackButton: () {
+                context.read<GolfDeviceBloc>().add(ResumeBleSyncEvent());
                 Navigator.pop(context, 'connected');
               },
             ),
