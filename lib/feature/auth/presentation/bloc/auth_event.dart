@@ -33,4 +33,19 @@ class SignUpRequested extends AuthEvent {
 class LogoutRequested extends AuthEvent {}
 
 class CheckAuthStatusEvent extends AuthEvent {}
+class UpdateProfileRequested extends AuthEvent {
+  final String name;
+
+  UpdateProfileRequested({required this.name});
+}
+class ChangePasswordRequested extends AuthEvent {
+  final String currentPassword;
+  final String newPassword;
+
+  ChangePasswordRequested({
+    required this.currentPassword,
+    required this.newPassword,
+  });
+}
+
 

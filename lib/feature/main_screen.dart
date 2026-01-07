@@ -14,6 +14,8 @@ import '../feature/landing_dashboard/persentation/pages/landing_dashboard.dart';
 import '../feature/shot_library/presentation/pages/shot_library_home_page.dart';
 import '../feature/practice_games/presentation/pages/practice_games_screen.dart';
 import '../feature/golf_device/presentation/pages/golf_device_screen.dart';
+import 'auth/presentation/bloc/auth_bloc.dart';
+import 'auth/presentation/bloc/auth_state.dart';
 import 'bottom_controller.dart';
 import 'club_gapping/presentation/bloc/club_gapping_bloc.dart';
 import 'golf_device/presentation/bloc/golf_device_event.dart';
@@ -121,19 +123,32 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final index = BottomNavController.currentIndex.value;
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is Unauthenticated) {
+          // Reset bottom nav
+          // BottomNavController.currentIndex.value = 0;
+          // BottomNavController.reTapIndex.value = null;
 
-    return Scaffold(
-      body: IndexedStack(
-        index: index,
-        children: [
-          _buildNavigator(0, const LandingDashboard()),
-          _buildNavigator(1, const GolfDeviceView()),
-          _buildNavigator(2, const PracticeGamesScreen()),
-          _buildNavigator(3, const ShotLibraryHomePage()),
-        ],
+          // 🔥 ROOT navigation (this WORKS)
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/SignInScreen',
+                (route) => false,
+          );
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: BottomNavController.currentIndex.value,
+          children: [
+            _buildNavigator(0, const LandingDashboard()),
+            _buildNavigator(1, const GolfDeviceView()),
+            _buildNavigator(2, const PracticeGamesScreen()),
+            _buildNavigator(3, const ShotLibraryHomePage()),
+          ],
+        ),
+        bottomNavigationBar: const BottomNavBar(),
       ),
-      bottomNavigationBar: const BottomNavBar(),
     );
   }
 

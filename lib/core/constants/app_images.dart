@@ -17,6 +17,7 @@ class AppImages {
   static const String bluetoothIcon = 'assets/svgs/bluetooth_icon.svg';
   static const String connectedIcon = 'assets/svgs/connected_icon.svg';
   static const String distanceMasterIcon = 'assets/svgs/distance_master.svg';
+  static const String settingsIcon = 'assets/svgs/setting_icon.svg';
 
   //png
   static const String slurvoLogo = 'assets/png/slurvo.png';

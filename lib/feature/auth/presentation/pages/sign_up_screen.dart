@@ -66,7 +66,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               Future.delayed(const Duration(milliseconds: 500), () {
                 Navigator.pushNamedAndRemoveUntil(
                   context,
-                  '/landingDashboard',
+                  '/MainScreen',
                       (route) => false,
                 );
               });

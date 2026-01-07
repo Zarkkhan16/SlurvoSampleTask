@@ -47,8 +47,24 @@ class AuthSignUpFailure extends AuthState {
 }
 
 class Authenticated extends AuthState {
-  final User user;
+  final UserEntity user;
   Authenticated(this.user);
 }
 
 class Unauthenticated extends AuthState {}
+class ProfileUpdating extends AuthState {}
+
+class ProfileUpdated extends AuthState {
+  final UserEntity user;
+
+  ProfileUpdated(this.user);
+}
+
+class PasswordChanging extends AuthState {}
+
+class PasswordChanged extends AuthState {}
+
+class PasswordChangeFailure extends AuthState {
+  final String message;
+  PasswordChangeFailure(this.message);
+}

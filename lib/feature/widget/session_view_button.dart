@@ -4,11 +4,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_strings.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:onegolf/core/constants/app_colors.dart';
+import 'package:onegolf/core/constants/app_strings.dart';
+
 class SessionViewButton extends StatelessWidget {
   final VoidCallback? onSessionClick;
   final String buttonText;
   final Color? backgroundColor, textColor;
   final String? iconSvg;
+
+  // 🔹 OPTIONAL LOADING FLAG
+  final bool isLoading;
 
   const SessionViewButton({
     super.key,
@@ -17,6 +26,7 @@ class SessionViewButton extends StatelessWidget {
     this.backgroundColor = AppColors.buttonBackground,
     this.textColor = AppColors.buttonText,
     this.iconSvg,
+    this.isLoading = false, // default → no loader
   });
 
   @override
@@ -31,7 +41,7 @@ class SessionViewButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: onSessionClick,
+        onPressed: isLoading ? null : onSessionClick, // disable while loading
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: AppColors.buttonText,
@@ -43,15 +53,25 @@ class SessionViewButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(buttonHeight / 2),
           ),
         ),
+
+        // 🔹 ONLY CONTENT CHANGES — SIZE STAYS SAME
         child: FittedBox(
           fit: BoxFit.scaleDown,
-          child: Row(
+          child: isLoading
+              ? const SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor:
+              AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          )
+              : Row(
             children: [
               if (iconSvg != null) ...[
-                SvgPicture.asset(
-                  iconSvg!,
-                ),
-                SizedBox(width: 15,),
+                SvgPicture.asset(iconSvg!),
+                const SizedBox(width: 15),
               ],
               Text(
                 buttonText,
@@ -73,3 +93,4 @@ class SessionViewButton extends StatelessWidget {
     );
   }
 }
+

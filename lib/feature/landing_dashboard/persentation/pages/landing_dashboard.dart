@@ -4,27 +4,17 @@ import 'package:flutter_svg/svg.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
-import 'package:onegolf/core/utils/navigation_helper.dart';
 import 'package:onegolf/feature/bottom_controller.dart';
 import 'package:onegolf/feature/profile/presentation/pages/profile_screen.dart';
-import 'package:onegolf/feature/shot_library/presentation/pages/shot_library_home_page.dart';
 import 'package:onegolf/feature/widget/session_view_button.dart';
-import '../../../../core/di/injection_container.dart' as di;
 import '../../../../core/services/ble_connection_helper.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/presentation/bloc/auth_event.dart';
-import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../ble_management/presentation/bloc/ble_management_bloc.dart';
 import '../../../ble_management/presentation/bloc/ble_management_state.dart';
 import '../../../ble_management/presentation/presentation/device_connected_screen.dart';
 import '../../../golf_device/presentation/bloc/golf_device_bloc.dart';
 import '../../../golf_device/presentation/bloc/golf_device_event.dart';
 import '../../../golf_device/presentation/pages/golf_device_screen.dart';
-import '../../../shot_library/presentation/bloc/shot_library_bloc.dart';
-import '../../../widget/bottom_nav_bar.dart';
 import '../../../widget/custom_app_bar.dart';
-import '../../../practice_games/presentation/bloc/practice_games_bloc.dart';
-import '../../../practice_games/presentation/pages/practice_games_screen.dart';
 import '../../../widget/gradient_border_container.dart';
 import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event.dart';
@@ -94,189 +84,239 @@ class _LandingDashboardState extends State<LandingDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    bool isConnected = BleConnectionHelper.isConnected(context);
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is Unauthenticated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Logout successful!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+    return Scaffold(
+      backgroundColor: AppColors.primaryBackground,
+      appBar: CustomAppBar(
+        onProfilePressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProfileScreen(),
             ),
           );
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/SignInScreen',
-            (route) => false,
-          );
-        }
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.primaryBackground,
-        // bottomNavigationBar: BottomNavBar(),
-        appBar: CustomAppBar(
-          onProfilePressed: () {
-            // Navigator.pushNamed(context, '/ProfileScreen');
-            // Navigator.of(context, rootNavigator: true).pushNamed('/ProfileScreen');
+        },
+      ),
+      body: BlocBuilder<DashboardBloc, DashboardState>(
+        builder: (context, state) {
+          if (state is DashboardLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            );
+          }
 
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ProfileScreen(),
+          if (state is DashboardError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 60),
+                  const SizedBox(height: 16),
+                  Text(
+                    state.message,
+                    style: AppTextStyle.roboto(
+                      fontSize: 16,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<DashboardBloc>().add(
+                            RefreshDashboard(),
+                          );
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
             );
-          },
-        ),
-        body: BlocBuilder<DashboardBloc, DashboardState>(
-          builder: (context, state) {
-            if (state is DashboardLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              );
-            }
+          }
 
-            if (state is DashboardError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline,
-                        color: Colors.red, size: 60),
-                    const SizedBox(height: 16),
-                    Text(
-                      state.message,
-                      style: AppTextStyle.roboto(
-                        fontSize: 16,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<DashboardBloc>().add(
-                              RefreshDashboard(),
-                            );
-                      },
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            final userName =
-                state is DashboardLoaded ? state.userProfile.name : 'User';
-
-            return Column(
+          return SingleChildScrollView(
+            child: Column(
               children: [
                 Container(
-                    margin: const EdgeInsets.all(12),
-                    width: double.infinity,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: GradientBorderContainer(
-                      borderRadius: 16,
-                      padding: EdgeInsets.zero,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.asset(
-                          'assets/png/test.jpeg',
-                          fit: BoxFit.fill,
-                          width: double.infinity,
-                          height: double.infinity,
-                        ),
-                      ),
-                    )
-                ),
-                // Shot Analysis Card
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: GestureDetector(
-                    onTap: () {
-                      _navigateWithBleCheck(
-                        context: context,
-                        screenName: "GolfDeviceView",
-                        destination: BlocProvider.value(
-                          value: context.read<GolfDeviceBloc>(),
-                          child: GolfDeviceView(),
-                        ),
-                      );
-                    },
-                    child: GradientBorderContainer(
-                      borderRadius: 32,
-                      borderWidth: 1,
-                      containerHeight: 130,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 6),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Colors.white,
-                                        Colors.white54,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    "Free",
-                                    style: AppTextStyle.roboto(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w400,
-                                        color: Colors.black),
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  "Shot Analysis",
-                                  style: AppTextStyle.roboto(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    height: 1.3,
-                                  ),
-                                ),
-                                // const SizedBox(height: 5),
-                                Text(
-                                  "Track your shots in real-time with accurate ball and club metrics.",
-                                  style: AppTextStyle.roboto(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.white,
-                                      height: 1.0),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Transform.scale(
-                            scale: 2.0,
-                            child: Image.asset(
-                              AppImages.deviceImage,
-                              width: 100,
-                              height: 140,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ],
+                  margin: EdgeInsets.symmetric(horizontal: w(context, 12), vertical: h(context, 12)),
+                  width: double.infinity,
+                  height: h(context, 120),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(w(context, 16)),
+                  ),
+                  child: GradientBorderContainer(
+                    borderRadius: w(context, 16),
+                    padding: EdgeInsets.zero,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(w(context, 16)),
+                      child: Image.asset(
+                        'assets/png/test.jpeg',
+                        fit: BoxFit.fill,
+                        width: double.infinity,
+                        height: double.infinity,
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 10),
+                // Shot Analysis Card
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: GradientBorderContainer(
+                    borderRadius: w(context, 32),
+                    borderWidth: 1,
+                    containerHeight: h(context, 130),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: w(context, 20),
+                      vertical: h(context, 6),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: w(context, 10),
+                                  vertical: h(context, 5),
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Colors.white, Colors.white54],
+                                  ),
+                                  borderRadius:
+                                      BorderRadius.circular(w(context, 4)),
+                                ),
+                                child: Text(
+                                  "Free",
+                                  style: AppTextStyle.roboto(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black),
+                                ),
+                              ),
+                              SizedBox(height: h(context, 3)),
+                              Text(
+                                "Shot Analysis",
+                                softWrap: true,
+                                maxLines: 2,
+                                style: AppTextStyle.roboto(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  height: 1.2,
+                                ),
+                              ),
+                              Text(
+                                "Track your shots in real-time with accurate ball and club metrics.",
+                                softWrap: true,
+                                maxLines: 3,
+                                style: AppTextStyle.roboto(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: w(context, 16)),
+                        Transform.scale(
+                          scale: MediaQuery.of(context).size.width < 360
+                              ? 1.6
+                              : 2.0,
+                          child: Image.asset(
+                            AppImages.deviceImage,
+                            width: w(context, 100),
+                            height: h(context, 140),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     _navigateWithBleCheck(
+                  //       context: context,
+                  //       screenName: "GolfDeviceView",
+                  //       destination: BlocProvider.value(
+                  //         value: context.read<GolfDeviceBloc>(),
+                  //         child: GolfDeviceView(),
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: GradientBorderContainer(
+                  //     borderRadius: 32,
+                  //     borderWidth: 1,
+                  //     containerHeight: 130,
+                  //     padding: const EdgeInsets.symmetric(
+                  //         horizontal: 20, vertical: 6),
+                  //     child: Row(
+                  //       children: [
+                  //         Expanded(
+                  //           child: Column(
+                  //             crossAxisAlignment: CrossAxisAlignment.start,
+                  //             children: [
+                  //               Container(
+                  //                 padding: const EdgeInsets.symmetric(
+                  //                     horizontal: 10, vertical: 5),
+                  //                 decoration: BoxDecoration(
+                  //                   gradient: const LinearGradient(
+                  //                     colors: [
+                  //                       Colors.white,
+                  //                       Colors.white54,
+                  //                     ],
+                  //                     begin: Alignment.topLeft,
+                  //                     end: Alignment.bottomRight,
+                  //                   ),
+                  //                   borderRadius: BorderRadius.circular(4),
+                  //                 ),
+                  //                 child: Text(
+                  //                   "Free",
+                  //                   style: AppTextStyle.roboto(
+                  //                       fontSize: 14,
+                  //                       fontWeight: FontWeight.w400,
+                  //                       color: Colors.black),
+                  //                 ),
+                  //               ),
+                  //               const SizedBox(height: 3),
+                  //               Text(
+                  //                 "Shot Analysis",
+                  //                 style: AppTextStyle.roboto(
+                  //                   fontSize: 22,
+                  //                   fontWeight: FontWeight.w900,
+                  //                   color: Colors.white,
+                  //                   height: 1.3,
+                  //                 ),
+                  //               ),
+                  //               // const SizedBox(height: 5),
+                  //               Text(
+                  //                 "Track your shots in real-time with accurate ball and club metrics.",
+                  //                 style: AppTextStyle.roboto(
+                  //                     fontSize: 16,
+                  //                     fontWeight: FontWeight.w400,
+                  //                     color: Colors.white,
+                  //                     height: 1.0),
+                  //               ),
+                  //             ],
+                  //           ),
+                  //         ),
+                  //         const SizedBox(width: 16),
+                  //         Transform.scale(
+                  //           scale: 2.0,
+                  //           child: Image.asset(
+                  //             AppImages.deviceImage,
+                  //             width: 100,
+                  //             height: 140,
+                  //             fit: BoxFit.cover,
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+                ),
+                SizedBox(height: h(context, 10)),
                 // Practice Games Card
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -295,11 +335,12 @@ class _LandingDashboardState extends State<LandingDashboard> {
                       // );
                     },
                     child: GradientBorderContainer(
-                      borderRadius: 32,
-                      borderWidth: 1,
-                      containerHeight: 130,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 6),
+                      containerHeight: h(context, 130),
+                      borderRadius: w(context, 32),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: w(context, 20),
+                        vertical: h(context, 6),
+                      ),
                       child: Row(
                         children: [
                           Expanded(
@@ -333,15 +374,19 @@ class _LandingDashboardState extends State<LandingDashboard> {
                                 const SizedBox(height: 5),
                                 Text(
                                   "Practice Games",
+                                  softWrap: true,
+                                  maxLines: 2,
                                   style: AppTextStyle.roboto(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
-                                    height: 1.3,
+                                    height: 1.2,
                                   ),
                                 ),
                                 Text(
                                   "Improve your skills with engaging and competitive practice modes.",
+                                  softWrap: true,
+                                  maxLines: 3,
                                   style: AppTextStyle.roboto(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400,
@@ -394,7 +439,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     ),
                   ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: h(context, 10)),
                 // Shot Library
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -412,11 +457,12 @@ class _LandingDashboardState extends State<LandingDashboard> {
                       // );
                     },
                     child: GradientBorderContainer(
-                      borderRadius: 32,
-                      borderWidth: 1,
-                      containerHeight: 130,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 6),
+                      containerHeight: h(context, 130),
+                      borderRadius: w(context, 32),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: w(context, 20),
+                        vertical: h(context, 6),
+                      ),
                       child: Row(
                         children: [
                           Expanded(
@@ -449,15 +495,21 @@ class _LandingDashboardState extends State<LandingDashboard> {
                                 const SizedBox(height: 5),
                                 Text(
                                   "Shot Library",
+                                  softWrap: true,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.visible,
                                   style: AppTextStyle.roboto(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
-                                    height: 1.3,
+                                    height: 1.2,
                                   ),
                                 ),
                                 Text(
                                   "Improve your skills with engaging and competitive practice modes.",
+                                  softWrap: true,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.visible,
                                   style: AppTextStyle.roboto(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w400,
@@ -469,10 +521,10 @@ class _LandingDashboardState extends State<LandingDashboard> {
                           ),
                           const SizedBox(width: 18),
                           SvgPicture.asset(
-                            width: 75,
-                            height: 60,
                             AppImages.libraryIcon,
-                            fit: BoxFit.cover,
+                            width: w(context, 75),
+                            height: h(context, 60),
+                            fit: BoxFit.contain,
                           ),
                           const SizedBox(width: 20),
                         ],
@@ -480,8 +532,69 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     ),
                   ),
                 ),
-                SizedBox(height: 12),
-                Spacer(),
+                SizedBox(height: h(context, 10)),
+                // Setting
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      // BottomNavController.goToTab(3);
+                    },
+                    child: GradientBorderContainer(
+                      containerHeight: h(context, 130),
+                      borderRadius: w(context, 32),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: w(context, 20),
+                        vertical: h(context, 6),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(height: h(context, 20)),
+                                Text(
+                                  "Setting",
+                                  softWrap: true,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.visible,
+                                  style: AppTextStyle.roboto(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                Text(
+                                  "Manage your profile, subscriptions, and device connections.",
+                                  softWrap: true,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.visible,
+                                  style: AppTextStyle.roboto(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                    height: 1.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 18),
+                          SvgPicture.asset(
+                            AppImages.settingsIcon,
+                            width: w(context, 75),
+                            height: h(context, 60),
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(width: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
                 BlocBuilder<BleManagementBloc, BleManagementState>(
                   builder: (context, bleState) {
                     final isConnected = bleState is BleConnectedState;
@@ -500,7 +613,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                     }
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      padding: EdgeInsets.symmetric(horizontal: w(context, 12)),
                       child: SessionViewButton(
                         onSessionClick: (isScanning || isConnecting)
                             ? null
@@ -514,9 +627,9 @@ class _LandingDashboardState extends State<LandingDashboard> {
                 ),
                 SizedBox(height: 20),
               ],
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

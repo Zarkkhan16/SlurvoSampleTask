@@ -163,11 +163,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:onegolf/feature/auth/domain/usecases/change_password.dart';
 import 'package:onegolf/feature/club_gapping/presentation/bloc/club_gapping_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../feature/auth/domain/usecases/update_profile.dart';
 import '../../feature/ble_management/data/repositories/ble_management_repository_imple.dart';
 import '../../feature/ble_management/data/services/ble_management_service.dart';
 import '../../feature/ble_management/domain/repositories/ble_management_repository.dart';
@@ -308,6 +310,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SignUpUser(sl()));
   sl.registerLazySingleton(() => CheckAuthStatus(sl()));
   sl.registerLazySingleton(() => LogoutUser(sl()));
+  sl.registerLazySingleton(() => UpdateProfile(sl()));
+  sl.registerLazySingleton(() => ChangePassword(sl()));
 
   // Dashboard Use Cases
   sl.registerLazySingleton(() => GetUserProfile(sl()));
@@ -347,6 +351,9 @@ Future<void> init() async {
       signUpUser: sl(),
       checkAuthStatus: sl(),
       logoutUser: sl(),
+      updateProfile: sl(),
+      changePassword: sl(),
+      firebaseAuth: sl(),
     ),
   );
 

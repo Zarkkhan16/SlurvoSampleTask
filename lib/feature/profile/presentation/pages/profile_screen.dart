@@ -7,10 +7,14 @@ import 'package:onegolf/core/constants/app_strings.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
 import 'package:onegolf/feature/auth/presentation/bloc/auth_bloc.dart';
 import 'package:onegolf/feature/auth/presentation/bloc/auth_event.dart';
+import 'package:onegolf/feature/profile/presentation/pages/change_password_screen.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
 import 'package:onegolf/feature/widget/gradient_border_container.dart';
 import 'package:onegolf/feature/widget/header_row.dart';
+
+import '../../../auth/presentation/bloc/auth_state.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -20,128 +24,158 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
       appBar: CustomAppBar(),
-      // bottomNavigationBar: BottomNavBar(),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Column(
-          children: [
-            HeaderRow(headingName: "Your Profile"),
-            SizedBox(height: 30),
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage(
-                AppImages.userDummyImage,
-              ),
-              backgroundColor: Colors.grey[700],
-            ),
-            SizedBox(height: 10),
-            Text(
-              AppStrings.userProfileData.name,
-              style: AppTextStyle.roboto(),
-            ),
-            SizedBox(height: 8),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: AppColors.cardBackground,
-              ),
-              child: Text(
-                'Free',
-                style: AppTextStyle.roboto(),
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Joined ${formatJoinDate(AppStrings.userProfileData.createdAt)} - Last Login ${formatLastLoginDate(DateTime.now())}',
-              style: AppTextStyle.roboto(),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32),
-            GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('This feature is under development.'),
-                    behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 2),
+      body: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is! Authenticated) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          final user = state.user;
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Column(
+              children: [
+                HeaderRow(headingName: "Your Profile"),
+                SizedBox(height: 30),
+                CircleAvatar(
+                  radius: 50,
+                  backgroundImage: AssetImage(
+                    AppImages.userDummyImage,
                   ),
-                );
-              },
-              child: GradientBorderContainer(
-                borderRadius: 20,
-                containerHeight: 60,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Edit Profile",
-                      style: AppTextStyle.roboto(),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 20,
-                    ),
-                  ],
+                  backgroundColor: Colors.grey[700],
                 ),
-              ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('This feature is under development.'),
-                    behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 2),
+                SizedBox(height: 10),
+                Text(
+                  user.name,
+                  style: AppTextStyle.roboto(),
+                ),
+                SizedBox(height: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: AppColors.cardBackground,
                   ),
-                );
-              },
-              child: GradientBorderContainer(
-                borderRadius: 20,
-                containerHeight: 60,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Change Password",
-                      style: AppTextStyle.roboto(),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Spacer(),
-            GestureDetector(
-              onTap: () {
-                context.read<AuthBloc>().add(LogoutRequested());
-              },
-              child: GradientBorderContainer(
-                backgroundColor: AppColors.red,
-                borderWidth: 0,
-                borderRadius: 20,
-                containerHeight: 60,
-                containerWidth: double.infinity,
-                child: Center(
                   child: Text(
-                    "LogOut",
-                    style: AppTextStyle.roboto(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                    'Free',
+                    style: AppTextStyle.roboto(),
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Joined ${formatJoinDate(AppStrings.userProfileData.createdAt)} - Last Login ${formatLastLoginDate(DateTime.now())}',
+                  style: AppTextStyle.roboto(),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 32),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EditProfileScreen(),
+                      ),
+                    );
+                  },
+                  child: GradientBorderContainer(
+                    borderRadius: 20,
+                    containerHeight: 60,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Edit Profile",
+                          style: AppTextStyle.roboto(),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 20,
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
+                SizedBox(
+                  height: 10,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ChangePasswordScreen(),
+                      ),
+                    );
+                  },
+                  child: GradientBorderContainer(
+                    borderRadius: 20,
+                    containerHeight: 60,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Change Password",
+                          style: AppTextStyle.roboto(),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Spacer(),
+                GestureDetector(
+                  onTap: () {
+                    // context.read<AuthBloc>().add(LogoutRequested());
+                  },
+                  child: GradientBorderContainer(
+                    backgroundColor: AppColors.buttonBackground,
+                    borderWidth: 0,
+                    borderRadius: 20,
+                    containerHeight: 60,
+                    containerWidth: double.infinity,
+                    child: Center(
+                      child: Text(
+                        "View Subscription",
+                        style: AppTextStyle.roboto(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.buttonText,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () {
+                    context.read<AuthBloc>().add(LogoutRequested());
+                  },
+                  child: GradientBorderContainer(
+                    backgroundColor: AppColors.red,
+                    borderWidth: 0,
+                    borderRadius: 20,
+                    containerHeight: 60,
+                    containerWidth: double.infinity,
+                    child: Center(
+                      child: Text(
+                        "LogOut",
+                        style: AppTextStyle.roboto(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+              ],
             ),
-            SizedBox(height: 10),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

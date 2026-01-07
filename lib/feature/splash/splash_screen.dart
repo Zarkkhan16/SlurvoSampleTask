@@ -85,6 +85,7 @@ import '../../core/constants/app_images.dart';
 import '../auth/presentation/bloc/auth_bloc.dart';
 import '../auth/presentation/bloc/auth_event.dart';
 import '../auth/presentation/bloc/auth_state.dart';
+import '../bottom_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -107,6 +108,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is Authenticated) {
+          BottomNavController.currentIndex.value = 0;
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/MainScreen',

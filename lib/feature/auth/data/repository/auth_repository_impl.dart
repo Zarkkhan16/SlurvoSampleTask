@@ -65,6 +65,44 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<UserEntity> updateProfile(String name) async {
+    final user = firebaseAuth.currentUser!;
+    await user.updateDisplayName(name);
+
+    await firestore.collection('users').doc(user.uid).update({
+      'name': name,
+    });
+
+    return UserEntity(
+      uid: user.uid,
+      email: user.email ?? '',
+      name: name,
+    );
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = firebaseAuth.currentUser!;
+    final email = user.email!;
+
+    final credential = EmailAuthProvider.credential(
+      email: email,
+      password: currentPassword,
+    );
+
+    // 🔴 THIS MUST THROW if password is wrong
+    await user.reauthenticateWithCredential(credential);
+
+    // 🔴 THIS RUNS ONLY IF RE-AUTH SUCCESS
+    await user.updatePassword(newPassword);
+  }
+
+
+
+  @override
   User? getCurrentUser() {
     return firebaseAuth.currentUser;
   }

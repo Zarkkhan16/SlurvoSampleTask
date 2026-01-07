@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/entities/user_entity.dart';
+import '../../domain/usecases/change_password.dart';
 import '../../domain/usecases/check_auth_status.dart';
 import '../../domain/usecases/logout_user.dart';
 import '../../domain/usecases/signup_user.dart';
+import '../../domain/usecases/update_profile.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../../domain/usecases/login_user.dart';
@@ -12,21 +15,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SignUpUser signUpUser;
   final CheckAuthStatus checkAuthStatus;
   final LogoutUser logoutUser;
+  final UpdateProfile updateProfile;
+  final ChangePassword changePassword;
+  final FirebaseAuth firebaseAuth;
 
   AuthBloc({
     required this.loginUser,
     required this.signUpUser,
     required this.checkAuthStatus,
     required this.logoutUser,
+    required this.updateProfile,
+    required this.changePassword,
+    required this.firebaseAuth,
   }) : super(AuthInitial()) {
-
     on<CheckAuthStatusEvent>((event, emit) async {
       emit(AuthLoading());
       await Future.delayed(const Duration(milliseconds: 500));
 
       final user = checkAuthStatus();
       if (user != null) {
-        emit(Authenticated(user));
+        final userEntity = UserEntity(
+          uid: user.uid,
+          email: user.email ?? '',
+          name: user.displayName ?? '',
+        );
+
+        emit(Authenticated(userEntity));
       } else {
         emit(Unauthenticated());
       }
@@ -45,7 +59,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } on FirebaseAuthException catch (e) {
         emit(AuthLoginFailure(_getFirebaseAuthErrorMessage(e.code)));
       } catch (e) {
-        emit(AuthLoginFailure("An unexpected error occurred. Please try again."));
+        emit(AuthLoginFailure(
+            "An unexpected error occurred. Please try again."));
       }
     });
 
@@ -66,10 +81,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } on FirebaseAuthException catch (e) {
         emit(AuthSignUpFailure(_getFirebaseAuthErrorMessage(e.code)));
       } catch (e) {
-        emit(AuthSignUpFailure("An unexpected error occurred. Please try again."));
+        emit(AuthSignUpFailure(
+            "An unexpected error occurred. Please try again."));
       }
     });
-
 
     on<LogoutRequested>((event, emit) async {
       emit(AuthLoading());
@@ -80,11 +95,63 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthLoginFailure("Logout failed. Please try again."));
       }
     });
+
+    on<UpdateProfileRequested>((event, emit) async {
+      emit(ProfileUpdating());
+      try {
+        final updatedUser = await updateProfile(event.name);
+        emit(Authenticated(updatedUser));
+      } catch (e) {
+        emit(AuthLoginFailure('Profile update failed'));
+      }
+    });
+
+    on<ChangePasswordRequested>((event, emit) async {
+      emit(PasswordChanging());
+
+      try {
+        await changePassword(
+          currentPassword: event.currentPassword,
+          newPassword: event.newPassword,
+        );
+
+        final currentState = state;
+
+        if (currentState is Authenticated) {
+          emit(currentState);
+        } else {
+          final firebaseUser = firebaseAuth.currentUser!;
+          emit(
+            Authenticated(
+              UserEntity(
+                uid: firebaseUser.uid,
+                email: firebaseUser.email ?? '',
+                name: firebaseUser.displayName ?? '',
+              ),
+            ),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+
+        emit(PasswordChangeFailure('Current password is incorrect'));
+        // if (e.code == 'wrong-password') {
+        //   emit(PasswordChangeFailure('Current password is incorrect'));
+        // } else if (e.code == 'requires-recent-login') {
+        //   emit(PasswordChangeFailure('Please login again and retry'));
+        // } else {
+        //   emit(PasswordChangeFailure(
+        //     e.message ?? 'Password update failed',
+        //   ));
+        // }
+      }
+    });
+
+
   }
 
   String _getFirebaseAuthErrorMessage(String code) {
     switch (code) {
-    // Login errors
+      // Login errors
       case 'user-not-found':
         return 'No account found with this email. Please sign up first.';
       case 'wrong-password':
@@ -98,7 +165,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       case 'invalid-credential':
         return 'Invalid email or password. Please check and try again.';
 
-    // SignUp errors
+      // SignUp errors
       case 'email-already-in-use':
         return 'An account already exists with this email. Please login.';
       case 'weak-password':
@@ -106,11 +173,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       case 'operation-not-allowed':
         return 'Email/password accounts are not enabled. Contact support.';
 
-    // Network errors
+      // Network errors
       case 'network-request-failed':
         return 'Network error. Please check your internet connection.';
 
-    // Default
+      // Default
       default:
         return 'Authentication failed. Please try again.';
     }
