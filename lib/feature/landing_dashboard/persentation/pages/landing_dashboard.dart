@@ -14,6 +14,7 @@ import '../../../ble_management/presentation/presentation/device_connected_scree
 import '../../../golf_device/presentation/bloc/golf_device_bloc.dart';
 import '../../../golf_device/presentation/bloc/golf_device_event.dart';
 import '../../../golf_device/presentation/pages/golf_device_screen.dart';
+import '../../../setting/persentation/pages/setting_screen.dart';
 import '../../../widget/custom_app_bar.dart';
 import '../../../widget/gradient_border_container.dart';
 import '../bloc/dashboard_bloc.dart';
@@ -45,6 +46,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
     required BuildContext context,
     required Widget destination,
     required String screenName,
+    int? targetTabIndex,
   }) async {
     final isConnected =
         await BleConnectionHelper.ensureDeviceConnected(context);
@@ -58,7 +60,12 @@ class _LandingDashboardState extends State<LandingDashboard> {
           bloc.bleRepository.isConnected,
         ),
       );
-      BottomNavController.currentIndex.value = 1;
+      // BottomNavController.currentIndex.value = 1;
+      if (targetTabIndex != null &&
+          BottomNavController.currentIndex.value != targetTabIndex) {
+        BottomNavController.currentIndex.value = targetTabIndex;
+      }
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -136,9 +143,10 @@ class _LandingDashboardState extends State<LandingDashboard> {
             child: Column(
               children: [
                 Container(
-                  margin: EdgeInsets.symmetric(horizontal: w(context, 12), vertical: h(context, 12)),
+                  margin: EdgeInsets.symmetric(
+                      horizontal: w(context, 12), vertical: h(context, 12)),
                   width: double.infinity,
-                  height: h(context, 120),
+                  height: h(context, 180),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(w(context, 16)),
                   ),
@@ -158,80 +166,95 @@ class _LandingDashboardState extends State<LandingDashboard> {
                 ),
                 // Shot Analysis Card
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: GradientBorderContainer(
-                    borderRadius: w(context, 32),
-                    borderWidth: 1,
-                    containerHeight: h(context, 130),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: w(context, 20),
-                      vertical: h(context, 6),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: w(context, 10),
-                                  vertical: h(context, 5),
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Colors.white, Colors.white54],
+                  padding: EdgeInsets.symmetric(horizontal: w(context, 12)),
+                  child: GestureDetector(
+                    onTap: () {
+                      _navigateWithBleCheck(
+                        context: context,
+                        screenName: "GolfDeviceView",
+                        destination: BlocProvider.value(
+                          value: context.read<GolfDeviceBloc>(),
+                          child: GolfDeviceView(),
+                        ),
+                        targetTabIndex: 1,
+                      );
+                    },
+                    child: GradientBorderContainer(
+                      borderRadius: w(context, 32),
+                      borderWidth: 1,
+                      containerHeight: h(context, 130),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: w(context, 20),
+                        vertical: h(context, 15),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: w(context, 16),
+                                    vertical: h(context, 5),
                                   ),
-                                  borderRadius:
-                                      BorderRadius.circular(w(context, 4)),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Colors.white, Colors.white38],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(w(context, 4)),
+                                  ),
+                                  child: Text(
+                                    "  Free  ",
+                                    style: AppTextStyle.roboto(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black),
+                                  ),
                                 ),
-                                child: Text(
-                                  "Free",
+                                SizedBox(height: h(context, 3)),
+                                Text(
+                                  "Shot Analysis",
+                                  softWrap: true,
+                                  maxLines: 2,
                                   style: AppTextStyle.roboto(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black),
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    height: 1.2,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: h(context, 3)),
-                              Text(
-                                "Shot Analysis",
-                                softWrap: true,
-                                maxLines: 2,
-                                style: AppTextStyle.roboto(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  height: 1.2,
+                                Text(
+                                  "Track your shots in real-time with accurate ball and club metrics.",
+                                  softWrap: true,
+                                  maxLines: 3,
+                                  style: AppTextStyle.roboto(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                    height: 1.0,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                "Track your shots in real-time with accurate ball and club metrics.",
-                                softWrap: true,
-                                maxLines: 3,
-                                style: AppTextStyle.roboto(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white,
-                                  height: 1.0,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(width: w(context, 16)),
-                        Transform.scale(
-                          scale: MediaQuery.of(context).size.width < 360
-                              ? 1.6
-                              : 2.0,
-                          child: Image.asset(
-                            AppImages.deviceImage,
-                            width: w(context, 100),
-                            height: h(context, 140),
-                            fit: BoxFit.cover,
+                          SizedBox(width: w(context, 16)),
+                          Transform.scale(
+                            scale: MediaQuery.of(context).size.width < 360
+                                ? 1.6
+                                : 2.0,
+                            child: Image.asset(
+                              AppImages.deviceImage,
+                              width: w(context, 100),
+                              height: h(context, 140),
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   // GestureDetector(
@@ -339,7 +362,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                       borderRadius: w(context, 32),
                       padding: EdgeInsets.symmetric(
                         horizontal: w(context, 20),
-                        vertical: h(context, 6),
+                        vertical: h(context, 15),
                       ),
                       child: Row(
                         children: [
@@ -349,8 +372,10 @@ class _LandingDashboardState extends State<LandingDashboard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: w(context, 10),
+                                    vertical: h(context, 5),
+                                  ),
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
                                       colors: [
@@ -361,7 +386,8 @@ class _LandingDashboardState extends State<LandingDashboard> {
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius:
+                                        BorderRadius.circular(w(context, 4)),
                                   ),
                                   child: Text(
                                     "Premium",
@@ -461,7 +487,7 @@ class _LandingDashboardState extends State<LandingDashboard> {
                       borderRadius: w(context, 32),
                       padding: EdgeInsets.symmetric(
                         horizontal: w(context, 20),
-                        vertical: h(context, 6),
+                        vertical: h(context, 15),
                       ),
                       child: Row(
                         children: [
@@ -470,8 +496,10 @@ class _LandingDashboardState extends State<LandingDashboard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: w(context, 10),
+                                    vertical: h(context, 5),
+                                  ),
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
                                       colors: [
@@ -482,7 +510,8 @@ class _LandingDashboardState extends State<LandingDashboard> {
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
-                                    borderRadius: BorderRadius.circular(4),
+                                    borderRadius:
+                                        BorderRadius.circular(w(context, 4)),
                                   ),
                                   child: Text(
                                     "Premium",
@@ -538,7 +567,14 @@ class _LandingDashboardState extends State<LandingDashboard> {
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
                   child: GestureDetector(
                     onTap: () {
-                      // BottomNavController.goToTab(3);
+                      _navigateWithBleCheck(
+                        context: context,
+                        destination: const SettingScreen(
+                          selectedUnit: true,
+                        ),
+                        screenName: 'SettingScreen',
+                      );
+
                     },
                     child: GradientBorderContainer(
                       containerHeight: h(context, 130),

@@ -31,6 +31,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
@@ -39,58 +46,65 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                HeaderRow(headingName: "Edit Profile"),
-                SizedBox(height: 30),
-                _field(
-                  "Email",
-                  controller: emailController,
-                  enabled: false,
-                ),
-                const SizedBox(height: 16),
-                _field(
-                  "Name",
-                  controller: nameController,
-                ),
-                const Spacer(),
-                BlocConsumer<AuthBloc, AuthState>(
-                  listener: (context, state) {
-                    if (state is Authenticated) {
-                      Navigator.pop(context);
-            
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Profile updated",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          backgroundColor: Colors.green,
-                          duration: Duration(seconds: 1),
-                          behavior: SnackBarBehavior.floating,
+          child: Column(
+            children: [
+              HeaderRow(
+                headingName: "Edit Profile",
+                onBackButton: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Future.delayed(Duration(milliseconds: 200)).then((_) {
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+              SizedBox(height: 30),
+              _field(
+                "Email",
+                controller: emailController,
+                enabled: false,
+              ),
+              const SizedBox(height: 16),
+              _field(
+                "Name",
+                controller: nameController,
+              ),
+              const Spacer(),
+              BlocConsumer<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (state is Authenticated) {
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "Profile updated",
+                          style: TextStyle(color: Colors.white),
                         ),
-                      );
-                    }
-                  },
-                  builder: (context, state) {
-                    return SessionViewButton(
-                      onSessionClick: () {
-                        if (!_formKey.currentState!.validate()) return;
-                        context.read<AuthBloc>().add(
-                              UpdateProfileRequested(
-                                name: nameController.text.trim(),
-                              ),
-                            );
-                      },
-                      isLoading: state is ProfileUpdating,
-                      buttonText: "Update",
+                        backgroundColor: Colors.green,
+                        duration: Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                      ),
                     );
-                  },
-                ),
-                const SizedBox(height: 10),
-              ],
-            ),
+                  }
+                },
+                builder: (context, state) {
+                  return SessionViewButton(
+                    onSessionClick: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      if (!_formKey.currentState!.validate()) return;
+                      context.read<AuthBloc>().add(
+                            UpdateProfileRequested(
+                              name: nameController.text.trim(),
+                            ),
+                          );
+                    },
+                    isLoading: state is ProfileUpdating,
+                    buttonText: "Update",
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
           ),
         ),
       ),

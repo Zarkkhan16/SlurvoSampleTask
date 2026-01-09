@@ -18,64 +18,110 @@ class ChangePasswordScreen extends StatefulWidget {
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final currentPasswordController = TextEditingController();
   final newPasswordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
   @override
+  void dispose() {
+    currentPasswordController.dispose();
+    newPasswordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+
+    // scale factors
+    final textScale = width / 375; // base iPhone width
+    final verticalSpace = height * 0.02;
+
     return Scaffold(
       backgroundColor: AppColors.primaryBackground,
       appBar: CustomAppBar(),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              HeaderRow(headingName: "Change Password"),
-              SizedBox(height: 30),
-              _passwordField(
-                "Current Password",
-                controller: currentPasswordController,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 🔹 Scrollable Form Content
+            Expanded(
+              child: SingleChildScrollView(
+                // keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.04,
+                  vertical: MediaQuery.of(context).size.height * 0.005,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      HeaderRow(
+                        headingName: "Change Password",
+                        onBackButton: () {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          Future.delayed(const Duration(milliseconds: 200))
+                              .then((_) => Navigator.pop(context));
+                        },
+                      ),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.03),
+                      _passwordField(
+                        "Current Password",
+                        controller: currentPasswordController,
+                        textScale: MediaQuery.of(context).size.width / 375,
+                      ),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.02),
+                      _passwordField(
+                        "New Password",
+                        controller: newPasswordController,
+                        textScale: MediaQuery.of(context).size.width / 375,
+                      ),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.02),
+                      _passwordField(
+                        "Confirm Password",
+                        controller: confirmPasswordController,
+                        confirmWith: newPasswordController,
+                        textScale: MediaQuery.of(context).size.width / 375,
+                      ),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.1),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
-              _passwordField(
-                "New Password",
-                controller: newPasswordController,
-              ),
-              const SizedBox(height: 16),
-              _passwordField(
-                "Confirm Password",
-                controller: confirmPasswordController,
-                confirmWith: newPasswordController,
-              ),
-              const Spacer(),
+            ),
 
-              BlocConsumer<AuthBloc, AuthState>(
+            // 🔹 Fixed Bottom Button
+            Padding(
+              padding: EdgeInsets.only(
+                left: MediaQuery.of(context).size.width * 0.04,
+                right: MediaQuery.of(context).size.width * 0.04,
+                bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 10 : 20,
+              ),
+              child: BlocConsumer<AuthBloc, AuthState>(
                 listener: (context, state) {
                   if (state is Authenticated) {
-                    Navigator.pop(context);
-
+                    FocusManager.instance.primaryFocus?.unfocus();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(
-                          "Password updated successfully",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        content: Text("Password updated successfully"),
                         backgroundColor: Colors.green,
                         duration: Duration(seconds: 1),
                       ),
                     );
+                    Future.delayed(const Duration(milliseconds: 200))
+                        .then((_) => Navigator.pop(context));
                   }
                   if (state is PasswordChangeFailure) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                          state.message,
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                        content: Text(state.message),
                         backgroundColor: Colors.red,
                         duration: const Duration(seconds: 2),
                       ),
@@ -89,31 +135,37 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     onSessionClick: state is PasswordChanging
                         ? null
                         : () {
-                      if (!_formKey.currentState!.validate()) return;
-
-                      context.read<AuthBloc>().add(
-                        ChangePasswordRequested(
-                          currentPassword:
-                          currentPasswordController.text.trim(),
-                          newPassword: newPasswordController.text.trim(),
-                        ),
-                      );
-                    },
+                            if (!_formKey.currentState!.validate()) return;
+                            context.read<AuthBloc>().add(
+                                  ChangePasswordRequested(
+                                    currentPassword:
+                                        currentPasswordController.text.trim(),
+                                    newPassword:
+                                        newPasswordController.text.trim(),
+                                  ),
+                                );
+                          },
                   );
                 },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _passwordField(
-      String label, {
-        required TextEditingController controller,
-        TextEditingController? confirmWith,
-      }) {
+    String label, {
+    required TextEditingController controller,
+    TextEditingController? confirmWith,
+    required double textScale,
+  }) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Colors.white),
+    );
+
     return TextFormField(
       controller: controller,
       obscureText: true,
@@ -130,24 +182,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         }
         return null;
       },
+      style: AppTextStyle.roboto(
+        color: Colors.white,
+        fontSize: 14 * textScale,
+      ),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: AppTextStyle.roboto(
+          color: Colors.white70,
+          fontSize: 13 * textScale,
+        ),
         filled: true,
         fillColor: AppColors.cardBackground,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.white),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.white),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red),
+        enabledBorder: border,
+        focusedBorder: border,
+        errorBorder: border,
+        focusedErrorBorder: border,
+        errorStyle: AppTextStyle.roboto(
+          color: Colors.red,
+          fontSize: 11 * textScale,
         ),
       ),
-      style: AppTextStyle.roboto(color: Colors.white),
     );
   }
 }

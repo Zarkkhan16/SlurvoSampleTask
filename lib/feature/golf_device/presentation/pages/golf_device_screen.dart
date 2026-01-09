@@ -324,6 +324,7 @@ class _GolfDeviceViewState extends State<GolfDeviceView> {
                                     value: context.read<GolfDeviceBloc>(),
                                     child: DispersionScreen(
                                       selectedShot: latestShot,
+                                      fromShotAnalysis: true,
                                     ),
                                   ),
                                 ),
