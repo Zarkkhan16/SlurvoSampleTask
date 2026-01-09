@@ -2,7 +2,7 @@ name: onegolf
 description: ""
 publish_to: 'none'
 
-version: 1.0.8+1
+version: 1.0.9+1
 
 environment:
   sdk: ^3.6.2
