@@ -299,10 +299,24 @@ class _LongestDriveMainPageState extends State<LongestDriveMainPage> {
                     ],
                     const SizedBox(height: 10),
                     if (!isKeyboardVisible)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10, bottom: 10),
-                        child: Center(
-                          child: Image.asset(AppImages.longestDriveImage),
+                      Container(
+                        width: double.infinity,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: GradientBorderContainer(
+                          borderRadius: 16,
+                          padding: EdgeInsets.zero,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular( 16),
+                            child: Image.asset(
+                              AppImages.longestDriveImage,
+                              fit: BoxFit.fill,
+                              width: double.infinity,
+                              height: double.infinity,
+                            ),
+                          ),
                         ),
                       ),
                     const SizedBox(height: 40),

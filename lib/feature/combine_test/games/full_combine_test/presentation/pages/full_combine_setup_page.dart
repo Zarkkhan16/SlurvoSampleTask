@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
+import 'package:onegolf/core/constants/app_images.dart';
 import 'package:onegolf/feature/combine_test/domain/entities/tile_data_entity.dart';
 import 'package:onegolf/feature/combine_test/games/full_combine_test/presentation/pages/full_combine_start_page.dart';
 import 'package:onegolf/feature/combine_test/games/wedge_combine_test/presentation/pages/wedge_combine_start_page.dart';
@@ -7,6 +8,7 @@ import 'package:onegolf/feature/combine_test/presentation/widget/answer_box.dart
 import 'package:onegolf/feature/combine_test/presentation/widget/custom_expandable_tile.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
+import 'package:onegolf/feature/widget/gradient_border_container.dart';
 import 'package:onegolf/feature/widget/header_row.dart';
 import 'package:onegolf/feature/widget/session_view_button.dart';
 
@@ -92,6 +94,27 @@ class _FullCombineSetupPageState extends State<FullCombineSetupPage> {
                 },
               ),
             ),
+            Container(
+              width: double.infinity,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: GradientBorderContainer(
+                borderRadius: 16,
+                padding: EdgeInsets.zero,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular( 16),
+                  child: Image.asset(
+                    AppImages.combineTestImage,
+                    fit: BoxFit.fill,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
             SessionViewButton(
               onSessionClick: () {
                 Navigator.push(

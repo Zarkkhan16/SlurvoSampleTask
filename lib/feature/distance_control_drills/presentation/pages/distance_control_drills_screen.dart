@@ -14,6 +14,7 @@ import 'package:onegolf/feature/practice_games/presentation/pages/practice_games
 import 'package:onegolf/feature/practice_games/presentation/widgets/gaming_card.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
+import 'package:onegolf/feature/widget/gradient_border_container.dart';
 import 'package:onegolf/feature/widget/header_row.dart';
 import '../../../../core/di/injection_container.dart' as di;
 
@@ -175,15 +176,21 @@ class DistanceControlDrillsScreen extends StatelessWidget {
                   ),
                   Spacer(),
                   Container(
+                    width: double.infinity,
                     height: 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      image: DecorationImage(
-                        image: AssetImage(AppImages.distanceMasterImage),
-                        fit: BoxFit.cover,
-                        colorFilter: ColorFilter.mode(
-                          Colors.black.withOpacity(0.3),
-                          BlendMode.darken,
+                    ),
+                    child: GradientBorderContainer(
+                      borderRadius: 16,
+                      padding: EdgeInsets.zero,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular( 16),
+                        child: Image.asset(
+                          AppImages.distanceMasterImage,
+                          fit: BoxFit.fill,
+                          width: double.infinity,
+                          height: double.infinity,
                         ),
                       ),
                     ),

@@ -196,6 +196,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:onegolf/core/utils/wake_lock_helper.dart';
 import 'package:onegolf/feature/golf_device/domain/entities/device_entity.dart';
 import '../../domain/entities/ble_device_entity.dart';
 import '../../domain/usecases/check_connection_status_usecase.dart';
@@ -326,6 +327,7 @@ class BleManagementBloc extends Bloc<BleManagementEvent, BleManagementState> {
 
     if (event.connectionState == DeviceConnectionState.connected) {
       print('✅ Device connected! Discovering services...');
+      await WakeLockHelper.enable();
 
       try {
         // Discover services after connection
@@ -350,6 +352,7 @@ class BleManagementBloc extends Bloc<BleManagementEvent, BleManagementState> {
       }
     } else if (event.connectionState == DeviceConnectionState.disconnected) {
       print('🔴 Device disconnected');
+      await WakeLockHelper.disable();
       emit(BleDisconnectedState());
       _currentDeviceId = null;
       _currentDeviceName = null;
@@ -361,6 +364,7 @@ class BleManagementBloc extends Bloc<BleManagementEvent, BleManagementState> {
       Emitter<BleManagementState> emit,
       ) async {
     print('🔴 BLoC: Disconnecting device...');
+    await WakeLockHelper.disable();
 
     try {
       await disconnectDeviceUseCase.call();
@@ -418,7 +422,8 @@ class BleManagementBloc extends Bloc<BleManagementEvent, BleManagementState> {
   }
 
   @override
-  Future<void> close() {
+  Future<void> close() async {
+    await WakeLockHelper.disable();
     _scanSubscription?.cancel();
     _connectionSubscription?.cancel();
     _bleStatusSubscription?.cancel();

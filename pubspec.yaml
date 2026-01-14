@@ -32,6 +32,7 @@ dependencies:
   syncfusion_flutter_sliders: ^32.1.21
   syncfusion_flutter_core: ^32.1.21
   collection: ^1.19.1
+  wakelock_plus: ^1.4.0
 
 
 
