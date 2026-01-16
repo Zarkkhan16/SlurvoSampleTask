@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
+import 'package:onegolf/core/utils/navigation_helper.dart';
 import 'package:onegolf/feature/combine_test/domain/entities/tile_data_entity.dart';
 import 'package:onegolf/feature/combine_test/games/full_combine_test/presentation/pages/full_combine_setup_page.dart';
 import 'package:onegolf/feature/combine_test/games/wedge_combine_test/presentation/pages/wedge_combine_setup_page.dart';
@@ -10,6 +11,8 @@ import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
 import 'package:onegolf/feature/widget/header_row.dart';
 
+import '../../../../core/di/injection_container.dart';
+import '../../../ble_management/domain/repositories/ble_management_repository.dart';
 import '../../games/custom_combine_test/presentation/pages/custom_combine_setup_page.dart';
 
 class CombineTestPage extends StatefulWidget {
@@ -97,25 +100,45 @@ class _CombineTestPageState extends State<CombineTestPage> {
                   // Buttons at the end of scroll
                   CustomCombineTestButton(
                     text: "Wedge Combine",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => WedgeCombineSetupPage(),
-                        ),
-                      );
+                    onTap: () async {
+                      final bleRepo = sl<BleManagementRepository>();
+                      if(bleRepo.isConnected){
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WedgeCombineSetupPage(),
+                          ),
+                        );
+                      }else{
+                        final isConnected =
+                        await NavigationHelper.isDeviceConnected(context);
+                        if (!isConnected) return;
+                        if (isConnected) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => WedgeCombineSetupPage(),
+                            ),
+                          );
+                        }
+                      }
                     },
                   ),
                   const SizedBox(height: 10),
                   CustomCombineTestButton(
                     text: "Full Combine",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FullCombineSetupPage(),
-                        ),
-                      );
+                    onTap: () async {
+                      final isConnected =
+                          await NavigationHelper.isDeviceConnected(context);
+                      if (!isConnected) return;
+                      if (isConnected) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FullCombineSetupPage(),
+                          ),
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 10),

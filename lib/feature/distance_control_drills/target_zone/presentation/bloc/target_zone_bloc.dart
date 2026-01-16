@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/feature/ble_management/domain/repositories/ble_management_repository.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/data/model/shot_result.dart';
@@ -359,8 +360,7 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
     ResetGameEvent event,
     Emitter<TargetZoneState> emit,
   ) async {
-    // ✅ STOP ALL BLE RESOURCES
-    print('🛑 Resetting game - Stopping all BLE resources');
+    debugPrint("Target Game Reset");
     await _bleSubscription?.cancel();
     _syncTimer?.cancel();
     _isFirstPacketHandled = false;
@@ -378,7 +378,6 @@ class TargetZoneBloc extends Bloc<TargetZoneEvent, TargetZoneState> {
 
   @override
   Future<void> close() {
-    print('🛑 Closing TargetZoneBloc - Cleaning up all resources');
     _bleSubscription?.cancel();
     _syncTimer?.cancel();
     _bleDataController.close();

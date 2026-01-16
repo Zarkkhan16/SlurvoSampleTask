@@ -165,6 +165,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:onegolf/feature/auth/domain/usecases/change_password.dart';
 import 'package:onegolf/feature/club_gapping/presentation/bloc/club_gapping_bloc.dart';
+import 'package:onegolf/feature/combine_test/games/wedge_combine_test/presentation/bloc/wedge_combine_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/target_zone/presentation/bloc/target_zone_bloc.dart';
@@ -417,6 +418,11 @@ Future<void> init() async {
   sl.registerFactory(
     () => LadderDrillBloc(
       bleRepository: sl(),
+    ),
+  );
+  sl.registerFactory(
+        () => WedgeCombineBloc(
+          bleRepository: sl(),
     ),
   );
 

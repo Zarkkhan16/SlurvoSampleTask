@@ -1,40 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/core/constants/app_colors.dart';
 import 'package:onegolf/core/constants/app_text_style.dart';
 import 'package:onegolf/feature/bottom_controller.dart';
+import 'package:onegolf/feature/combine_test/domain/entities/category_summary.dart';
+import 'package:onegolf/feature/combine_test/games/wedge_combine_test/presentation/bloc/wedge_combine_bloc.dart';
+import 'package:onegolf/feature/combine_test/games/wedge_combine_test/presentation/bloc/wedge_combine_state.dart';
 import 'package:onegolf/feature/combine_test/presentation/pages/combine_test_page.dart';
 import 'package:onegolf/feature/widget/bottom_nav_bar.dart';
 import 'package:onegolf/feature/widget/custom_app_bar.dart';
 import 'package:onegolf/feature/widget/gradient_border_container.dart';
 import 'package:onegolf/feature/widget/header_row.dart';
 
+import '../bloc/wedge_combine_event.dart';
+
 class WedgeCombineSummaryPage extends StatelessWidget {
   const WedgeCombineSummaryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return BlocBuilder<WedgeCombineBloc, WedgeCombineState>(
+      builder: (context, state) {
+        if (state.shots.isEmpty) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final bloc = context.read<WedgeCombineBloc>();
+
+        final finalScore = bloc.calculateFinalScore(state.shots).round();
+
+        final categorySummary = bloc.buildCategorySummary(state.shots);
+        for(final c in categorySummary){
+          print("${c.rangeLabel} | ${c.averageScore} | ${c.handicap}");
+        }
+
+        return _SummaryScaffold(
+          finalScore: finalScore,
+          categorySummary: categorySummary,
+        );
+      },
+    );
+  }
+}
+
+class _SummaryScaffold extends StatelessWidget {
+  final int finalScore;
+  final List<CategorySummary> categorySummary;
+
+  const _SummaryScaffold({
+    required this.finalScore,
+    required this.categorySummary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final tableHeaders = ['Range', 'Score', 'Handicap'];
-    final tableData = [
-      ['40-49', '15', '59'],
-      ['50-59', '17', '74'],
-      ['60-69', '12', '87'],
-      ['70-79', '9', '96'],
-      ['80-89', '8', '117'],
-      ['90-99', '8', '118'],
-    ];
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldBackground,
       appBar: CustomAppBar(),
-      // bottomNavigationBar: BottomNavBar(),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         child: SingleChildScrollView(
           child: Column(
             children: [
               HeaderRow(headingName: "Combine Test Summary"),
               const SizedBox(height: 10),
-              // Score in a circle
               Center(
                 child: Container(
                   width: 130,
@@ -44,7 +77,7 @@ class WedgeCombineSummaryPage extends StatelessWidget {
                     border: Border.all(color: Colors.white, width: 2),
                   ),
                   alignment: Alignment.center,
-                  child: Text("80",
+                  child: Text(finalScore.toString(),
                       style: AppTextStyle.oswald(
                         fontSize: 50,
                         fontWeight: FontWeight.w600,
@@ -52,7 +85,6 @@ class WedgeCombineSummaryPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 15),
-              // Performance Insights box
               GradientBorderContainer(
                 containerWidth: double.infinity,
                 child: Column(
@@ -91,7 +123,6 @@ class WedgeCombineSummaryPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 15),
-              // Table
               GradientBorderContainer(
                 child: Table(
                   columnWidths: const {
@@ -106,7 +137,6 @@ class WedgeCombineSummaryPage extends StatelessWidget {
                     // Header
                     TableRow(
                       decoration: BoxDecoration(
-                        // color: const Color(0xFF232323),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(20),
                           topRight: Radius.circular(20),
@@ -129,32 +159,17 @@ class WedgeCombineSummaryPage extends StatelessWidget {
                           .toList(),
                     ),
                     // Data rows
-                    ...tableData.map(
-                      (row) => TableRow(
-                        children: row
-                            .map(
-                              (cell) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
-                                child: Center(
-                                  child: Text(
-                                    cell,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
+                    ...categorySummary.map(
+                      (row) => TableRow(children: [
+                        _cell(row.rangeLabel),
+                        _cell(row.averageScore.round().toString()),
+                        _cell(row.handicap),
+                      ]),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 10),
-              // Bottom buttons
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -186,19 +201,17 @@ class WedgeCombineSummaryPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: ElevatedButton(
                         onPressed: () {
-                          // BottomNavController.goToTab(2); // Ensure tab is correct
-                          // Navigator.of(context).popUntil((route) => route.isFirst); // Back to root
-                          Navigator.of(context).popUntil((route) => route.isFirst); // go back to PracticeGamesScreen
+                          context
+                              .read<WedgeCombineBloc>()
+                              .add(ResetWedgeCombineEvent());
+                          Navigator.of(context)
+                              .popUntil((route) => route.isFirst);
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               settings: RouteSettings(name: 'CombineTestPage'),
                               builder: (context) => CombineTestPage(),
                             ),
                           );
-                          // Navigator.of(context).pushAndRemoveUntil(
-                          //   MaterialPageRoute(builder: (context) => CombineTestPage()),
-                          //       (route) => route.settings.name == 'PracticeGamesScreen',
-                          // );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.buttonBackground,
@@ -210,9 +223,10 @@ class WedgeCombineSummaryPage extends StatelessWidget {
                         child: const Text(
                           "Start Again",
                           style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            color: AppColors.buttonText,),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.buttonText,
+                          ),
                         ),
                       ),
                     ),
@@ -221,6 +235,21 @@ class WedgeCombineSummaryPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _cell(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Center(
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
           ),
         ),
       ),

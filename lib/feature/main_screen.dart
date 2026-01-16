@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onegolf/feature/club_gapping/presentation/bloc/club_gapping_event.dart';
+import 'package:onegolf/feature/combine_test/games/wedge_combine_test/presentation/bloc/wedge_combine_bloc.dart';
+import 'package:onegolf/feature/combine_test/games/wedge_combine_test/presentation/bloc/wedge_combine_event.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_bloc.dart';
 import 'package:onegolf/feature/distance_control_drills/distance_master/presentation/bloc/distance_master_event.dart';
 import 'package:onegolf/feature/distance_control_drills/ladder_drill/presentation/bloc/ladder_drill_bloc.dart';
@@ -83,6 +85,7 @@ class _MainScreenState extends State<MainScreen> {
       context.read<TargetZoneBloc>().add(ResetGameEvent());
       context.read<DistanceMasterBloc>().add(EndGameEvent());
       context.read<LadderDrillBloc>().add(RestartLadderDrillGameEvent());
+      context.read<WedgeCombineBloc>().add(ResetWedgeCombineEvent());
 
     if (index == 0 || index == 2 || index == 3) {
       context.read<GolfDeviceBloc>()
